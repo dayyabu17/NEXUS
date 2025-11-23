@@ -40,16 +40,18 @@ const seedDB = async () => {
     // 3. Create some dummy Events linked to the Organizer
     await Event.create([
       {
-        title: 'Tech Summit 2024',
-        description: 'A grand summit for tech enthusiasts and professionals.',
+        title: 'Tech Innovators Meetup',
+        description: 'Connect with fellow innovators, demo projects, and swap ideas for upcoming collaborations.',
         date: new Date(new Date().setDate(new Date().getDate() + 7)), // 7 days from now
-        location: 'Virtual',
+        location: 'Innovation Hub, Block B',
         organizer: organizerUser._id,
         category: 'Technology',
-        status: 'pending', // Will show on admin dashboard
-        capacity: 500,
+        status: 'pending',
+        capacity: 120,
         registrationFee: 0,
-        tags: ['tech', 'summit', 'innovation'],
+        rsvpCount: 0,
+        imageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
+        tags: ['tech', 'networking', 'innovation'],
       },
       {
         title: 'Campus Hackathon',
@@ -61,18 +63,22 @@ const seedDB = async () => {
         status: 'pending', // Will show on admin dashboard
         capacity: 100,
         registrationFee: 10,
+        rsvpCount: 35,
+        imageUrl: 'https://images.unsplash.com/photo-1483478550801-ceba5fe50e8e?auto=format&fit=crop&w=800&q=80',
         tags: ['hackathon', 'coding', 'students'],
       },
       {
-        title: 'Spring Festival Gala',
-        description: 'Annual celebration with music, dance, and food.',
+        title: 'Cultural Day',
+        description: 'Annual celebration with music, dance, talks, and delicious food from across campus.',
         date: new Date(new Date().setDate(new Date().getDate() + 30)), // 30 days from now
         location: 'Main Campus Field',
         organizer: organizerUser._id,
         category: 'Culture',
-        status: 'approved', // Won't show on admin dashboard (pending)
+        status: 'approved',
         capacity: 1000,
-        registrationFee: 5,
+        registrationFee: 15,
+        rsvpCount: 72,
+        imageUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=800&q=80',
         tags: ['festival', 'gala', 'celebration'],
       },
       {
@@ -82,9 +88,11 @@ const seedDB = async () => {
         location: 'Sports Arena',
         organizer: organizerUser._id,
         category: 'Career',
-        status: 'rejected', // Won't show on admin dashboard (pending)
+        status: 'rejected',
         capacity: 300,
         registrationFee: 0,
+        rsvpCount: 18,
+        imageUrl: 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=80',
         tags: ['career', 'job fair', 'networking'],
       },
     ]);

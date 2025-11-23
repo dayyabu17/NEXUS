@@ -7,6 +7,7 @@ const path = require('path');
 // Import Routes
 const authRoutes = require('./routes/authRoutes'); // Make sure this is present and correct
 const adminRoutes = require('./routes/adminRoutes');
+const organizerRoutes = require('./routes/organizerRoutes');
 
 const app = express();
 
@@ -22,6 +23,7 @@ app.use('/public', express.static(path.join(__dirname, 'public')));
 // Routes
 app.use('/api/auth', authRoutes); 
 app.use('/api/admin', adminRoutes);
+app.use('/api/organizer', organizerRoutes);
 
 // Basic Route (for testing if the server is up)
 app.get('/', (req, res) => {

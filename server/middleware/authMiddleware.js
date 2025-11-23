@@ -1,3 +1,4 @@
+// No changes to apply
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
@@ -48,4 +49,13 @@ const admin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, admin };
+const organizer = (req, res, next) => {
+  if (req.user && req.user.role === 'organizer') {
+    next();
+  } else {
+    res.status(403);
+    throw new Error('Not authorized as an organizer');
+  }
+};
+
+module.exports = { protect, admin, organizer };

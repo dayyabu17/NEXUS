@@ -36,6 +36,8 @@ const SignIn = () => {
       // 2. Redirect based on role (For now, let's just go to a dashboard placeholder)
       if (response.data.role === 'admin') {
         navigate('/admin/dashboard');
+      } else if (response.data.role === 'organizer') {
+        navigate('/organizer/dashboard');
       } else {
         navigate('/dashboard');
       }

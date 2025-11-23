@@ -6,6 +6,7 @@ import EventDetails from './components/EventDetails';
 import UserManagement from './components/UserManagement';
 import EventManagement from './components/EventManagement';
 import Settings from './components/Settings';
+import OrganizerDashboard from './components/OrganizerDashboard';
 
 function App() {
   return (
@@ -19,6 +20,8 @@ function App() {
       <Route path="/admin/users" element={<UserManagement />} /> 
       <Route path="/admin/events" element={<EventManagement />} /> 
       <Route path="/admin/settings" element={<Settings />} />
+
+      <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
 
       <Route path="/dashboard" element={<div>User Dashboard Placeholder</div>} /> 
       <Route path="/" element={<SignIn />} />
