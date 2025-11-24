@@ -160,7 +160,7 @@ const OrganizerDashboard = () => {
   );
 
   return (
-    <OrganizerLayoutDark activeNav="Dashboard">
+    <OrganizerLayoutDark>
       <section className="pb-16">
         <header className="pt-6">
           <h1 className="text-4xl font-semibold tracking-tight">

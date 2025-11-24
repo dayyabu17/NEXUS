@@ -7,6 +7,8 @@ import UserManagement from './components/UserManagement';
 import EventManagement from './components/EventManagement';
 import Settings from './components/Settings';
 import OrganizerDashboard from './components/OrganizerDashboard';
+import OrganizerEvents from './components/OrganizerEvents';
+import OrganizerEarnings from './components/OrganizerEarnings';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
       <Route path="/admin/settings" element={<Settings />} />
 
       <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+      <Route path="/organizer/events" element={<OrganizerEvents />} />
+      <Route path="/organizer/earnings" element={<OrganizerEarnings />} />
 
       <Route path="/dashboard" element={<div>User Dashboard Placeholder</div>} /> 
       <Route path="/" element={<SignIn />} />

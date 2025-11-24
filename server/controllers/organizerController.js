@@ -81,4 +81,33 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getOrganizerDashboard };
+const getOrganizerEvents = asyncHandler(async (req, res) => {
+  const { status, search } = req.query;
+
+  const query = { organizer: req.user._id };
+
+  if (status && ['pending', 'approved', 'rejected'].includes(status)) {
+    query.status = status;
+  }
+
+  if (search) {
+    query.title = { $regex: new RegExp(search, 'i') };
+  }
+
+  const events = await Event.find(query).sort({ date: 1 });
+
+  res.json(events.map((event) => ({
+    id: event._id,
+    title: event.title,
+    status: event.status,
+    date: event.date,
+    location: event.location,
+    rsvpCount: event.rsvpCount || 0,
+    registrationFee: event.registrationFee || 0,
+    imageUrl: event.imageUrl,
+    tags: event.tags || [],
+    category: event.category,
+  })));
+});
+
+module.exports = { getOrganizerDashboard, getOrganizerEvents };
