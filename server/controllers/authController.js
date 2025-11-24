@@ -4,9 +4,14 @@ const jwt = require('jsonwebtoken');
 const upload = require('../utils/fileUpload');
 const asyncHandler = require('express-async-handler')
 
-// @desc    Auth user & get token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * Authenticates a user and returns a JWT token.
+ *
+ * @function loginUser
+ * @param {import('express').Request} req - The Express request object containing email and password in body.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response with user info and token, or an error.
+ */
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,9 +69,14 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Update user profile (name, email, password)
-// @route   PUT /api/auth/profile
-// @access  Private
+/**
+ * Updates the user's profile (name, email, password).
+ *
+ * @function updateUserProfile
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response with updated user info.
+ */
 const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandler
   const user = await User.findById(req.user._id);
 
@@ -93,9 +103,15 @@ const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandl
   }
 });
 
-// @desc    Upload user profile picture
-// @route   PUT /api/auth/profile/picture
-// @access  Private
+/**
+ * Uploads and updates the user's profile picture.
+ * Uses the `upload` utility middleware for handling the file upload.
+ *
+ * @function updateProfilePicture
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response with the new profile picture URL.
+ */
 const updateProfilePicture = asyncHandler(async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {

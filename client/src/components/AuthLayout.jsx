@@ -1,6 +1,16 @@
 import React from 'react';
 import nexusLogo from '../assets/nexus-logo.svg'; // We'll create this soon
 
+/**
+ * AuthLayout Component.
+ * Provides a split-screen layout for authentication pages (Sign In / Sign Up).
+ * Left side contains the form, right side contains a decorative image.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The form content to display on the left side.
+ * @returns {JSX.Element} The rendered AuthLayout component.
+ */
 const AuthLayout = ({ children }) => {
   return (
     <div className="flex min-h-screen bg-nexus-light">

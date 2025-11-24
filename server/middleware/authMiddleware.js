@@ -2,7 +2,16 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-// Middleware to verify JWT and attach user to request (req.user)
+/**
+ * Middleware to verify JWT and attach user to request (req.user).
+ * Checks the Authorization header for a Bearer token.
+ *
+ * @function protect
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The Express next middleware function.
+ * @throws {Error} Will throw an error if no token is found, or if verification fails.
+ */
 const protect = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -37,7 +46,16 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Middleware to check if the user is an Admin
+/**
+ * Middleware to check if the user is an Admin.
+ * Assumes `protect` middleware has already run and attached `req.user`.
+ *
+ * @function admin
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The Express next middleware function.
+ * @throws {Error} Will throw an error with 403 status if user is not an admin.
+ */
 const admin = (req, res, next) => {
   // We rely on the protect middleware having already attached req.user
   if (req.user && req.user.role === 'admin') {

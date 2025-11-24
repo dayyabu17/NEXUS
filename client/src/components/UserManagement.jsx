@@ -3,6 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import api from '../api/axios';
 
+/**
+ * UserManagement Component.
+ * Allows administrators to manage users, including viewing the list of users and changing their roles.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered UserManagement component.
+ */
 const UserManagement = () => { // No longer receiving searchTerm as a prop here
     const navigate = useNavigate();
     const [users, setUsers] = useState([]);

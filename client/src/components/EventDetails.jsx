@@ -3,6 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import api from '../api/axios';
 
+/**
+ * EventDetails Component.
+ * Displays detailed information about a specific event.
+ * Allows admins to approve or reject the event.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered EventDetails component.
+ */
 const EventDetails = () => {
     const { id } = useParams();
     const navigate = useNavigate();

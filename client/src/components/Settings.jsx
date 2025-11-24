@@ -4,6 +4,13 @@ import api from '../api/axios';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg'; 
 
+/**
+ * Settings Component.
+ * Allows users to update their profile information (name, email, password) and profile picture.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered Settings component.
+ */
 const Settings = () => {
   const [formData, setFormData] = useState({
     name: '',

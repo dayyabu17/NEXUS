@@ -10,6 +10,13 @@ const ContinueIcon = () => (
   </svg>
 );
 
+/**
+ * SignIn Component.
+ * Allows users to sign in to the application.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SignIn component.
+ */
 const SignIn = () => {
   const navigate = useNavigate();
   

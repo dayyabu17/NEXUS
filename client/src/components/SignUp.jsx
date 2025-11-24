@@ -15,6 +15,14 @@ const ContinueIcon = () => (
   </svg>
 );
 
+/**
+ * SignUp Component.
+ * Allows new users to register for an account.
+ * Supports registration as a 'guest' or 'organizer'.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SignUp component.
+ */
 const SignUp = () => {
   // 'guest' or 'organizer'
   const [userType, setUserType] = useState('guest'); 

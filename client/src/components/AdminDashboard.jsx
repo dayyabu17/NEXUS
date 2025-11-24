@@ -4,6 +4,13 @@ import AdminLayout from './AdminLayout';
 import api from '../api/axios'; // Our configured Axios instance
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * AdminDashboard Component.
+ * Displays the main dashboard for admins, including statistics and a list of pending events.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered AdminDashboard component.
+ */
 const AdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({

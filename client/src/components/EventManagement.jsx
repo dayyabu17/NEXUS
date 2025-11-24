@@ -3,6 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import api from '../api/axios';
 
+/**
+ * EventManagement Component.
+ * Allows administrators to view, filter, and delete events.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {string} props.searchTerm - Search term for filtering events.
+ * @returns {JSX.Element} The rendered EventManagement component.
+ */
 const EventManagement = ({ searchTerm }) => {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);

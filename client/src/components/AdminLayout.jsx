@@ -34,6 +34,17 @@ const getInitialProfilePicture = () => {
     return DEFAULT_AVATAR;
 };
 
+/**
+ * AdminLayout Component.
+ * Provides the common layout structure for admin pages, including a sidebar and header.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The content to display within the layout.
+ * @param {string} [props.searchTerm] - Current search term for the search bar.
+ * @param {Function} [props.onSearchChange] - Callback function when search term changes.
+ * @returns {JSX.Element} The rendered AdminLayout component.
+ */
 const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
   const [userName, setUserName] = useState(getInitialUserName);
   const [profilePicture, setProfilePicture] = useState(getInitialProfilePicture);

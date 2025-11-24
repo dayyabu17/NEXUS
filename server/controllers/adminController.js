@@ -2,10 +2,15 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Event = require('../models/Event');
 
-// ... (getAdminStats and getPendingEvents and getEventDetails remain the same) ...
-// You can keep them as they are, or copy the full file below.
-
-// @desc    Get counts for Admin Dashboard
+/**
+ * Retrieves statistics for the Admin Dashboard.
+ * Returns counts of pending events, total users, total organizers, and total events.
+ *
+ * @function getAdminStats
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON object with statistical data.
+ */
 const getAdminStats = asyncHandler(async (req, res) => {
   const pendingEventsCount = await Event.countDocuments({ status: 'pending' });
   const totalUsersCount = await User.countDocuments();
@@ -20,7 +25,15 @@ const getAdminStats = asyncHandler(async (req, res) => {
   });
 });
 
-// @desc    Get pending events
+/**
+ * Retrieves a list of events with 'pending' status.
+ * Populates organizer details.
+ *
+ * @function getPendingEvents
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON array of pending events.
+ */
 const getPendingEvents = asyncHandler(async (req, res) => {
   const pendingEvents = await Event.find({ status: 'pending' })
     .populate('organizer', 'name organizationName')
@@ -28,7 +41,15 @@ const getPendingEvents = asyncHandler(async (req, res) => {
   res.json(pendingEvents);
 });
 
-// @desc    Get single event details
+/**
+ * Retrieves details of a single event by ID.
+ * Populates organizer details.
+ *
+ * @function getEventDetails
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON object with event details or a 404 error.
+ */
 const getEventDetails = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id).populate('organizer', 'name email organizationName');
   if (!event) {
@@ -38,7 +59,14 @@ const getEventDetails = asyncHandler(async (req, res) => {
   res.json(event);
 });
 
-// @desc    Approve or Reject an event
+/**
+ * Updates the approval status of an event.
+ *
+ * @function updateEventStatus
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response with the update result.
+ */
 const updateEventStatus = asyncHandler(async (req, res) => {
   const { status } = req.body;
   
@@ -58,14 +86,28 @@ const updateEventStatus = asyncHandler(async (req, res) => {
   res.json({ message: `Event ${status} successfully.`, eventId: event._id, newStatus: status });
 });
 
-// @desc    Get all users
+/**
+ * Retrieves a list of all users.
+ * Excludes password field.
+ *
+ * @function getAllUsers
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON array of user objects.
+ */
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await User.find({}).select('-password');
   res.json(users);
 });
 
-// @desc    Update a user's role
-// @route   PUT /api/admin/users/:id/role
+/**
+ * Updates the role of a user.
+ *
+ * @function updateUserRole
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response with the update result.
+ */
 const updateUserRole = asyncHandler(async (req, res) => {
   const { role } = req.body;
 
@@ -94,9 +136,15 @@ const updateUserRole = asyncHandler(async (req, res) => {
   res.json({ message: `User role updated to ${role} successfully.`, userId: user._id, newRole: role });
 });
 
-// @desc    Get ALL events (for the main events list)
-// @route   GET /api/admin/events
-// @access  Private (Admin Only)
+/**
+ * Retrieves all events (for the main events list).
+ * Populates organizer details.
+ *
+ * @function getAllEvents
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON array of all events.
+ */
 const getAllEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({})
     .populate('organizer', 'name organizationName')
@@ -104,9 +152,14 @@ const getAllEvents = asyncHandler(async (req, res) => {
   res.json(events);
 });
 
-// @desc    Delete an event
-// @route   DELETE /api/admin/events/:id
-// @access  Private (Admin Only)
+/**
+ * Deletes an event by ID.
+ *
+ * @function deleteEvent
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void} Sends a JSON response confirming deletion.
+ */
 const deleteEvent = asyncHandler(async (req, res) => {
   const event = await Event.findById(req.params.id);
 

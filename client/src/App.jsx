@@ -7,6 +7,13 @@ import UserManagement from './components/UserManagement';
 import EventManagement from './components/EventManagement';
 import Settings from './components/Settings';
 
+/**
+ * Main Application Component.
+ * Defines the routing structure of the application using `react-router-dom`.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered application component with routes.
+ */
 function App() {
   return (
     <Routes>
