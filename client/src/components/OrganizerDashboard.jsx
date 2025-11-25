@@ -115,7 +115,28 @@ const OrganizerDashboard = () => {
             Authorization: `Bearer ${token}`,
           },
         });
-        setDashboardData(response.data);
+        const stats = response.data?.stats || {
+          totalUpcomingRsvps: 0,
+          totalUpcomingRsvpsChange: 0,
+          totalRevenue: 0,
+          totalRevenueChange: 0,
+          activeEvents: 0,
+          activeEventsChange: 0,
+        };
+
+        const nextEvents = (response.data?.upcomingEvents || [])
+          .filter((event) => {
+            const eventDate = new Date(event.date).getTime();
+            return !Number.isNaN(eventDate) && eventDate >= Date.now();
+          })
+          .sort((a, b) => new Date(a.date) - new Date(b.date))
+          .slice(0, 3);
+
+        setDashboardData({
+          stats,
+          upcomingEvents: nextEvents,
+          activities: response.data?.activities || [],
+        });
       } catch (err) {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
           localStorage.removeItem('token');

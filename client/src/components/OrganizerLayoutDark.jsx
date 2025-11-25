@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
 import nexusIcon from '../assets/icons/nexus-icon.svg';
 import DashboardActiveIcon from '../assets/icons/dashboard_active.svg';
@@ -9,6 +9,7 @@ import EarningActiveIcon from '../assets/icons/earning_active.svg';
 import EarningInactiveIcon from '../assets/icons/earning_notactive.svg';
 import searchIcon from '../assets/icons/search.svg';
 import bellIcon from '../assets/icons/Bell.svg';
+import api from '../api/axios';
 
 const avatarImage = '/images/default-avatar.jpeg';
 
@@ -31,6 +32,12 @@ const formatTime = (date) => {
 
 const OrganizerLayoutDark = ({ children }) => {
   const [currentTime, setCurrentTime] = useState(() => formatTime(new Date()));
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [events, setEvents] = useState([]);
+  const [eventsLoading, setEventsLoading] = useState(false);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
+  const [eventsError, setEventsError] = useState('');
   const location = useLocation();
 
   useEffect(() => {
@@ -40,6 +47,97 @@ const OrganizerLayoutDark = ({ children }) => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (!showSearch) {
+      return undefined;
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        setShowSearch(false);
+      }
+    };
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showSearch]);
+
+  useEffect(() => {
+    if (!showSearch || eventsLoaded || eventsLoading) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setEventsError('Authentication required to search events.');
+      return;
+    }
+
+    const fetchEvents = async () => {
+      try {
+        setEventsLoading(true);
+        setEventsError('');
+        const response = await api.get('/organizer/events', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setEvents(Array.isArray(response.data) ? response.data : []);
+        setEventsLoaded(true);
+      } catch (error) {
+        const message =
+          error?.response?.data?.message || 'Unable to load events right now.';
+        setEventsError(message);
+      } finally {
+        setEventsLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, [showSearch, eventsLoaded, eventsLoading]);
+
+  const upcomingEvents = useMemo(() => {
+    if (!events || events.length === 0) {
+      return [];
+    }
+
+    const now = Date.now();
+    return [...events]
+      .filter((event) => {
+        const eventTime = new Date(event.date).getTime();
+        return !Number.isNaN(eventTime) && eventTime >= now;
+      })
+      .sort((a, b) => new Date(a.date) - new Date(b.date));
+  }, [events]);
+
+  const filteredEvents = useMemo(() => {
+    const trimmed = searchQuery.trim().toLowerCase();
+    if (!trimmed) {
+      return upcomingEvents;
+    }
+
+    return upcomingEvents.filter((event) => {
+      const haystack = [
+        event.title,
+        event.category,
+        Array.isArray(event.tags) ? event.tags.join(' ') : '',
+      ]
+        .join(' ')
+        .toLowerCase();
+
+      return haystack.includes(trimmed);
+    });
+  }, [searchQuery, upcomingEvents]);
+
+  const upcomingPreview = useMemo(
+    () => upcomingEvents.slice(0, 3),
+    [upcomingEvents],
+  );
 
   const navItems = [
     {
@@ -113,7 +211,18 @@ const OrganizerLayoutDark = ({ children }) => {
             >
               Create Event
             </Link>
-            <img src={searchIcon} alt="Search" className="h-6 w-6 opacity-70" data-node-id="156:82" />
+            <button
+              type="button"
+              onClick={() => {
+                setSearchQuery('');
+                setShowSearch(true);
+              }}
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-transparent text-white transition hover:border-white/30"
+              aria-label="Search events"
+              data-node-id="156:82"
+            >
+              <img src={searchIcon} alt="Search" className="h-4 w-4 opacity-80" />
+            </button>
             <img src={bellIcon} alt="Notifications" className="h-5 w-5 opacity-70" data-node-id="158:89" />
             <div className="h-10 w-10 overflow-hidden rounded-full border border-white/20" data-node-id="156:88">
               <img src={avatarImage} alt="Profile" className="h-full w-full object-cover" />
@@ -125,6 +234,163 @@ const OrganizerLayoutDark = ({ children }) => {
       <main className="mx-auto w-full max-w-[1455px] px-10 pb-16 pt-28">
         {children}
       </main>
+
+      {showSearch && (
+        <SearchOverlay
+          query={searchQuery}
+          onQueryChange={setSearchQuery}
+          onClose={() => setShowSearch(false)}
+          loading={eventsLoading && !eventsLoaded}
+          error={eventsError}
+          upcomingPreview={upcomingPreview}
+          results={filteredEvents}
+          hasQuery={Boolean(searchQuery.trim())}
+        />
+      )}
+    </div>
+  );
+};
+
+const SearchOverlay = ({
+  query,
+  onQueryChange,
+  onClose,
+  loading,
+  error,
+  upcomingPreview,
+  results,
+  hasQuery,
+}) => {
+  const inputRef = useRef(null);
+
+  useEffect(() => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, []);
+
+  const handleBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      onClose();
+    }
+  };
+
+  const formatEventMeta = (event) => {
+    const eventDate = new Date(event.date);
+    if (Number.isNaN(eventDate.getTime())) {
+      return 'Date to be announced';
+    }
+
+    const dateLabel = eventDate.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
+    });
+
+    const timeLabel = eventDate.toLocaleTimeString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+
+    return `${dateLabel} • ${timeLabel}`;
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-[1200] flex items-start justify-center bg-black/60 px-4 py-10 backdrop-blur"
+      onClick={handleBackdropClick}
+    >
+      <div className="w-full max-w-2xl rounded-3xl border border-white/10 bg-[rgba(15,19,29,0.92)] px-6 py-6 text-white shadow-[0_30px_120px_rgba(4,8,18,0.7)]">
+        <div className="relative">
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(event) => onQueryChange(event.target.value)}
+            placeholder="Search events, categories, or tags..."
+            className="w-full rounded-2xl border border-white/15 bg-[rgba(20,24,34,0.85)] px-4 py-3 text-base text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
+          />
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/15 px-3 py-1 text-xs text-white/70 transition hover:border-white/35 hover:text-white"
+          >
+            Esc
+          </button>
+        </div>
+
+        <div className="mt-6 space-y-6">
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
+              Shortcuts
+            </h3>
+            <div className="mt-3 flex flex-col gap-2">
+              <Link
+                to="/organizer/events/create"
+                className="flex items-center justify-between rounded-2xl border border-white/10 bg-[rgba(28,33,44,0.85)] px-4 py-3 text-sm font-medium text-white transition hover:border-white/25 hover:bg-[rgba(35,40,52,0.9)]"
+                onClick={onClose}
+              >
+                <span className="flex items-center gap-3">
+                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-lg" aria-hidden>
+                    +
+                  </span>
+                  Create event
+                </span>
+                <span className="text-xs text-white/50">Shortcut</span>
+              </Link>
+            </div>
+          </section>
+
+          <section>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
+                {hasQuery ? 'Search results' : 'Upcoming'}
+              </h3>
+              {!hasQuery && upcomingPreview.length > 0 && (
+                <span className="text-xs text-white/50">Next {upcomingPreview.length} events</span>
+              )}
+            </div>
+
+            <div className="mt-3 space-y-2">
+              {loading && !error && (
+                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
+                  Loading events...
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                  {error}
+                </div>
+              )}
+
+              {!loading && !error && results.length === 0 && (
+                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
+                  {hasQuery
+                    ? 'No events matched your search.'
+                    : 'You have no upcoming events yet.'}
+                </div>
+              )}
+
+              {!loading && !error && results.slice(0, hasQuery ? 6 : 3).map((event) => (
+                <Link
+                  key={event.id}
+                  to={`/organizer/events/${event.id}`}
+                  onClick={onClose}
+                  className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white transition hover:border-white/25 hover:bg-[#1e2433]"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{event.title}</span>
+                    <span className="text-xs text-white/55">
+                      {event.category ? `${event.category} • ` : ''}
+                      {formatEventMeta(event)}
+                    </span>
+                  </div>
+                  <span className="text-xs text-white/45">View</span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
     </div>
   );
 };

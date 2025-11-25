@@ -29,8 +29,27 @@ const INITIAL_FORM = {
 
 const TITLE_PLACEHOLDER = 'Event Name';
 
+const QUICK_PRICE_OPTIONS = ['500', '1000', '2000', '5000', '10000', '20000'];
+
 const FALLBACK_DATE = 'Select date';
 const FALLBACK_TIME = 'Set time';
+
+const capacityLabel = (value) => {
+  if (!value) {
+    return 'Unlimited';
+  }
+
+  return `${value} seats`;
+};
+
+const ticketPriceLabel = (value) => {
+  if (!value || Number(value) <= 0) {
+    return 'Free';
+  }
+
+  const formatted = Number(value).toLocaleString();
+  return `₦${formatted}`;
+};
 
 const formatDateDisplay = (value) => {
   if (!value) {
@@ -465,40 +484,19 @@ const OrganizerCreateEvent = () => {
 
             <div className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8">
               <p className="text-sm font-semibold uppercase tracking-wide text-white/45">Event options</p>
-              <div className="mt-5 space-y-3">
-                <div className="flex flex-col gap-3 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3 text-white/85">
-                    <span aria-hidden>🪑</span>
-                    <span>Capacity</span>
-                  </div>
-                  <input
-                    id="capacity"
-                    name="capacity"
-                    type="number"
-                    min="0"
-                    value={formData.capacity}
-                    onChange={handleChange}
-                    placeholder="Unlimited"
-                    className="rounded-xl border border-white/10 bg-[#1b2330] px-4 py-2 text-right text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-3 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-3 text-white/85">
-                    <span aria-hidden>🎟️</span>
-                    <span>Ticket price</span>
-                  </div>
-                  <input
-                    id="registrationFee"
-                    name="registrationFee"
-                    type="number"
-                    min="0"
-                    value={formData.registrationFee}
-                    onChange={handleChange}
-                    placeholder="Free"
-                    className="rounded-xl border border-white/10 bg-[#1b2330] px-4 py-2 text-right text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
-                  />
-                </div>
+              <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                <OptionCard
+                  label="Capacity"
+                  icon="🪑"
+                  displayValue={capacityLabel(formData.capacity)}
+                  onClick={() => setActivePicker('capacity')}
+                />
+                <OptionCard
+                  label="Ticket price"
+                  icon="🎟️"
+                  displayValue={ticketPriceLabel(formData.registrationFee)}
+                  onClick={() => setActivePicker('ticketPrice')}
+                />
               </div>
             </div>
 
@@ -616,6 +614,8 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
   const isTimePicker = activePicker === 'time' || activePicker === 'endTime';
   const isTimezonePicker = activePicker === 'timezone';
   const isTitleEditor = activePicker === 'title';
+  const isCapacityEditor = activePicker === 'capacity';
+  const isTicketPriceEditor = activePicker === 'ticketPrice';
 
   const targetField = {
     title: 'title',
@@ -624,6 +624,8 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
     endDate: 'endDate',
     endTime: 'endTime',
     timezone: 'timezone',
+    capacity: 'capacity',
+    ticketPrice: 'registrationFee',
   }[activePicker];
 
   if (!targetField) {
@@ -653,6 +655,10 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
               ? 'Select timezone'
               : isTitleEditor
               ? 'Set event name'
+              : isCapacityEditor
+              ? 'Set capacity'
+              : isTicketPriceEditor
+              ? 'Set ticket price'
               : ''}
           </h2>
           <button type="button" className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/70 transition hover:bg-white/10" onClick={onClose}>
@@ -692,6 +698,24 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
             onCancel={onClose}
             onSave={(nextValue) => {
               setFormData((prev) => ({ ...prev, title: nextValue }));
+              onClose();
+            }}
+          />
+        ) : isCapacityEditor ? (
+          <CapacityEditor
+            value={formData[targetField]}
+            onCancel={onClose}
+            onSave={(nextValue) => {
+              setFormData((prev) => ({ ...prev, capacity: nextValue }));
+              onClose();
+            }}
+          />
+        ) : isTicketPriceEditor ? (
+          <TicketPriceEditor
+            value={formData[targetField]}
+            onCancel={onClose}
+            onSave={(nextValue) => {
+              setFormData((prev) => ({ ...prev, registrationFee: nextValue }));
               onClose();
             }}
           />
@@ -899,6 +923,202 @@ const TitleEditor = ({ value, onSave, onCancel }) => {
   );
 };
 
+const CapacityEditor = ({ value, onSave, onCancel }) => {
+  const [mode, setMode] = useState(value ? 'limited' : 'unlimited');
+  const [limit, setLimit] = useState(value || '');
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (mode === 'unlimited') {
+      onSave('');
+      return;
+    }
+
+    const numeric = Number(limit);
+    if (Number.isNaN(numeric) || numeric <= 0) {
+      return;
+    }
+    onSave(String(Math.floor(numeric)));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-white/70">Capacity type</legend>
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setMode('unlimited')}
+            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
+              mode === 'unlimited'
+                ? 'border-white bg-white text-black'
+                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+            }`}
+          >
+            <span className="font-semibold">Unlimited</span>
+            {mode === 'unlimited' && <span className="text-xs">Selected</span>}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMode('limited')}
+            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
+              mode === 'limited'
+                ? 'border-white bg-white text-black'
+                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+            }`}
+          >
+            <span className="font-semibold">Limited spots</span>
+            {mode === 'limited' && <span className="text-xs">Selected</span>}
+          </button>
+        </div>
+      </fieldset>
+
+      {mode === 'limited' && (
+        <div className="space-y-2">
+          <label htmlFor="capacity-limit" className="text-xs font-medium uppercase tracking-wide text-white/45">
+            Seats available
+          </label>
+          <input
+            id="capacity-limit"
+            type="number"
+            min="1"
+            value={limit}
+            onChange={(event) => setLimit(event.target.value)}
+            placeholder="Enter number of seats"
+            className="w-full rounded-2xl border border-white/15 bg-[#161b27] px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
+          />
+        </div>
+      )}
+
+      <div className="flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-white/70 transition hover:border-white/35 hover:text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="rounded-xl bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  );
+};
+
+const TicketPriceEditor = ({ value, onSave, onCancel }) => {
+  const [mode, setMode] = useState(!value || Number(value) <= 0 ? 'free' : 'paid');
+  const [price, setPrice] = useState(value || '');
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    if (mode === 'free') {
+      onSave('');
+      return;
+    }
+
+    const numeric = Number(price);
+    if (Number.isNaN(numeric) || numeric <= 0) {
+      return;
+    }
+
+    onSave(String(Math.floor(numeric)));
+  };
+
+  const applyQuickPrice = (amount) => {
+    setMode('paid');
+    setPrice(String(amount));
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <fieldset className="space-y-3">
+        <legend className="text-sm font-medium text-white/70">Ticket pricing</legend>
+        <div className="space-y-3">
+          <button
+            type="button"
+            onClick={() => setMode('free')}
+            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
+              mode === 'free'
+                ? 'border-white bg-white text-black'
+                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+            }`}
+          >
+            <span className="font-semibold">Free</span>
+            {mode === 'free' && <span className="text-xs">Selected</span>}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setMode('paid')}
+            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
+              mode === 'paid'
+                ? 'border-white bg-white text-black'
+                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+            }`}
+          >
+            <span className="font-semibold">Paid</span>
+            {mode === 'paid' && <span className="text-xs">Selected</span>}
+          </button>
+        </div>
+      </fieldset>
+
+      {mode === 'paid' && (
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <label htmlFor="ticket-price" className="text-xs font-medium uppercase tracking-wide text-white/45">
+              Price per ticket (₦)
+            </label>
+            <input
+              id="ticket-price"
+              type="number"
+              min="1"
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              placeholder="Enter ticket price"
+              className="w-full rounded-2xl border border-white/15 bg-[#161b27] px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
+            />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            {QUICK_PRICE_OPTIONS.map((option) => (
+              <button
+                key={option}
+                type="button"
+                onClick={() => applyQuickPrice(option)}
+                className="rounded-xl border border-white/15 px-3 py-1 text-xs font-medium text-white/75 transition hover:border-white/35 hover:text-white"
+              >
+                ₦{Number(option).toLocaleString()}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex items-center justify-end gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-white/70 transition hover:border-white/35 hover:text-white"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="rounded-xl bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+        >
+          Save
+        </button>
+      </div>
+    </form>
+  );
+};
+
 const TimezoneGrid = ({ value, onSelect }) => {
   return (
     <div className="max-h-[320px] space-y-2 overflow-y-auto pr-2">
@@ -921,6 +1141,27 @@ const TimezoneGrid = ({ value, onSelect }) => {
         );
       })}
     </div>
+  );
+};
+
+const OptionCard = ({ label, icon, displayValue, onClick }) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="group flex flex-col gap-4 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 text-left text-white/80 transition hover:border-white/25 hover:bg-[#1b2332]"
+    >
+      <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-white/45">
+        <span>{label}</span>
+        <span aria-hidden className="text-base">
+          ✏️
+        </span>
+      </div>
+      <div className="flex items-center justify-between text-white">
+        <span className="text-lg font-medium">{displayValue}</span>
+        <span aria-hidden className="text-xl">{icon}</span>
+      </div>
+    </button>
   );
 };
 
