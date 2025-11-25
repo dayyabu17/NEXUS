@@ -13,7 +13,7 @@ import SettingsFilledSvg from '../assets/icons/settings_filled.svg';
 import SettingsOutlinedSvg from '../assets/icons/settings_outlined.svg'; 
 import SearchOutlinedSvg from '../assets/icons/search_outlined.svg'; 
 import LogoutOutlinedSvg from '../assets/icons/logout_outlined.svg'; 
-import Event2OutlinedSvg from '../assets/icons/event2_outlined.svg';
+import Event2OutlinedSvg from '../assets/icons/event_outlined2.svg';
 
 const getInitialUserName = () => {
   const user = localStorage.getItem('user');
@@ -108,7 +108,7 @@ const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
              <h1 className="text-3xl font-bold text-nexus-dark">Hello {userName} 👋</h1>
              <p className="text-gray-500">Nexus Admin Dashboard</p>
           </div>
-          <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
             {showSearch && (
                 <div className="relative">
                     <input
@@ -121,14 +121,21 @@ const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
                     <img src={SearchOutlinedSvg} alt="Search" className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
                 </div>
             )}
-            <div className="relative w-10 h-10 rounded-full bg-gray-300 overflow-hidden border border-gray-200">
-                <img 
-                    src={profilePicture} 
-                    alt="Profile" 
-                    className="w-full h-full object-cover" 
-                    onError={(e) => { e.target.onerror = null; e.target.src = DEFAULT_AVATAR; }}
-                />
-            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/admin/settings')}
+              className="relative w-10 h-10 rounded-full bg-gray-300 overflow-hidden border border-gray-200 focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+            >
+              <img
+                src={profilePicture}
+                alt="Profile"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = DEFAULT_AVATAR;
+                }}
+              />
+            </button>
           </div>
         </header>
 

@@ -16,8 +16,8 @@ app.use(cors({
   origin: 'http://localhost:5173', // Allow your Vite frontend
   credentials: true
 }));
-app.use(express.json()); // Allows us to parse JSON bodies from requests
-app.use(express.urlencoded({ extended: true })); // Add this for form-data parsing
+app.use(express.json({ limit: '10mb' })); // Allows us to parse JSON bodies from requests
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Add this for form-data parsing
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes

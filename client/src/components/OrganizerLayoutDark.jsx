@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation } from 'react-router-dom';
 import nexusIcon from '../assets/icons/nexus-icon.svg';
 import DashboardActiveIcon from '../assets/icons/dashboard_active.svg';
 import DashboardInactiveIcon from '../assets/icons/dashboard_notactive.svg';
@@ -106,13 +106,13 @@ const OrganizerLayoutDark = ({ children }) => {
             <span className="text-[#acacac]" data-node-id="156:85">
               {currentTime}
             </span>
-            <a
-              href="#"
+            <Link
+              to="/organizer/events/create"
               className="font-medium text-white transition-colors hover:text-[#a2cbff]"
               data-node-id="156:84"
             >
               Create Event
-            </a>
+            </Link>
             <img src={searchIcon} alt="Search" className="h-6 w-6 opacity-70" data-node-id="156:82" />
             <img src={bellIcon} alt="Notifications" className="h-5 w-5 opacity-70" data-node-id="158:89" />
             <div className="h-10 w-10 overflow-hidden rounded-full border border-white/20" data-node-id="156:88">

@@ -110,4 +110,83 @@ const getOrganizerEvents = asyncHandler(async (req, res) => {
   })));
 });
 
-module.exports = { getOrganizerDashboard, getOrganizerEvents };
+const createOrganizerEvent = asyncHandler(async (req, res) => {
+  const {
+    title,
+    description,
+    date,
+    location,
+    category,
+    capacity,
+    registrationFee,
+    imageUrl,
+    tags,
+  } = req.body;
+
+  if (!title || !description || !date || !location) {
+    return res.status(400).json({ message: 'Title, description, date, and location are required.' });
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return res.status(400).json({ message: 'Invalid event date supplied.' });
+  }
+
+  const parsedTagsSource = Array.isArray(tags)
+    ? tags
+    : typeof tags === 'string'
+      ? tags.split(',')
+      : [];
+
+  const normalizedTags = parsedTagsSource
+    .map((tag) => (tag || '').toString().trim())
+    .filter(Boolean);
+
+  const normalizedCapacity =
+    capacity === undefined || capacity === null || capacity === ''
+      ? undefined
+      : Number(capacity);
+
+  if (normalizedCapacity !== undefined && Number.isNaN(normalizedCapacity)) {
+    return res.status(400).json({ message: 'Capacity must be a valid number.' });
+  }
+
+  const normalizedFee =
+    registrationFee === undefined || registrationFee === null || registrationFee === ''
+      ? 0
+      : Number(registrationFee);
+
+  if (Number.isNaN(normalizedFee)) {
+    return res.status(400).json({ message: 'Registration fee must be a valid number.' });
+  }
+
+  const event = await Event.create({
+    title: title.trim(),
+    description,
+    date: parsedDate,
+    location: location.trim(),
+    category: category ? category.trim() : undefined,
+    capacity: normalizedCapacity,
+    registrationFee: normalizedFee,
+    imageUrl: imageUrl ? imageUrl.trim() : undefined,
+    tags: normalizedTags,
+    organizer: req.user._id,
+    status: 'pending',
+  });
+
+  res.status(201).json({
+    id: event._id,
+    title: event.title,
+    status: event.status,
+    date: event.date,
+    location: event.location,
+    rsvpCount: event.rsvpCount || 0,
+    registrationFee: event.registrationFee || 0,
+    imageUrl: event.imageUrl,
+    tags: event.tags,
+    category: event.category,
+  });
+});
+
+module.exports = { getOrganizerDashboard, getOrganizerEvents, createOrganizerEvent };
