@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const statusOptions = [
   { label: 'All', value: 'all' },
@@ -220,7 +220,10 @@ const OrganizerEvents = () => {
                         <span>{formatTimelineDate(date)}</span>
                       </div>
 
-                      <article className="flex flex-col justify-between gap-4 rounded-xl border border-white/5 bg-[rgba(25,27,29,0.78)] p-6 shadow-lg shadow-black/20 sm:flex-row">
+                      <Link
+                        to={`/organizer/events/${event.id}`}
+                        className="flex flex-col justify-between gap-4 rounded-xl border border-white/5 bg-[rgba(25,27,29,0.78)] p-6 text-left shadow-lg shadow-black/20 transition hover:border-white/20 hover:bg-[rgba(32,34,37,0.78)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 sm:flex-row"
+                      >
                         <div className="flex-1 space-y-3">
                           <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-medium text-white ${className}`}>
                             {label}
@@ -241,7 +244,7 @@ const OrganizerEvents = () => {
                             className="h-full w-full rounded-lg object-cover"
                           />
                         </div>
-                      </article>
+                      </Link>
                     </div>
                   );
                 })}

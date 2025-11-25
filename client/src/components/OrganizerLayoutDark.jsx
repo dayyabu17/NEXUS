@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, NavLink, useLocation } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import nexusIcon from '../assets/icons/nexus-icon.svg';
 import DashboardActiveIcon from '../assets/icons/dashboard_active.svg';
 import DashboardInactiveIcon from '../assets/icons/dashboard_notactive.svg';
@@ -38,7 +38,16 @@ const OrganizerLayoutDark = ({ children }) => {
   const [eventsLoading, setEventsLoading] = useState(false);
   const [eventsLoaded, setEventsLoaded] = useState(false);
   const [eventsError, setEventsError] = useState('');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsLoaded, setNotificationsLoaded] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
   const location = useLocation();
+  const navigate = useNavigate();
+  const profileMenuRef = useRef(null);
+  const notificationsMenuRef = useRef(null);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -139,6 +148,120 @@ const OrganizerLayoutDark = ({ children }) => {
     [upcomingEvents],
   );
 
+  useEffect(() => {
+    if (!showProfileMenu) {
+      return undefined;
+    }
+
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowProfileMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [showProfileMenu]);
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setShowProfileMenu(false);
+    navigate('/sign-in');
+  };
+
+  const handlePreferences = () => {
+    setShowProfileMenu(false);
+    navigate('/organizer/settings');
+  };
+
+  useEffect(() => {
+    if (!showNotifications) {
+      return undefined;
+    }
+
+    const handleClickOutside = (event) => {
+      if (notificationsMenuRef.current && !notificationsMenuRef.current.contains(event.target)) {
+        setShowNotifications(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleEscape);
+
+    if (!notificationsLoaded && !notificationsLoading) {
+      const token = localStorage.getItem('token');
+
+      if (!token) {
+        setNotificationsError('Sign in to view notifications.');
+      } else {
+        const fetchNotifications = async () => {
+          try {
+            setNotificationsLoading(true);
+            setNotificationsError('');
+            const response = await api.get('/organizer/dashboard', {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            const activities = Array.isArray(response.data?.activities)
+              ? response.data.activities
+              : [];
+            setNotifications(activities.slice(0, 5));
+            setNotificationsLoaded(true);
+          } catch (error) {
+            if (error?.response?.status === 401 || error?.response?.status === 403) {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              navigate('/sign-in');
+            } else {
+              const message = error?.response?.data?.message || 'Unable to load notifications.';
+              setNotificationsError(message);
+            }
+          } finally {
+            setNotificationsLoading(false);
+          }
+        };
+
+        fetchNotifications();
+      }
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [showNotifications, notificationsLoaded, notificationsLoading, navigate]);
+
+  const formatNotificationTimestamp = (value) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return 'Just now';
+    }
+
+    return date.toLocaleString(undefined, {
+      hour: 'numeric',
+      minute: '2-digit',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
   const navItems = [
     {
       label: 'Dashboard',
@@ -223,9 +346,89 @@ const OrganizerLayoutDark = ({ children }) => {
             >
               <img src={searchIcon} alt="Search" className="h-4 w-4 opacity-80" />
             </button>
-            <img src={bellIcon} alt="Notifications" className="h-5 w-5 opacity-70" data-node-id="158:89" />
-            <div className="h-10 w-10 overflow-hidden rounded-full border border-white/20" data-node-id="156:88">
-              <img src={avatarImage} alt="Profile" className="h-full w-full object-cover" />
+            <div className="relative" ref={notificationsMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNotifications((prev) => !prev);
+                  setShowProfileMenu(false);
+                }}
+                className={`flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-transparent transition ${
+                  showNotifications ? 'border-white/40' : 'hover:border-white/30'
+                }`}
+                aria-haspopup="menu"
+                aria-expanded={showNotifications}
+                aria-label="Notifications"
+              >
+                <img src={bellIcon} alt="Notifications" className="h-5 w-5 opacity-80" />
+              </button>
+              {showNotifications && (
+                <div className="absolute right-0 mt-3 w-80 rounded-3xl border border-white/12 bg-[rgba(18,22,32,0.9)] p-4 text-sm text-white shadow-[0_22px_80px_rgba(4,8,18,0.6)] backdrop-blur">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/50">
+                      Latest updates
+                    </h3>
+                    {notificationsLoading && <span className="text-xs text-white/40">Loading…</span>}
+                  </div>
+                  {!notificationsLoading && notificationsError && (
+                    <p className="mt-4 rounded-2xl border border-red-400/40 bg-red-500/10 px-3 py-3 text-xs text-red-200">
+                      {notificationsError}
+                    </p>
+                  )}
+                  {!notificationsLoading && !notificationsError && notifications.length === 0 && (
+                    <p className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-3 py-4 text-xs text-white/60">
+                      No notifications yet.
+                    </p>
+                  )}
+                  {!notificationsLoading && !notificationsError && notifications.length > 0 && (
+                    <ul className="mt-4 space-y-3">
+                      {notifications.map((item) => (
+                        <li
+                          key={item.id || item._id || `${item.title}-${item.createdAt}`}
+                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-left text-sm text-white/80"
+                        >
+                          <p className="font-medium text-white">{item.title || 'New activity'}</p>
+                          <p className="mt-1 text-xs text-white/55">
+                            {formatNotificationTimestamp(item.createdAt)}
+                          </p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowProfileMenu((prev) => !prev);
+                  setShowNotifications(false);
+                }}
+                className="h-10 w-10 overflow-hidden rounded-full border border-white/20 transition hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                aria-haspopup="menu"
+                aria-expanded={showProfileMenu}
+              >
+                <img src={avatarImage} alt="Profile" className="h-full w-full object-cover" />
+              </button>
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-3 w-48 rounded-2xl border border-white/15 bg-[rgba(21,26,36,0.85)] p-3 text-sm text-white shadow-[0_18px_60px_rgba(5,8,17,0.65)] backdrop-blur">
+                  <button
+                    type="button"
+                    onClick={handlePreferences}
+                    className="flex w-full items-center justify-between rounded-xl border border-white/0 px-3 py-2 text-left text-white/80 transition hover:border-white/20 hover:bg-white/10 hover:text-white"
+                  >
+                    Preferences
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="mt-2 flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2 text-left text-[#ff6464] transition hover:border-[#ff6464]/40 hover:bg-[#ff6464]/10"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

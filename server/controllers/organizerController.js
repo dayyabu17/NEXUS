@@ -110,6 +110,33 @@ const getOrganizerEvents = asyncHandler(async (req, res) => {
   })));
 });
 
+const getOrganizerEventDetails = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const event = await Event.findOne({ _id: id, organizer: req.user._id });
+
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found.' });
+  }
+
+  res.json({
+    id: event._id,
+    title: event.title,
+    description: event.description,
+    date: event.date,
+    location: event.location,
+    status: event.status,
+    category: event.category,
+    capacity: event.capacity,
+    registrationFee: event.registrationFee || 0,
+    tags: event.tags || [],
+    rsvpCount: event.rsvpCount || 0,
+    imageUrl: event.imageUrl,
+    createdAt: event.createdAt,
+    updatedAt: event.updatedAt,
+  });
+});
+
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
     title,
@@ -189,4 +216,9 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = { getOrganizerDashboard, getOrganizerEvents, createOrganizerEvent };
+module.exports = {
+  getOrganizerDashboard,
+  getOrganizerEvents,
+  getOrganizerEventDetails,
+  createOrganizerEvent,
+};
