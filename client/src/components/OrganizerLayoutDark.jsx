@@ -63,7 +63,7 @@ const getNotificationInitial = (value) => {
   return trimmed ? trimmed.charAt(0).toUpperCase() : 'N';
 };
 
-const OrganizerLayoutDark = ({ children }) => {
+const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(() => formatTime(new Date()));
@@ -82,7 +82,7 @@ const OrganizerLayoutDark = ({ children }) => {
   const [unreadBadge, setUnreadBadge] = useState(0);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [showInitialLoader, setShowInitialLoader] = useState(() => {
-    if (typeof window === 'undefined') {
+    if (suppressInitialLoader || typeof window === 'undefined') {
       return false;
     }
 
@@ -433,13 +433,24 @@ const OrganizerLayoutDark = ({ children }) => {
   }, []);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    if (suppressInitialLoader) {
+      try {
+        window.sessionStorage.removeItem('organizer:show-loader');
+      } catch {
+        // Ignore storage issues
+      }
+      return undefined;
+    }
+
     if (!showInitialLoader) {
-      if (typeof window !== 'undefined') {
-        try {
-          window.sessionStorage.removeItem('organizer:show-loader');
-        } catch {
-          // Continue gracefully if storage is unavailable
-        }
+      try {
+        window.sessionStorage.removeItem('organizer:show-loader');
+      } catch {
+        // Continue gracefully if storage is unavailable
       }
       return undefined;
     }
@@ -449,7 +460,7 @@ const OrganizerLayoutDark = ({ children }) => {
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, [showInitialLoader]);
+  }, [showInitialLoader, suppressInitialLoader]);
 
   useEffect(() => {
     if (location.state?.fromSignIn) {
@@ -780,7 +791,7 @@ const OrganizerLayoutDark = ({ children }) => {
         <BrandSpotlight onClose={() => setShowBrandSpotlight(false)} />
       )}
 
-      {showInitialLoader && (
+      {showInitialLoader && !suppressInitialLoader && (
         <InitialLoader />
       )}
     </div>
@@ -1063,7 +1074,7 @@ function BrandSpotlight({ onClose }) {
 
         <div className="relative space-y-3">
           <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/55">
-            Nexus Event Intelligence
+            Nexus Event Management System
           </p>
           <h2 className="text-2xl font-semibold text-white">
             Orchestrate unforgettable experiences.

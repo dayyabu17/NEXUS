@@ -1,14 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { motion as Motion } from 'framer-motion';
 import AuthLayout from './AuthLayout';
-import api from '../api/axios'; // Import our new API helper
-
-// Simple arrow icon
-const ContinueIcon = () => (
-  <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-  </svg>
-);
+import api from '../api/axios';
+import confetti from 'canvas-confetti';
 
 const SignIn = () => {
   const navigate = useNavigate();
@@ -17,6 +12,9 @@ const SignIn = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [showEasterEggToast, setShowEasterEggToast] = useState(false);
+  const konamiIndexRef = useRef(0);
+  const toastTimerRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault(); // Prevent the page from reloading
@@ -53,65 +51,136 @@ const SignIn = () => {
     }
   };
 
+  useEffect(() => {
+    const sequence = [
+      'ArrowUp',
+      'ArrowUp',
+      'ArrowDown',
+      'ArrowDown',
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowLeft',
+      'ArrowRight',
+      'b',
+      'a',
+    ];
+
+    const resetToastTimer = () => {
+      if (toastTimerRef.current) {
+        clearTimeout(toastTimerRef.current);
+        toastTimerRef.current = null;
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      const currentIndex = konamiIndexRef.current;
+      const expectedKey = sequence[currentIndex];
+
+      if (event.key === expectedKey) {
+        konamiIndexRef.current += 1;
+
+        if (konamiIndexRef.current === sequence.length) {
+          confetti({
+            particleCount: 150,
+            spread: 60,
+            origin: { y: 0.6 },
+          });
+
+          setShowEasterEggToast(true);
+          resetToastTimer();
+          toastTimerRef.current = setTimeout(() => {
+            setShowEasterEggToast(false);
+            toastTimerRef.current = null;
+          }, 2500);
+
+          konamiIndexRef.current = 0;
+        }
+      } else {
+        konamiIndexRef.current = event.key === sequence[0] ? 1 : 0;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      resetToastTimer();
+    };
+  }, []);
+
   return (
     <AuthLayout>
-      <div className="w-full mt-16">
-        <h1 className="text-3xl font-bold text-nexus-dark mb-2">
-          Welcome Back!
-        </h1>
-        <p className="text-gray-500 mb-8">
-          Your campus, connected. Log in to experience it.
-        </p>
+      <Motion.div
+        className="relative w-full max-w-sm space-y-10"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        {showEasterEggToast && (
+          <div className="absolute -top-16 left-1/2 w-max -translate-x-1/2 rounded-full bg-blue-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white shadow-lg">
+            DEV MODE ENABLED 🎮
+          </div>
+        )}
 
-        {/* Error Message Display */}
+        <div className="space-y-2 text-white">
+          <h1 className="text-4xl font-semibold">Welcome Back</h1>
+          <p className="text-base text-slate-400">
+            Your campus, connected. Log in to experience it.
+          </p>
+        </div>
+
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 text-sm">
+          <div className="rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
             {error}
           </div>
         )}
 
-        {/* Sign In Form */}
-        <form className="space-y-5" onSubmit={handleSubmit}>
-          <div>
+        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-300" htmlFor="email">
+              Email address
+            </label>
             <input
               type="email"
               id="email"
               placeholder="Enter your email"
-              className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+              className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={email}
-              onChange={(e) => setEmail(e.target.value)} // Update state on type
+              onChange={(event) => setEmail(event.target.value)}
               required
             />
           </div>
 
-          <div>
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-medium text-slate-300" htmlFor="password">
+              Password
+            </label>
             <input
               type="password"
               id="password"
               placeholder="Enter your password"
-              className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+              className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={password}
-              onChange={(e) => setPassword(e.target.value)} // Update state on type
+              onChange={(event) => setPassword(event.target.value)}
               required
             />
           </div>
 
           <button
             type="submit"
-            className="w-full bg-nexus-primary text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center"
+            className="h-12 w-full rounded-lg bg-blue-600 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
           >
             Continue
-            <ContinueIcon />
           </button>
         </form>
 
-        <p className="text-center text-sm text-gray-500 mt-8">
-          New User? 
-          <Link to="/sign-up" className="font-bold text-nexus-primary hover:underline ml-1">
+        <p className="text-center text-sm text-slate-400">
+          <span>New User? </span>
+          <Link to="/sign-up" className="font-semibold text-blue-400 transition hover:text-blue-300">
             Sign Up!
           </Link>
         </p>
-      </div>
+      </Motion.div>
     </AuthLayout>
   );
 };

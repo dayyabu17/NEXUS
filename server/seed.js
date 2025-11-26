@@ -37,7 +37,17 @@ const seedDB = async () => {
     });
     console.log('Organizer user created: organizer@nexus.com');
 
-    // 3. Create some dummy Events linked to the Organizer
+    // 3. Create a Guest (Attendee) User
+    const guestHashedPassword = await bcrypt.hash('guest123', salt);
+    await User.create({
+      name: 'Guest Explorer',
+      email: 'guest@nexus.com',
+      password: guestHashedPassword,
+      role: 'student',
+    });
+    console.log('Guest user created: guest@nexus.com');
+
+    // 4. Create some dummy Events linked to the Organizer
     await Event.create([
       {
         title: 'Tech Innovators Meetup',

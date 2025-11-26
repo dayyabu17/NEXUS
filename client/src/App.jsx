@@ -13,6 +13,7 @@ import OrganizerCreateEvent from './components/OrganizerCreateEvent';
 import OrganizerEventView from './components/OrganizerEventView';
 import OrganizerPreferences from './components/OrganizerPreferences';
 import OrganizerNotifications from './components/OrganizerNotifications';
+import GuestDashboard from './components/GuestDashboard';
 
 function App() {
   return (
@@ -35,7 +36,8 @@ function App() {
       <Route path="/organizer/settings" element={<OrganizerPreferences />} />
       <Route path="/organizer/notifications" element={<OrganizerNotifications />} />
 
-      <Route path="/dashboard" element={<div>User Dashboard Placeholder</div>} /> 
+      <Route path="/guest/dashboard" element={<GuestDashboard />} />
+      <Route path="/dashboard" element={<GuestDashboard />} /> 
       <Route path="/" element={<SignIn />} />
     </Routes>
   );

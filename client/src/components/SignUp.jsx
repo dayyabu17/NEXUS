@@ -1,104 +1,110 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import AuthLayout from './AuthLayout';
-
-// A simple arrow icon for the button
-const ContinueIcon = () => (
-  <svg 
-    className="w-4 h-4 ml-2" 
-    fill="none" 
-    stroke="currentColor" 
-    viewBox="0 0 24 24" 
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-  </svg>
-);
 
 const SignUp = () => {
   // 'guest' or 'organizer'
   const [userType, setUserType] = useState('guest'); 
+  const isOrganizer = userType === 'organizer';
+  const MotionContainer = motion.div;
 
   return (
     <AuthLayout>
-      <div className="w-full mt-10"> {/* Added margin-top */}
-        <h1 className="text-3xl font-bold text-nexus-dark mb-2">
-          Join Nexus
-        </h1>
-        <p className="text-gray-500 mb-6">
-          Get connected to every event, group, and opportunity.
-        </p>
+      <MotionContainer
+        className="w-full max-w-sm space-y-8"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+      >
+        <div className="space-y-2">
+          <h1 className="text-3xl font-bold text-white">Join Nexus</h1>
+          <p className="text-base text-slate-400">
+            Get connected to every event, group, and opportunity.
+          </p>
+        </div>
 
-        {/* User Type Toggle */}
-        <div className="flex w-full bg-gray-100 rounded-lg p-1 mb-6">
+        <div className="flex w-full rounded-lg bg-slate-900 p-1">
           <button
+            type="button"
             onClick={() => setUserType('guest')}
-            className={`w-1/2 py-2 rounded-md font-bold transition-all
-              ${userType === 'guest' ? 'bg-white shadow text-nexus-primary' : 'text-gray-500'}
-            `}
+            className={`flex-1 rounded-md py-2 transition-colors ${
+              userType === 'guest'
+                ? 'bg-slate-800 text-white shadow-sm font-medium'
+                : 'text-slate-400 hover:text-white'
+            }`}
           >
             Guest
           </button>
           <button
+            type="button"
             onClick={() => setUserType('organizer')}
-            className={`w-1/2 py-2 rounded-md font-bold transition-all
-              ${userType === 'organizer' ? 'bg-white shadow text-nexus-primary' : 'text-gray-500'}
-            `}
+            className={`flex-1 rounded-md py-2 transition-colors ${
+              userType === 'organizer'
+                ? 'bg-slate-800 text-white shadow-sm font-medium'
+                : 'text-slate-400 hover:text-white'
+            }`}
           >
             Organizer
           </button>
         </div>
 
-        {/* Sign Up Form */}
-        <form className="space-y-4">
+        <form className="flex flex-col gap-4">
           <input
             type="text"
             placeholder="Enter your full name"
-            className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
           />
           <input
             type="email"
             placeholder="Enter your email"
-            className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
           />
-          
-          {/* Conditional field for Organizer */}
-          {userType === 'organizer' && (
-            <input
-              type="text"
-              placeholder="Enter your organization"
-              className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
-            />
-          )}
+
+          <AnimatePresence initial={false}>
+            {isOrganizer && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ type: 'spring', bounce: 0.5, duration: 0.6 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <input
+                  type="text"
+                  placeholder="Enter your organization"
+                  className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <input
             type="password"
             placeholder="Enter your password"
-            className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
           />
           <input
             type="password"
             placeholder="Confirm your password"
-            className="w-full px-4 py-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-nexus-primary"
+            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
           />
 
           <button
             type="submit"
-            className="w-full bg-nexus-primary text-white font-bold py-4 px-4 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center justify-center"
+            className="flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950"
           >
             Continue
-            <ContinueIcon />
           </button>
         </form>
 
-        {/* Sign In Link */}
-        <p className="text-center text-sm text-gray-500 mt-8">
-          Already have an account? 
-          <Link to="/sign-in" className="font-bold text-nexus-primary hover:underline ml-1">
+        <p className="text-center text-sm text-slate-400">
+          Already have an account?
+          <Link to="/sign-in" className="ml-1 font-semibold text-blue-400 transition hover:text-blue-300">
             Sign In
           </Link>
         </p>
-      </div>
+      </MotionContainer>
     </AuthLayout>
   );
 };
