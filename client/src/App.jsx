@@ -11,6 +11,8 @@ import OrganizerEvents from './components/OrganizerEvents';
 import OrganizerEarnings from './components/OrganizerEarnings';
 import OrganizerCreateEvent from './components/OrganizerCreateEvent';
 import OrganizerEventView from './components/OrganizerEventView';
+import OrganizerPreferences from './components/OrganizerPreferences';
+import OrganizerNotifications from './components/OrganizerNotifications';
 
 function App() {
   return (
@@ -30,6 +32,8 @@ function App() {
       <Route path="/organizer/events/create" element={<OrganizerCreateEvent />} />
       <Route path="/organizer/events/:id" element={<OrganizerEventView />} />
       <Route path="/organizer/earnings" element={<OrganizerEarnings />} />
+      <Route path="/organizer/settings" element={<OrganizerPreferences />} />
+      <Route path="/organizer/notifications" element={<OrganizerNotifications />} />
 
       <Route path="/dashboard" element={<div>User Dashboard Placeholder</div>} /> 
       <Route path="/" element={<SignIn />} />

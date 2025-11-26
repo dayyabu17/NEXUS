@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
+const User = require('../models/User');
 
 const calculatePercentageChange = (current, previous) => {
   if (!previous) {
@@ -10,16 +11,119 @@ const calculatePercentageChange = (current, previous) => {
   return Number(change.toFixed(1));
 };
 
+const pluralize = (count, singular, plural) => (count === 1 ? singular : plural);
+
+const buildNotifications = (events, readSet = new Set()) => {
+  const notifications = [];
+
+  const pushNotification = (payload) => {
+    if (!payload.createdAt) {
+      return;
+    }
+    const notificationId = payload.id || `${payload.eventId}-${payload.type}`;
+    notifications.push({
+      ...payload,
+      id: notificationId,
+      isRead: readSet.has(notificationId),
+    });
+  };
+
+  events.forEach((event) => {
+    const basePayload = {
+      eventId: event._id,
+      eventTitle: event.title,
+      imageUrl: event.imageUrl,
+    };
+
+    const ticketsSold = event.registrationFee > 0 ? event.rsvpCount || 0 : undefined;
+    const rsvpTotal = event.registrationFee > 0 ? undefined : event.rsvpCount || 0;
+
+    if (event.createdAt) {
+      const id = `${event._id.toString()}-created`;
+      pushNotification({
+        ...basePayload,
+        id,
+        type: 'event-created',
+        headline: 'Event created',
+        message: 'Your event is awaiting approval.',
+        tone: 'success',
+        stats:
+          ticketsSold !== undefined
+            ? { ticketsSold }
+            : rsvpTotal !== undefined
+              ? { rsvpTotal }
+              : undefined,
+        createdAt: event.createdAt,
+      });
+    }
+
+    if (
+      event.updatedAt &&
+      event.createdAt &&
+      event.updatedAt.getTime() !== event.createdAt.getTime()
+    ) {
+      const id = `${event._id.toString()}-updated-${event.updatedAt.getTime()}`;
+      pushNotification({
+        ...basePayload,
+        id,
+        type: 'event-updated',
+        headline: 'Event updated',
+        message: 'Recent changes were saved successfully.',
+        tone: 'info',
+        stats:
+          ticketsSold !== undefined
+            ? { ticketsSold }
+            : rsvpTotal !== undefined
+              ? { rsvpTotal }
+              : undefined,
+        createdAt: event.updatedAt,
+      });
+    }
+
+    const attendeeCount = event.rsvpCount || 0;
+    if (attendeeCount > 0) {
+      const noun = event.registrationFee > 0 ? 'ticket' : 'attendee';
+      const verb = event.registrationFee > 0 ? 'were bought' : "RSVP'd";
+      const headline = event.registrationFee > 0 ? 'Ticket sales' : 'New RSVPs';
+      const id = `${event._id.toString()}-attendance-${attendeeCount}`;
+
+      pushNotification({
+        ...basePayload,
+        id,
+        type: 'attendance',
+        headline,
+        message: `${attendeeCount} ${pluralize(attendeeCount, noun, `${noun}s`)} ${verb}`,
+        tone: event.registrationFee > 0 ? 'highlight' : 'info',
+        stats: event.registrationFee > 0
+          ? { ticketsSold: attendeeCount }
+          : { rsvpTotal: attendeeCount },
+        createdAt: event.updatedAt || event.createdAt,
+      });
+    }
+  });
+
+  return notifications
+    .filter((notification) => notification.createdAt)
+    .sort((a, b) => b.createdAt - a.createdAt);
+};
+
 const getOrganizerDashboard = asyncHandler(async (req, res) => {
   const now = new Date();
+  const startOfToday = new Date(now);
+  startOfToday.setHours(0, 0, 0, 0);
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(now.getDate() - 7);
+  const sevenDaysForward = new Date(startOfToday);
+  sevenDaysForward.setDate(startOfToday.getDate() + 7);
 
   const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
 
   const upcomingEvents = events.filter((event) => event.date >= now);
   const previousWeekEvents = events.filter(
     (event) => event.date < now && event.date >= sevenDaysAgo,
+  );
+  const upcomingWindowEvents = events.filter(
+    (event) => event.date >= startOfToday && event.date < sevenDaysForward,
   );
 
   const totalUpcomingRsvps = upcomingEvents.reduce(
@@ -56,16 +160,41 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
       imageUrl: event.imageUrl,
     }));
 
-  const activities = events
-    .filter((event) => (event.rsvpCount || 0) > 0)
-    .sort((a, b) => b.updatedAt - a.updatedAt)
-    .slice(0, 5)
-    .map((event) => ({
-      id: `${event._id.toString()}-${event.updatedAt.getTime()}`,
-      title: `New ticket sold for ${event.title}`,
-      createdAt: event.updatedAt,
-      rsvpCount: event.rsvpCount || 0,
-    }));
+  const readSet = new Set(req.user.notificationReads || []);
+  const notifications = buildNotifications(events, readSet);
+  const activities = notifications.slice(0, 5).map((item) => ({
+    id: item.id,
+    title:
+      item.message ||
+      [item.headline, item.eventTitle].filter(Boolean).join(' · ') ||
+      item.type,
+    createdAt: item.createdAt,
+  }));
+
+  const trendBuckets = Array.from({ length: 7 }).map((_, index) => {
+    const dayStart = new Date(startOfToday);
+    dayStart.setDate(startOfToday.getDate() + index);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+
+    const dayEvents = upcomingWindowEvents.filter(
+      (event) => event.date >= dayStart && event.date < dayEnd,
+    );
+
+    const rsvps = dayEvents.reduce((sum, event) => sum + (event.rsvpCount || 0), 0);
+    const revenue = dayEvents.reduce(
+      (sum, event) => sum + ((event.registrationFee || 0) * (event.rsvpCount || 0)),
+      0,
+    );
+    const active = dayEvents.filter((event) => event.status === 'approved').length;
+
+    return {
+      date: dayStart.toISOString(),
+      rsvps,
+      revenue,
+      active,
+    };
+  });
 
   res.json({
     stats: {
@@ -78,7 +207,63 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
     },
     upcomingEvents: upcomingList,
     activities,
+    notifications: notifications.slice(0, 20),
+    unreadCount: notifications.filter((item) => !item.isRead).length,
+    trends: {
+      rsvps: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.rsvps })),
+      revenue: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.revenue })),
+      active: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.active })),
+    },
   });
+});
+
+const getOrganizerNotifications = asyncHandler(async (req, res) => {
+  const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
+  const readSet = new Set(req.user.notificationReads || []);
+  const notifications = buildNotifications(events, readSet);
+  const unreadCount = notifications.filter((notification) => !notification.isRead).length;
+
+  res.json({
+    notifications,
+    unreadCount,
+  });
+});
+
+const markOrganizerNotificationRead = asyncHandler(async (req, res) => {
+  const { id } = req.body;
+
+  if (!id || typeof id !== 'string') {
+    res.status(400);
+    throw new Error('Notification id is required.');
+  }
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { $addToSet: { notificationReads: id } },
+    { new: false },
+  );
+
+  const updatedUser = await User.findById(req.user._id).select('notificationReads');
+  const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
+  const readSet = new Set(updatedUser?.notificationReads || []);
+  const notifications = buildNotifications(events, readSet);
+  const unreadCount = notifications.filter((notification) => !notification.isRead).length;
+
+  res.json({ success: true, unreadCount });
+});
+
+const markAllOrganizerNotificationsRead = asyncHandler(async (req, res) => {
+  const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
+  const notifications = buildNotifications(events);
+  const ids = [...new Set(notifications.map((notification) => notification.id))];
+
+  await User.findByIdAndUpdate(
+    req.user._id,
+    { notificationReads: ids },
+    { new: false },
+  );
+
+  res.json({ success: true, unreadCount: 0 });
 });
 
 const getOrganizerEvents = asyncHandler(async (req, res) => {
@@ -221,4 +406,7 @@ module.exports = {
   getOrganizerEvents,
   getOrganizerEventDetails,
   createOrganizerEvent,
+  getOrganizerNotifications,
+  markOrganizerNotificationRead,
+  markAllOrganizerNotificationsRead,
 };

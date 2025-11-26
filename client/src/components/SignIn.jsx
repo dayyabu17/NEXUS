@@ -37,7 +37,12 @@ const SignIn = () => {
       if (response.data.role === 'admin') {
         navigate('/admin/dashboard');
       } else if (response.data.role === 'organizer') {
-        navigate('/organizer/dashboard');
+        try {
+          sessionStorage.setItem('organizer:show-loader', 'true');
+        } catch {
+          // Ignore storage access errors to avoid disrupting the flow
+        }
+        navigate('/organizer/dashboard', { state: { fromSignIn: true } });
       } else {
         navigate('/dashboard');
       }

@@ -27,6 +27,10 @@ const userSchema = new mongoose.Schema({
     default: Date.now,
   },
   profilePicture: { type: String, default: '/images/default-avatar.jpeg' },
+  notificationReads: {
+    type: [String],
+    default: [],
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);

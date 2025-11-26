@@ -51,3 +51,38 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+html {
+  color-scheme: dark;
+  background-color: #050811;
+}
+
+body {
+  background-color: #050811;
+}
+
+*::-webkit-scrollbar {
+  width: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #020617;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: #1e293b;
+  border-radius: 6px;
+  border: 3px solid #020617;
+}
+
+@supports (scrollbar-gutter: stable) {
+  html {
+    scrollbar-gutter: stable;
+  }
+}
+
+@supports (scrollbar-color: #000 #000) {
+  html {
+    scrollbar-color: #1e293b #020617;
+  }
+}

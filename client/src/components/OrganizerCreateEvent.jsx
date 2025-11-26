@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
+
+const MOTION = motion; // Reference preserves the import for linting when using JSX member expressions
 
 const TIMEZONE_OPTIONS = [
   { value: 'GMT', label: 'GMT +0:00', location: 'Greenwich' },
@@ -258,26 +261,56 @@ const OrganizerCreateEvent = () => {
   const selectedTimezone =
     TIMEZONE_OPTIONS.find((option) => option.value === formData.timezone) || TIMEZONE_OPTIONS[0];
 
+  const containerVars = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVars = {
+    hidden: { opacity: 0, y: 20 },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { type: 'spring', stiffness: 100, damping: 20 },
+    },
+  };
+
   return (
     <OrganizerLayoutDark>
-      <section className="pb-16">
-        <header className="mb-10 space-y-3">
+      <motion.section
+        className="pb-16"
+        initial="hidden"
+        animate="show"
+        variants={containerVars}
+      >
+        <motion.header className="mb-10 space-y-3" variants={itemVars}>
           <p className="text-sm font-medium uppercase tracking-wide text-white/50">Create event</p>
           <h1 className="text-4xl font-semibold text-white">Design a new experience</h1>
           <p className="text-base text-white/60">
             Provide the details, pick the perfect time, and submit for approval. Newly created events stay
             pending until an admin reviews them.
           </p>
-        </header>
+        </motion.header>
 
-          {success && (
-            <div className="pointer-events-none fixed left-1/2 top-6 z-[1100] w-full max-w-xl -translate-x-1/2 rounded-3xl border border-white/15 bg-[rgba(20,26,36,0.85)] px-6 py-4 text-center text-sm font-medium text-white/90 shadow-[0_25px_70px_rgba(5,10,20,0.6)] backdrop-blur">
-              {success}
-            </div>
-          )}
+        {success && (
+          <motion.div
+            className="pointer-events-none fixed left-1/2 top-6 z-[1100] w-full max-w-xl -translate-x-1/2 rounded-3xl border border-white/15 bg-[rgba(20,26,36,0.85)] px-6 py-4 text-center text-sm font-medium text-white/90 shadow-[0_25px_70px_rgba(5,10,20,0.6)] backdrop-blur"
+            variants={itemVars}
+          >
+            {success}
+          </motion.div>
+        )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-8 lg:flex-row">
-          <aside className="lg:w-80 xl:w-96">
+        <motion.form
+          onSubmit={handleSubmit}
+          className="flex flex-col gap-8 lg:flex-row"
+          variants={itemVars}
+        >
+          <motion.aside className="lg:w-80 xl:w-96" variants={itemVars}>
             <div className="rounded-[22px] border border-white/10 bg-[#0f121d] p-6 text-sm text-white/70 shadow-[0_30px_80px_rgba(2,9,18,0.45)]">
               <p className="text-xs uppercase tracking-[0.2em] text-white/40">Event cover</p>
               <div className="mt-4 overflow-hidden rounded-[18px] border border-dashed border-white/10 bg-[#171b27]">
@@ -335,40 +368,45 @@ const OrganizerCreateEvent = () => {
                 but approvals go faster when the visual is ready.
               </p>
             </div>
-          </aside>
+          </motion.aside>
 
-          <div className="flex-1 space-y-8">
-            <button
-              type="button"
-              aria-label="Set event name"
-              className="relative flex min-h-[72px] w-full items-center rounded-none bg-transparent text-left outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40"
-              onClick={() => {
-                if (success) {
-                  setSuccess('');
-                }
-                setActivePicker('title');
-              }}
-            >
-              {!formData.title && (
-                <span
-                  className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-white/70 transition-opacity ${
-                    showTitleCaret ? 'opacity-100' : 'opacity-0'
-                  }`}
-                  aria-hidden
-                >
-                  |
-                </span>
-              )}
-              <span
-                className={`block pl-5 text-5xl font-semibold leading-tight sm:text-6xl ${
-                  formData.title ? 'text-white' : 'text-white/40'
-                }`}
+          <motion.div className="flex-1 space-y-8" variants={itemVars}>
+            <motion.div variants={itemVars}>
+              <button
+                type="button"
+                aria-label="Set event name"
+                className="relative flex min-h-[72px] w-full items-center rounded-none bg-transparent text-left outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40"
+                onClick={() => {
+                  if (success) {
+                    setSuccess('');
+                  }
+                  setActivePicker('title');
+                }}
               >
-                {formData.title || TITLE_PLACEHOLDER}
-              </span>
-            </button>
+                {!formData.title && (
+                  <span
+                    className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-white/70 transition-opacity ${
+                      showTitleCaret ? 'opacity-100' : 'opacity-0'
+                    }`}
+                    aria-hidden
+                  >
+                    |
+                  </span>
+                )}
+                <span
+                  className={`block pl-5 text-5xl font-semibold leading-tight sm:text-6xl ${
+                    formData.title ? 'text-white' : 'text-white/40'
+                  }`}
+                >
+                  {formData.title || TITLE_PLACEHOLDER}
+                </span>
+              </button>
+            </motion.div>
 
-            <div className="rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-6 shadow-[0_25px_60px_rgba(7,11,20,0.6)] sm:p-8">
+            <motion.div
+              className="rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-6 shadow-[0_25px_60px_rgba(7,11,20,0.6)] sm:p-8"
+              variants={itemVars}
+            >
               <div className="flex flex-col gap-6 lg:flex-row lg:items-center">
                 <div className="flex-1 space-y-5">
                   <div className="rounded-[18px] border border-white/5 bg-[rgba(25,27,29,0.78)] px-5 py-6">
@@ -447,9 +485,12 @@ const OrganizerCreateEvent = () => {
                   </button>
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8">
+            <motion.div
+              className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8"
+              variants={itemVars}
+            >
               <div className="space-y-6">
                 <div>
                   <label htmlFor="location" className="text-sm font-medium text-white/80">
@@ -480,9 +521,12 @@ const OrganizerCreateEvent = () => {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
-            <div className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8">
+            <motion.div
+              className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8"
+              variants={itemVars}
+            >
               <p className="text-sm font-semibold uppercase tracking-wide text-white/45">Event options</p>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <OptionCard
@@ -498,9 +542,12 @@ const OrganizerCreateEvent = () => {
                   onClick={() => setActivePicker('ticketPrice')}
                 />
               </div>
-            </div>
+            </motion.div>
 
-            <div className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8">
+            <motion.div
+              className="rounded-[22px] border border-white/10 bg-[#0c121d]/95 p-6 shadow-[0_18px_50px_rgba(6,11,19,0.55)] sm:p-8"
+              variants={itemVars}
+            >
               <p className="text-sm font-semibold uppercase tracking-wide text-white/45">Extras ✨</p>
               <div className="mt-5 space-y-3">
                 <div className="flex flex-col gap-3 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -533,15 +580,18 @@ const OrganizerCreateEvent = () => {
                   />
                 </div>
               </div>
-            </div>
+            </motion.div>
 
             {error && (
-              <div className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+              <motion.div
+                className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+                variants={itemVars}
+              >
                 {error}
-              </div>
+              </motion.div>
             )}
 
-            <div className="flex flex-col gap-4">
+            <motion.div className="flex flex-col gap-4" variants={itemVars}>
               <button
                 type="submit"
                 disabled={submitting}
@@ -552,10 +602,10 @@ const OrganizerCreateEvent = () => {
               <p className="text-center text-xs text-white/60">
                 Events submit in a pending state while your admin team reviews the details.
               </p>
-            </div>
-          </div>
-        </form>
-      </section>
+            </motion.div>
+          </motion.div>
+        </motion.form>
+      </motion.section>
 
       <PickerOverlay
         activePicker={activePicker}
@@ -678,6 +728,7 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
           />
         ) : isTimePicker ? (
           <TimeGrid
+            key={`${activePicker}-${formData[targetField] || 'unset'}`}
             value={formData[targetField]}
             onSelect={(nextValue) => {
               setFormData((prev) => ({ ...prev, [targetField]: nextValue }));
@@ -836,38 +887,129 @@ const DateGrid = ({ value, onSelect, anchorDate, setAnchorDate }) => {
 };
 
 const TimeGrid = ({ value, onSelect }) => {
-  const options = useMemo(() => {
-    const slots = [];
-    for (let hour = 0; hour < 24; hour += 1) {
-      for (let minute = 0; minute < 60; minute += 15) {
-        slots.push(`${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`);
-      }
+  const parseTime = (input) => {
+    if (!input || typeof input !== 'string') {
+      return { hours: 0, minutes: 0 };
     }
-    return slots;
-  }, []);
+
+    const [rawHours, rawMinutes] = input.split(':');
+    const hours = Number.parseInt(rawHours, 10);
+    const minutes = Number.parseInt(rawMinutes, 10);
+
+    return {
+      hours: Number.isFinite(hours) && hours >= 0 && hours < 24 ? hours : 0,
+      minutes: Number.isFinite(minutes) && minutes >= 0 && minutes < 60 ? minutes : 0,
+    };
+  };
+
+  const [segments, setSegments] = useState(() => parseTime(value));
+  const { hours, minutes } = segments;
+
+  const formatSegment = (segment) => segment.toString().padStart(2, '0');
+
+  const adjustHours = (delta) => {
+    setSegments((prev) => {
+      const wrapped = (prev.hours + delta) % 24;
+      const hoursValue = wrapped < 0 ? wrapped + 24 : wrapped;
+      return { ...prev, hours: hoursValue };
+    });
+  };
+
+  const adjustMinutes = (delta) => {
+    setSegments((prev) => {
+      const wrapped = (prev.minutes + delta) % 60;
+      const minutesValue = wrapped < 0 ? wrapped + 60 : wrapped;
+      return { ...prev, minutes: minutesValue };
+    });
+  };
+
+  const handleSetMinutes = (nextMinutes) => {
+    setSegments((prev) => ({ ...prev, minutes: nextMinutes }));
+  };
+
+  const handleSave = () => {
+    const nextValue = `${formatSegment(hours)}:${formatSegment(minutes)}`;
+    onSelect(nextValue);
+  };
 
   return (
-    <div className="max-h-[320px] space-y-3 overflow-y-auto pr-2">
-      {options.map((option) => {
-        const isSelected = option === value;
-        return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-center gap-6">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-[#181f2c] px-6 py-5 shadow-[0_12px_40px_rgba(8,12,24,0.45)]">
           <button
-            key={option}
             type="button"
-            className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-sm transition ${
-              isSelected
-                ? 'border-white bg-white text-black'
-                : 'border-white/10 bg-[#18202d] text-white/80 hover:border-white/30'
-            }`}
-            onClick={() => {
-              onSelect(option);
-            }}
+            aria-label="Increase hour"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
+            onClick={() => adjustHours(1)}
           >
-            <span>{option}</span>
-            {isSelected && <span className="text-xs font-semibold">Selected</span>}
+            <span aria-hidden className="text-lg leading-none">&#9650;</span>
           </button>
-        );
-      })}
+          <div className="flex h-16 w-20 items-center justify-center rounded-xl bg-black/40 text-4xl font-semibold tracking-widest text-white">
+            {formatSegment(hours)}
+          </div>
+          <button
+            type="button"
+            aria-label="Decrease hour"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
+            onClick={() => adjustHours(-1)}
+          >
+            <span aria-hidden className="text-lg leading-none">&#9660;</span>
+          </button>
+          <span className="text-xs uppercase tracking-[0.35em] text-white/40">Hours</span>
+        </div>
+
+        <span className="text-4xl font-semibold text-white/60">:</span>
+
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-white/10 bg-[#181f2c] px-6 py-5 shadow-[0_12px_40px_rgba(8,12,24,0.45)]">
+          <button
+            type="button"
+            aria-label="Increase minutes"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
+            onClick={() => adjustMinutes(1)}
+          >
+            <span aria-hidden className="text-lg leading-none">&#9650;</span>
+          </button>
+          <div className="flex h-16 w-20 items-center justify-center rounded-xl bg-black/40 text-4xl font-semibold tracking-widest text-white">
+            {formatSegment(minutes)}
+          </div>
+          <button
+            type="button"
+            aria-label="Decrease minutes"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/70 transition hover:border-white/30 hover:text-white"
+            onClick={() => adjustMinutes(-1)}
+          >
+            <span aria-hidden className="text-lg leading-none">&#9660;</span>
+          </button>
+          <span className="text-xs uppercase tracking-[0.35em] text-white/40">Minutes</span>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap justify-center gap-2">
+        {[0, 15, 30, 45].map((minuteOption) => (
+          <button
+            key={minuteOption}
+            type="button"
+            className={`rounded-xl border px-3 py-1 text-xs font-medium transition ${
+              minutes === minuteOption
+                ? 'border-white bg-white text-black'
+                : 'border-white/10 bg-[#171f2d] text-white/75 hover:border-white/30 hover:text-white'
+            }`}
+            onClick={() => handleSetMinutes(minuteOption)}
+          >
+            :{formatSegment(minuteOption)}
+          </button>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-end">
+        <button
+          type="button"
+          onClick={handleSave}
+          className="rounded-xl bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+        >
+          Set time
+        </button>
+      </div>
     </div>
   );
 };

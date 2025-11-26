@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
@@ -68,10 +68,145 @@ const relativeTimeFromNow = (dateString) => {
   return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
 };
 
+const AnimatedStatValue = ({ value, formatter, animate, delay = 0, duration = 900 }) => {
+  const nodeRef = useRef(null);
+
+  useEffect(() => {
+    const node = nodeRef.current;
+    if (!node) {
+      return undefined;
+    }
+
+    const formatValue = (input) => {
+      const rounded = Math.round(input);
+      if (formatter) {
+        return formatter(rounded);
+      }
+      return rounded.toLocaleString();
+    };
+
+    if (!animate) {
+      node.textContent = formatValue(0);
+      return undefined;
+    }
+
+    const target = Number(value) || 0;
+    let start;
+    let rafId;
+    let timeoutId;
+
+    const step = (timestamp) => {
+      if (start === undefined) {
+        start = timestamp;
+      }
+      const progress = Math.min((timestamp - start) / duration, 1);
+      const eased = 1 - (1 - progress) * (1 - progress) * (1 - progress); // easeOutCubic
+      const current = target * eased;
+      node.textContent = formatValue(current);
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(step);
+      }
+    };
+
+    if (delay > 0) {
+      timeoutId = window.setTimeout(() => {
+        rafId = requestAnimationFrame(step);
+      }, delay);
+    } else {
+      rafId = requestAnimationFrame(step);
+    }
+
+    return () => {
+      if (rafId) {
+        cancelAnimationFrame(rafId);
+      }
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [animate, delay, duration, formatter, value]);
+
+  const initial = formatter ? formatter(0) : '0';
+  return <span ref={nodeRef}>{initial}</span>;
+};
+
+const StatSparkline = ({ data, color = '#4d997a', animate, delay = 0, id }) => {
+  const svgWidth = 112;
+  const svgHeight = 56;
+
+  const values = useMemo(() => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return [0];
+    }
+    return data.map((point) => {
+      if (typeof point === 'number') {
+        return point;
+      }
+      if (point && typeof point === 'object') {
+        return Number(point.value) || 0;
+      }
+      return 0;
+    });
+  }, [data]);
+
+  const { pathD, areaD, lastPoint } = useMemo(() => {
+    const max = Math.max(...values);
+    const min = Math.min(...values);
+    const range = max - min || 1;
+    const step = values.length > 1 ? svgWidth / (values.length - 1) : svgWidth;
+
+    let pathString = '';
+
+    values.forEach((value, index) => {
+      const x = index * step;
+      const normalized = (value - min) / range;
+      const y = svgHeight - normalized * svgHeight;
+      pathString += index === 0 ? `M${x} ${y}` : ` L${x} ${y}`;
+    });
+
+    const areaString = `${pathString} L${svgWidth} ${svgHeight} L0 ${svgHeight} Z`;
+    const lastIndex = values.length - 1;
+    const lastValue = values[lastIndex];
+    const normalizedLast = (lastValue - min) / range;
+    const lastY = svgHeight - normalizedLast * svgHeight;
+
+    return {
+      pathD: pathString,
+      areaD: areaString,
+      lastPoint: { x: lastIndex * step, y: lastY },
+    };
+  }, [values]);
+
+  const transitionClass = animate ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2';
+
+  return (
+    <svg
+      viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+      className={`h-14 w-28 transform transition-all duration-700 ease-out ${transitionClass}`}
+      style={{ transitionDelay: `${delay}ms` }}
+      role="img"
+      aria-labelledby={`sparkline-${id}`}
+    >
+      <title id={`sparkline-${id}`}>Recent trend</title>
+      <defs>
+        <linearGradient id={`sparkline-area-${id}`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor={color} stopOpacity="0.35" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <path d={areaD} fill={`url(#sparkline-area-${id})`} />
+      <path d={pathD} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" />
+      <circle cx={lastPoint.x} cy={lastPoint.y} r="3" fill={color} />
+    </svg>
+  );
+};
+
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [animateReady, setAnimateReady] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalUpcomingRsvps: 0,
@@ -83,6 +218,11 @@ const OrganizerDashboard = () => {
     },
     upcomingEvents: [],
     activities: [],
+    trends: {
+      rsvps: [],
+      revenue: [],
+      active: [],
+    },
   });
 
   const organizerName = useMemo(() => {
@@ -136,6 +276,11 @@ const OrganizerDashboard = () => {
           stats,
           upcomingEvents: nextEvents,
           activities: response.data?.activities || [],
+          trends: response.data?.trends || {
+            rsvps: [],
+            revenue: [],
+            active: [],
+          },
         });
       } catch (err) {
         if (err.response && (err.response.status === 401 || err.response.status === 403)) {
@@ -153,12 +298,19 @@ const OrganizerDashboard = () => {
     fetchDashboard();
   }, [navigate]);
 
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setAnimateReady(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
+
   const statsCards = [
     {
       id: 'rsvps',
       title: 'Total Upcoming RSVPs',
       value: dashboardData.stats.totalUpcomingRsvps,
       change: dashboardData.stats.totalUpcomingRsvpsChange,
+      trendKey: 'rsvps',
+      color: '#4d997a',
     },
     {
       id: 'revenue',
@@ -166,12 +318,16 @@ const OrganizerDashboard = () => {
       value: dashboardData.stats.totalRevenue,
       change: dashboardData.stats.totalRevenueChange,
       formatter: formatCurrency,
+      trendKey: 'revenue',
+      color: '#6c9bff',
     },
     {
       id: 'active-events',
       title: 'Active Events',
       value: dashboardData.stats.activeEvents,
       change: dashboardData.stats.activeEventsChange,
+      trendKey: 'active',
+      color: '#f7b853',
     },
   ];
 
@@ -180,10 +336,13 @@ const OrganizerDashboard = () => {
     [dashboardData.activities],
   );
 
+  const enterEase = animateReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6';
+  const cardEnter = animateReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4';
+
   return (
     <OrganizerLayoutDark>
-      <section className="pb-16">
-        <header className="pt-6">
+      <section className={`pb-16 transform transition-all duration-700 ease-out ${enterEase}`}>
+        <header className={`pt-6 transition-all duration-700 ease-out ${cardEnter}`} style={{ transitionDelay: '60ms' }}>
           <h1 className="text-4xl font-semibold tracking-tight">
             Hello, {organizerName}
             <span className="ml-1" role="img" aria-label="waving hand">
@@ -193,28 +352,45 @@ const OrganizerDashboard = () => {
         </header>
 
         {error && (
-          <div className="mt-6 rounded-lg border border-red-400 bg-red-50/10 px-4 py-3 text-sm text-red-200">
+          <div
+            className={`mt-6 rounded-lg border border-red-400 bg-red-50/10 px-4 py-3 text-sm text-red-200 transition-all duration-700 ease-out ${cardEnter}`}
+            style={{ transitionDelay: '120ms' }}
+          >
             {error}
           </div>
         )}
 
         <section className="mt-10 grid gap-6 lg:grid-cols-3">
-          {statsCards.map(({ id, title, value, change, formatter }) => {
+          {statsCards.map(({ id, title, value, change, formatter, trendKey, color }, index) => {
             const numericValue = Number(value) || 0;
-            const formattedValue = formatter ? formatter(numericValue) : numericValue.toLocaleString();
             const numericChange = Number(change) || 0;
             const trendColor = numericChange >= 0 ? 'text-[#4d997a]' : 'text-[#c26666]';
             const changePrefix = numericChange > 0 ? '+' : '';
+            const trendSeries = dashboardData.trends?.[trendKey] || [];
 
             return (
               <article
                 key={id}
-                className="rounded-xl border border-white/5 bg-[rgba(25,27,29,0.78)] px-6 py-8 shadow-lg shadow-black/20"
+                className={`rounded-xl border border-white/5 bg-[rgba(25,27,29,0.78)] px-6 py-8 shadow-lg shadow-black/20 transform transition-all duration-700 ease-out ${cardEnter}`}
+                style={{ transitionDelay: `${180 + index * 80}ms` }}
               >
                 <p className="text-sm text-white/70">{title}</p>
                 <div className="mt-3 flex items-center justify-between">
-                  <p className="text-3xl font-semibold">{formattedValue}</p>
-                  <div className="h-14 w-28 rounded-md bg-gradient-to-r from-[#1F2A3A] to-[#122032] opacity-80" />
+                  <p className="text-3xl font-semibold">
+                    <AnimatedStatValue
+                      value={numericValue}
+                      formatter={formatter}
+                      animate={animateReady}
+                      delay={180 + index * 80}
+                    />
+                  </p>
+                  <StatSparkline
+                    id={id}
+                    data={trendSeries}
+                    color={color}
+                    animate={animateReady}
+                    delay={220 + index * 80}
+                  />
                 </div>
                 <p className={`mt-4 text-xs font-medium ${trendColor}`}>
                   {changePrefix}
@@ -226,10 +402,12 @@ const OrganizerDashboard = () => {
         </section>
 
         {loading ? (
-          <div className="mt-12 text-center text-white/60">Loading dashboard...</div>
+          <div className={`mt-12 text-center text-white/60 transition-opacity duration-500 ${animateReady ? 'opacity-100' : 'opacity-0'}`}>
+            Loading dashboard...
+          </div>
         ) : (
           <section className="mt-12 flex flex-col gap-10 lg:flex-row">
-            <div className="flex-1">
+            <div className={`flex-1 transform transition-all duration-700 ease-out ${cardEnter}`} style={{ transitionDelay: '420ms' }}>
               <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-medium text-white">Upcoming Events</h2>
                 {dashboardData.upcomingEvents.length > 0 && (
@@ -254,7 +432,11 @@ const OrganizerDashboard = () => {
                     const imageSrc = event.imageUrl || 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=640&q=80';
 
                     return (
-                      <div key={event.id} className="relative pl-10">
+                      <div
+                        key={event.id}
+                        className={`relative pl-10 transform transition-all duration-700 ease-out ${cardEnter}`}
+                        style={{ transitionDelay: `${520 + index * 90}ms` }}
+                      >
                         <span className="absolute left-[11px] top-0 flex h-full flex-col items-center">
                           <span className="h-3 w-3 rounded-full bg-white/30" />
                           {!isLast && <span className="mt-1 h-full w-px bg-gradient-to-b from-white/30 to-transparent" />}
@@ -293,7 +475,10 @@ const OrganizerDashboard = () => {
               </div>
             </div>
 
-            <aside className="w-full max-w-md h-96 rounded-xl border border-white/5 bg-[#191b1d]/90 p-6 shadow-lg shadow-black/20">
+            <aside
+              className={`w-full max-w-md h-96 rounded-xl border border-white/5 bg-[#191b1d]/90 p-6 shadow-lg shadow-black/20 transform transition-all duration-700 ease-out ${cardEnter}`}
+              style={{ transitionDelay: '580ms' }}
+            >
               <h2 className="text-2xl font-medium text-white">The Buzz</h2>
               <div className="mt-6 space-y-4">
                 {recentActivities.length === 0 ? (

@@ -5,7 +5,7 @@ require('dotenv').config();
 const path = require('path');
 
 // Import Routes
-const authRoutes = require('./routes/authRoutes'); // Make sure this is present and correct
+const authRoutes = require('./routes/authRoutes'); 
 const adminRoutes = require('./routes/adminRoutes');
 const organizerRoutes = require('./routes/organizerRoutes');
 
@@ -17,7 +17,7 @@ app.use(cors({
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' })); // Allows us to parse JSON bodies from requests
-app.use(express.urlencoded({ extended: true, limit: '10mb' })); // Add this for form-data parsing
+app.use(express.urlencoded({ extended: true, limit: '10mb' })); 
 app.use('/public', express.static(path.join(__dirname, 'public')));
 
 // Routes

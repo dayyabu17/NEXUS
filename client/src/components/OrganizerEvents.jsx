@@ -1,7 +1,10 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
 import { Link, useNavigate } from 'react-router-dom';
+
+const MotionSection = motion.section;
 
 const statusOptions = [
   { label: 'All', value: 'all' },
@@ -150,7 +153,12 @@ const OrganizerEvents = () => {
 
   return (
     <OrganizerLayoutDark>
-      <section className="pb-16">
+      <MotionSection
+        className="pb-16"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeInOut' }}
+      >
         <div className="flex flex-col items-start justify-between gap-6 pt-6 sm:flex-row sm:items-center">
           <h1 className="text-4xl font-semibold tracking-tight text-white">Events</h1>
 
@@ -252,7 +260,7 @@ const OrganizerEvents = () => {
             ))}
           </div>
         )}
-      </section>
+      </MotionSection>
     </OrganizerLayoutDark>
   );
 };
