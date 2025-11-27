@@ -48,7 +48,7 @@ const TicketCard = ({ ticket }) => {
         className="relative h-full w-full rounded-[26px] bg-slate-950/95 shadow-[0_20px_45px_rgba(8,15,32,0.4)] [transform-style:preserve-3d]"
         initial={false}
         animate={cardRotation}
-        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        transition={{ type: 'spring', duration: 0.5, stiffness: 140, damping: 18 }}
       >
         <div className="absolute inset-0 flex h-full w-full flex-col overflow-hidden rounded-[26px] border border-white/10 bg-slate-950/95 [backface-visibility:hidden]">
           <div className="relative h-40 w-full overflow-hidden">
