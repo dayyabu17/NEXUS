@@ -11,6 +11,14 @@ const STATUS = {
   ERROR: 'error',
 };
 
+/**
+ * MyTickets component.
+ * Displays a list of tickets purchased/RSVP'd by the user.
+ * Fetches tickets from the backend and renders them as TicketCards.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered MyTickets page.
+ */
 const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [status, setStatus] = useState(STATUS.LOADING);

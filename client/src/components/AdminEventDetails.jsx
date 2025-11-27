@@ -3,13 +3,40 @@ import { useParams, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import api from '../api/axios';
 
+/**
+ * AdminEventDetails component.
+ * Displays detailed information about a specific event for administrators.
+ * Allows administrators to approve or reject pending events.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered AdminEventDetails component.
+ */
 const AdminEventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
+  /**
+   * State to hold the event details.
+   * @type {Object|null}
+   */
   const [event, setEvent] = useState(null);
+
+  /**
+   * Loading state for the initial data fetch.
+   * @type {boolean}
+   */
   const [loading, setLoading] = useState(true);
+
+  /**
+   * Error state for displaying data fetch errors.
+   * @type {string}
+   */
   const [error, setError] = useState('');
+
+  /**
+   * Loading state for action buttons (Approve/Reject).
+   * @type {boolean}
+   */
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -32,6 +59,12 @@ const AdminEventDetails = () => {
     fetchEvent();
   }, [id]);
 
+  /**
+   * Handles the approve or reject action for the event.
+   *
+   * @param {string} status - The new status to set ('approved' or 'rejected').
+   * @returns {Promise<void>}
+   */
   const handleAction = async (status) => {
     if (!window.confirm(`Are you sure you want to ${status} this event?`)) return;
 

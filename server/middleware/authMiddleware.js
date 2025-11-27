@@ -1,9 +1,17 @@
-// No changes to apply
 const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-// Middleware to verify JWT and attach user to request (req.user)
+/**
+ * Middleware to verify JSON Web Token (JWT) and attach the user to the request object.
+ * Checks the 'Authorization' header for a Bearer token.
+ *
+ * @function protect
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {Error} - Throws a 401 'Not authorized' error if token is missing or invalid, or user is not found.
+ */
 const protect = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -38,7 +46,16 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Middleware to check if the user is an Admin
+/**
+ * Middleware to restrict access to Admin users only.
+ * Must be used after the `protect` middleware.
+ *
+ * @function admin
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {Error} - Throws a 403 'Not authorized as an admin' error if the user role is not 'admin'.
+ */
 const admin = (req, res, next) => {
   // We rely on the protect middleware having already attached req.user
   if (req.user && req.user.role === 'admin') {
@@ -49,6 +66,16 @@ const admin = (req, res, next) => {
   }
 };
 
+/**
+ * Middleware to restrict access to Organizer users only.
+ * Must be used after the `protect` middleware.
+ *
+ * @function organizer
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @param {Function} next - The next middleware function.
+ * @throws {Error} - Throws a 403 'Not authorized as an organizer' error if the user role is not 'organizer'.
+ */
 const organizer = (req, res, next) => {
   if (req.user && req.user.role === 'organizer') {
     next();

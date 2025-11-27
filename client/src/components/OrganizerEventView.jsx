@@ -41,6 +41,14 @@ const createGuestRecord = (name, email) => ({
   addedAt: new Date().toISOString(),
 });
 
+/**
+ * OrganizerEventView component.
+ * Displays comprehensive details for a specific event managed by an organizer.
+ * Includes tabs for Overview, Guests, Check-ins, and Earnings.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerEventView component.
+ */
 const OrganizerEventView = () => {
   const { id } = useParams();
   const navigate = useNavigate();

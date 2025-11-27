@@ -24,6 +24,16 @@ const formatDateTime = (input) => {
   });
 };
 
+/**
+ * TicketCard component.
+ * Displays information about a purchased ticket.
+ * Features a flip animation to show a QR code for check-in.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.ticket - The ticket object containing event details and status.
+ * @returns {JSX.Element} The rendered TicketCard component.
+ */
 const TicketCard = ({ ticket }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 

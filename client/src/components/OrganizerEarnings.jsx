@@ -4,6 +4,14 @@ import OrganizerLayoutDark from './OrganizerLayoutDark';
 
 const MotionSection = motion.section;
 
+/**
+ * OrganizerEarnings component.
+ * Displays earnings analytics for organizers.
+ * Currently a placeholder for future implementation.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerEarnings component.
+ */
 const OrganizerEarnings = () => (
   <OrganizerLayoutDark>
     <MotionSection

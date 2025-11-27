@@ -15,6 +15,18 @@ const NAV_LINKS = [
 
 const STORAGE_KEY = 'userLocation';
 
+/**
+ * GuestNavbar component.
+ * Provides the main navigation for the guest interface.
+ * Features:
+ * - Links to Dashboard, Map View, and My Tickets.
+ * - Location detection and manual selection.
+ * - Search, Notifications, and Profile dropdowns.
+ * - Mobile responsive menu.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered GuestNavbar component.
+ */
 const GuestNavbar = () => {
   const hasRequestedRef = useRef(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

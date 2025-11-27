@@ -22,6 +22,14 @@ const USER_MARKER_ICON = new L.Icon({
 const DEFAULT_CENTER = [9.05785, 7.49508];
 const LOCATION_STORAGE_KEY = 'userLocation';
 
+/**
+ * Component to fit the map bounds to include specific points.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Array<Array<number>>} props.points - Array of [lat, lng] coordinates.
+ * @returns {null} This component does not render any visible elements.
+ */
 const FitBounds = ({ points }) => {
     const map = useMap();
 
@@ -43,6 +51,14 @@ const FitBounds = ({ points }) => {
     return null;
 };
 
+/**
+ * EventDetails component.
+ * Displays comprehensive details about a specific event, including a map with directions,
+ * travel time estimates, and ticket purchasing options.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered EventDetails page.
+ */
 const EventDetails = () => {
     const { id } = useParams();
     console.log('Event ID from URL:', id);

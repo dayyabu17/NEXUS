@@ -5,6 +5,15 @@ import AuthLayout from './AuthLayout';
 import api from '../api/axios';
 import confetti from 'canvas-confetti';
 
+/**
+ * SignIn component.
+ * Handles user authentication via email and password.
+ * Redirects users to their respective dashboards based on their role upon successful login.
+ * Includes a fun "Konami code" easter egg.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SignIn component.
+ */
 const SignIn = () => {
   const navigate = useNavigate();
   

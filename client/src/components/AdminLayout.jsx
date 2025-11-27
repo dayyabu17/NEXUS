@@ -15,6 +15,10 @@ import SearchOutlinedSvg from '../assets/icons/search_outlined.svg';
 import LogoutOutlinedSvg from '../assets/icons/logout_outlined.svg'; 
 import Event2OutlinedSvg from '../assets/icons/event_outlined2.svg';
 
+/**
+ * Retrieves the initial user name from local storage.
+ * @returns {string} The user's name or 'Admin' as default.
+ */
 const getInitialUserName = () => {
   const user = localStorage.getItem('user');
   return user ? JSON.parse(user).name : 'Admin';
@@ -22,6 +26,11 @@ const getInitialUserName = () => {
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
 
+/**
+ * Retrieves the initial profile picture URL from local storage.
+ * Handles local and remote URLs.
+ * @returns {string} The profile picture URL.
+ */
 const getInitialProfilePicture = () => {
     const user = localStorage.getItem('user');
     if (user) {
@@ -34,6 +43,17 @@ const getInitialProfilePicture = () => {
     return DEFAULT_AVATAR;
 };
 
+/**
+ * AdminLayout component.
+ * Provides a common layout structure for admin pages, including a sidebar and header.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The content to render within the layout.
+ * @param {string} [props.searchTerm] - The current search term.
+ * @param {Function} [props.onSearchChange] - Callback function for search input changes.
+ * @returns {JSX.Element} The rendered AdminLayout component.
+ */
 const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
   const [userName, setUserName] = useState(getInitialUserName);
   const [profilePicture, setProfilePicture] = useState(getInitialProfilePicture);

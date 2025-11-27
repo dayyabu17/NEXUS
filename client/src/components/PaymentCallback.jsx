@@ -9,6 +9,14 @@ const STATUS = {
   ERROR: 'error',
 };
 
+/**
+ * PaymentCallback component.
+ * Handles the callback from Paystack after a payment attempt.
+ * Verifies the payment with the backend and displays the result.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered PaymentCallback component.
+ */
 const PaymentCallback = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();

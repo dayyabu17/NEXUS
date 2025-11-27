@@ -3,8 +3,23 @@ import { Link, useNavigate } from 'react-router-dom';
 import AdminLayout from './AdminLayout';
 import api from '../api/axios';
 
+/**
+ * EventManagement component.
+ * Provides a comprehensive interface for administrators to manage all events.
+ * Features include listing events, searching, filtering by status/category/organizer,
+ * viewing details, and deleting events.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {string} props.searchTerm - The global search term passed from the layout.
+ * @returns {JSX.Element} The rendered EventManagement page.
+ */
 const EventManagement = ({ searchTerm }) => {
     const navigate = useNavigate();
+    /**
+     * State to hold the list of all events.
+     * @type {Array<Object>}
+     */
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -72,6 +87,12 @@ const EventManagement = ({ searchTerm }) => {
         return matchesSearch && matchesStatus && matchesCategory && matchesOrganizer;
     });
 
+    /**
+     * Handles the permanent deletion of an event.
+     *
+     * @param {string} id - The ID of the event to delete.
+     * @returns {Promise<void>}
+     */
     const handleDelete = async (id) => {
         if(!window.confirm("Delete this event permanently?")) return;
         try {

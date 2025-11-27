@@ -18,6 +18,14 @@ const resolveProfileImage = (value) => {
   return `http://localhost:5000/public${value}`;
 };
 
+/**
+ * OrganizerPreferences component.
+ * Allows organizers to manage their profile settings, including display name,
+ * email, password, and profile picture.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerPreferences component.
+ */
 const OrganizerPreferences = () => {
   const [profile, setProfile] = useState({
     name: '',

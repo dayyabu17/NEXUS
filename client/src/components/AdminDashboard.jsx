@@ -4,16 +4,47 @@ import AdminLayout from './AdminLayout';
 import api from '../api/axios'; // Our configured Axios instance
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * AdminDashboard component that displays the main dashboard for administrators.
+ * It shows summary statistics (users, organizers, events, pending approvals)
+ * and a list of events pending approval.
+ *
+ * @component
+ * @returns {JSX.Element} The AdminDashboard rendered component.
+ */
 const AdminDashboard = () => {
   const navigate = useNavigate();
+  /**
+   * State to hold dashboard statistics.
+   * @type {Object}
+   * @property {number} pendingApprovals - Number of events pending approval.
+   * @property {number} totalUsers - Total number of registered users.
+   * @property {number} totalOrganizers - Total number of organizers.
+   * @property {number} totalEvents - Total number of events.
+   */
   const [stats, setStats] = useState({
     pendingApprovals: 0,
     totalUsers: 0,
     totalOrganizers: 0,
     totalEvents: 0,
   });
+
+  /**
+   * State to hold the list of pending events.
+   * @type {Array<Object>}
+   */
   const [events, setEvents] = useState([]);
+
+  /**
+   * Loading state for asynchronous data fetching.
+   * @type {boolean}
+   */
   const [loading, setLoading] = useState(true);
+
+  /**
+   * Error state for displaying fetch errors.
+   * @type {string|null}
+   */
   const [error, setError] = useState(null);
 
   useEffect(() => {
