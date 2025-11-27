@@ -2,7 +2,8 @@ import { Routes, Route } from 'react-router-dom';
 import SignIn from './components/SignIn';
 import SignUp from './components/SignUp';
 import AdminDashboard from './components/AdminDashboard';
-import EventDetails from './components/EventDetails'; 
+import AdminEventDetails from './components/AdminEventDetails';
+import EventDetails from './components/EventDetails';
 import UserManagement from './components/UserManagement';
 import EventManagement from './components/EventManagement';
 import Settings from './components/Settings';
@@ -14,6 +15,9 @@ import OrganizerEventView from './components/OrganizerEventView';
 import OrganizerPreferences from './components/OrganizerPreferences';
 import OrganizerNotifications from './components/OrganizerNotifications';
 import GuestDashboard from './components/GuestDashboard';
+import GuestMap from './components/GuestMap';
+import PaymentCallback from './components/PaymentCallback';
+import MyTickets from './pages/MyTickets';
 
 function App() {
   return (
@@ -23,7 +27,7 @@ function App() {
       
       {/* Admin Routes */}
       <Route path="/admin/dashboard" element={<AdminDashboard />} /> 
-      <Route path="/admin/events/:id" element={<EventDetails />} /> 
+      <Route path="/admin/events/:id" element={<AdminEventDetails />} /> 
       <Route path="/admin/users" element={<UserManagement />} /> 
       <Route path="/admin/events" element={<EventManagement />} /> 
       <Route path="/admin/settings" element={<Settings />} />
@@ -37,6 +41,10 @@ function App() {
       <Route path="/organizer/notifications" element={<OrganizerNotifications />} />
 
       <Route path="/guest/dashboard" element={<GuestDashboard />} />
+      <Route path="/guest/map" element={<GuestMap />} />
+      <Route path="/guest/tickets" element={<MyTickets />} />
+      <Route path="/events/:id" element={<EventDetails />} />
+      <Route path="/payment/callback" element={<PaymentCallback />} />
       <Route path="/dashboard" element={<GuestDashboard />} /> 
       <Route path="/" element={<SignIn />} />
     </Routes>

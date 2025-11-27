@@ -86,3 +86,12 @@ body {
     scrollbar-color: #1e293b #020617;
   }
 }
+
+.map-tiles {
+  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+}
+
+.leaflet-control-attribution {
+  filter: none;
+  color: #e2e8f0;
+}

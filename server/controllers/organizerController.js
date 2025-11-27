@@ -328,11 +328,16 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     description,
     date,
     location,
+    locationLatitude,
+    locationLongitude,
     category,
     capacity,
     registrationFee,
     imageUrl,
     tags,
+    timezone,
+    endDate,
+    endTime,
   } = req.body;
 
   if (!title || !description || !date || !location) {
@@ -373,6 +378,24 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Registration fee must be a valid number.' });
   }
 
+  const parseCoordinate = (value) => {
+    if (value === undefined || value === null || value === '') {
+      return undefined;
+    }
+    const numericValue = typeof value === 'number' ? value : Number(value);
+    return Number.isFinite(numericValue) ? numericValue : undefined;
+  };
+
+  let parsedEndDate;
+  if (endDate) {
+    const candidate = new Date(endDate);
+    if (!Number.isNaN(candidate.getTime())) {
+      parsedEndDate = candidate;
+    }
+  }
+
+  const sanitizedEndTime = typeof endTime === 'string' && endTime.trim().length > 0 ? endTime.trim() : undefined;
+
   const event = await Event.create({
     title: title.trim(),
     description,
@@ -385,6 +408,11 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     tags: normalizedTags,
     organizer: req.user._id,
     status: 'pending',
+    locationLatitude: parseCoordinate(locationLatitude),
+    locationLongitude: parseCoordinate(locationLongitude),
+    timezone: typeof timezone === 'string' && timezone.trim().length > 0 ? timezone.trim() : undefined,
+    endDate: parsedEndDate,
+    endTime: sanitizedEndTime,
   });
 
   res.status(201).json({
@@ -398,6 +426,11 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     imageUrl: event.imageUrl,
     tags: event.tags,
     category: event.category,
+    locationLatitude: event.locationLatitude,
+    locationLongitude: event.locationLongitude,
+    timezone: event.timezone,
+    endDate: event.endDate,
+    endTime: event.endTime,
   });
 });
 

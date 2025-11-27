@@ -2,6 +2,8 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
+import LocationPicker from './LocationPicker';
+import { EVENT_CATEGORIES } from '../constants/categories';
 import api from '../api/axios';
 
 const MOTION = motion; // Reference preserves the import for linting when using JSX member expressions
@@ -22,9 +24,11 @@ const INITIAL_FORM = {
   endDate: '',
   endTime: '',
   location: '',
+  locationLatitude: null,
+  locationLongitude: null,
   category: '',
   capacity: '',
-  registrationFee: '',
+  price: '0',
   imageUrl: '',
   tags: '',
   timezone: TIMEZONE_OPTIONS[0].value,
@@ -171,16 +175,52 @@ const OrganizerCreateEvent = () => {
     setCoverPreview('');
   };
 
+  const handleLocationSelect = ({ address, lat, lng }) => {
+    setFormData((prev) => ({
+      ...prev,
+      location: address || '',
+      locationLatitude: typeof lat === 'number' ? lat : null,
+      locationLongitude: typeof lng === 'number' ? lng : null,
+    }));
+
+    if (success) {
+      setSuccess('');
+    }
+  };
+
+  const handleCategorySelect = (category) => {
+    setFormData((prev) => ({
+      ...prev,
+      category,
+    }));
+
+    if (success) {
+      setSuccess('');
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
     setSuccess('');
 
-    const requiredFields = ['title', 'description', 'date', 'time', 'location'];
-    const missing = requiredFields.filter((field) => !formData[field]);
+    const requiredFields = [
+      'title',
+      'description',
+      'date',
+      'time',
+      'category',
+      'location',
+      'locationLatitude',
+      'locationLongitude',
+    ];
+    const missing = requiredFields.filter((field) => {
+      const value = formData[field];
+      return value === null || value === undefined || value === '';
+    });
 
     if (missing.length > 0) {
-      setError('Please fill out all required fields.');
+      setError('Please fill out all required fields and confirm the event location from the suggestions.');
       return;
     }
 
@@ -209,14 +249,19 @@ const OrganizerCreateEvent = () => {
       }
     }
 
+    const parsedPrice = Number(formData.price);
+    const normalizedPrice = Number.isFinite(parsedPrice) && parsedPrice > 0 ? Math.floor(parsedPrice) : 0;
+
     const payload = {
       title: formData.title.trim(),
       description: formData.description.trim(),
       date: startDate.toISOString(),
       location: formData.location.trim(),
+      locationLatitude: formData.locationLatitude,
+      locationLongitude: formData.locationLongitude,
       category: formData.category.trim() || undefined,
       capacity: formData.capacity,
-      registrationFee: formData.registrationFee,
+      price: normalizedPrice,
       imageUrl: formData.imageUrl,
       tags: formData.tags,
       timezone: formData.timezone,
@@ -492,19 +537,15 @@ const OrganizerCreateEvent = () => {
               variants={itemVars}
             >
               <div className="space-y-6">
-                <div>
-                  <label htmlFor="location" className="text-sm font-medium text-white/80">
-                    Location
-                  </label>
-                  <input
-                    id="location"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="Add the venue or meeting link"
-                    className="mt-3 w-full rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 text-base text-white placeholder:text-white/35 focus:border-white/40 focus:outline-none"
-                  />
-                </div>
+                <LocationPicker
+                  value={formData.location}
+                  coordinates={
+                    typeof formData.locationLatitude === 'number' && typeof formData.locationLongitude === 'number'
+                      ? { lat: formData.locationLatitude, lng: formData.locationLongitude }
+                      : null
+                  }
+                  onChange={handleLocationSelect}
+                />
 
                 <div>
                   <label htmlFor="description" className="text-sm font-medium text-white/80">
@@ -538,7 +579,7 @@ const OrganizerCreateEvent = () => {
                 <OptionCard
                   label="Ticket price"
                   icon="🎟️"
-                  displayValue={ticketPriceLabel(formData.registrationFee)}
+                  displayValue={ticketPriceLabel(formData.price)}
                   onClick={() => setActivePicker('ticketPrice')}
                 />
               </div>
@@ -550,19 +591,30 @@ const OrganizerCreateEvent = () => {
             >
               <p className="text-sm font-semibold uppercase tracking-wide text-white/45">Extras ✨</p>
               <div className="mt-5 space-y-3">
-                <div className="flex flex-col gap-3 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-4 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4">
                   <div className="flex items-center gap-3 text-white/85">
                     <span aria-hidden>🗂️</span>
-                    <span>Category</span>
+                    <span className="text-sm font-medium">Category</span>
                   </div>
-                  <input
-                    id="category"
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    placeholder="e.g. Technology"
-                    className="rounded-xl border border-white/10 bg-[#1b2330] px-4 py-2 text-right text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
-                  />
+                  <div className="flex flex-wrap gap-3">
+                    {EVENT_CATEGORIES.map((category) => {
+                      const isActive = formData.category === category;
+                      return (
+                        <button
+                          key={category}
+                          type="button"
+                          onClick={() => handleCategorySelect(category)}
+                          className={`rounded-full px-4 py-2 text-sm font-medium transition focus:outline-none ${
+                            isActive
+                              ? 'bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-500/20'
+                              : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-blue-500'
+                          }`}
+                        >
+                          {category}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
                 <div className="flex flex-col gap-3 rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -675,7 +727,7 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
     endTime: 'endTime',
     timezone: 'timezone',
     capacity: 'capacity',
-    ticketPrice: 'registrationFee',
+    ticketPrice: 'price',
   }[activePicker];
 
   if (!targetField) {
@@ -766,7 +818,7 @@ const PickerOverlay = ({ activePicker, onClose, formData, setFormData, pickerMon
             value={formData[targetField]}
             onCancel={onClose}
             onSave={(nextValue) => {
-              setFormData((prev) => ({ ...prev, registrationFee: nextValue }));
+              setFormData((prev) => ({ ...prev, price: nextValue }));
               onClose();
             }}
           />
@@ -1153,14 +1205,15 @@ const CapacityEditor = ({ value, onSave, onCancel }) => {
 };
 
 const TicketPriceEditor = ({ value, onSave, onCancel }) => {
-  const [mode, setMode] = useState(!value || Number(value) <= 0 ? 'free' : 'paid');
-  const [price, setPrice] = useState(value || '');
+  const initialMode = !value || Number(value) <= 0 ? 'free' : 'paid';
+  const [mode, setMode] = useState(initialMode);
+  const [price, setPrice] = useState(initialMode === 'paid' ? String(value) : '');
 
   const handleSubmit = (event) => {
     event.preventDefault();
 
     if (mode === 'free') {
-      onSave('');
+      onSave('0');
       return;
     }
 
@@ -1184,7 +1237,10 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
         <div className="space-y-3">
           <button
             type="button"
-            onClick={() => setMode('free')}
+            onClick={() => {
+              setMode('free');
+              setPrice('');
+            }}
             className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
               mode === 'free'
                 ? 'border-white bg-white text-black'
@@ -1197,7 +1253,12 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
 
           <button
             type="button"
-            onClick={() => setMode('paid')}
+            onClick={() => {
+              setMode('paid');
+              if (!price || Number(price) <= 0) {
+                setPrice('');
+              }
+            }}
             className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
               mode === 'paid'
                 ? 'border-white bg-white text-black'

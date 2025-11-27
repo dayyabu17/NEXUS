@@ -36,7 +36,7 @@ const SignIn = () => {
         navigate('/admin/dashboard');
       } else if (response.data.role === 'organizer') {
         try {
-          sessionStorage.setItem('organizer:show-loader', 'true');
+          sessionStorage.setItem('showWelcome', 'true');
         } catch {
           // Ignore storage access errors to avoid disrupting the flow
         }

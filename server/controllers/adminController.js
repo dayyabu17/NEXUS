@@ -2,8 +2,7 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Event = require('../models/Event');
 
-// ... (getAdminStats and getPendingEvents and getEventDetails remain the same) ...
-// You can keep them as they are, or copy the full file below.
+
 
 // @desc    Get counts for Admin Dashboard
 const getAdminStats = asyncHandler(async (req, res) => {

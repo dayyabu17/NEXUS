@@ -4,8 +4,6 @@ import { motion as Motion, AnimatePresence } from 'framer-motion';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
 
-const SPLASH_STORAGE_KEY = 'hasSeenSplash';
-
 const formatCurrency = (value) => {
   if (!value) {
     return '₦0';
@@ -272,12 +270,11 @@ const OrganizerDashboard = () => {
     }
 
     try {
-      return !window.sessionStorage.getItem(SPLASH_STORAGE_KEY);
+      return window.sessionStorage.getItem('showWelcome') === 'true';
     } catch {
-      return true;
+      return false;
     }
   });
-  const splashFlagRef = useRef(false);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -340,30 +337,22 @@ const OrganizerDashboard = () => {
   }, [navigate]);
 
   useEffect(() => {
-    if (!showSplash || splashFlagRef.current || typeof window === 'undefined') {
+    if (!showSplash || typeof window === 'undefined') {
       return;
-    }
-
-    try {
-      window.sessionStorage.setItem(SPLASH_STORAGE_KEY, 'true');
-    } catch {
-      // Ignore storage errors (e.g., private browsing)
-    }
-
-    splashFlagRef.current = true;
-  }, [showSplash]);
-
-  useEffect(() => {
-    if (!showSplash || loading) {
-      return undefined;
     }
 
     const timer = window.setTimeout(() => {
       setShowSplash(false);
-    }, 400);
 
-    return () => clearTimeout(timer);
-  }, [loading, showSplash]);
+      try {
+        window.sessionStorage.removeItem('showWelcome');
+      } catch {
+        // Ignore storage errors (e.g., private browsing)
+      }
+    }, 2500);
+
+    return () => window.clearTimeout(timer);
+  }, [showSplash]);
 
   const statsCards = [
     {

@@ -18,6 +18,12 @@ const eventSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    locationLatitude: {
+      type: Number,
+    },
+    locationLongitude: {
+      type: Number,
+    },
     organizer: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User', // Links this event to the User who created it
@@ -30,13 +36,24 @@ const eventSchema = new mongoose.Schema(
     },
     category: {
       type: String,
+      enum: ['Technology', 'Academic', 'Social', 'Sports', 'Music', 'Business', 'Arts', 'Health', 'Religious', 'Culture', 'Others'],
+      required: true,
     },
     capacity: {
       type: Number,
     },
+    ticketsSold: {
+      type: Number,
+      default: 0,
+    },
     registrationFee: {
       type: Number,
       default: 0,
+    },
+    price: {
+      type: Number,
+      default: 0,
+      required: true,
     },
     tags: {
       type: [String],
@@ -48,6 +65,15 @@ const eventSchema = new mongoose.Schema(
     },
     imageUrl: {
       type: String, // URL to the event image
+    },
+    timezone: {
+      type: String,
+    },
+    endDate: {
+      type: Date,
+    },
+    endTime: {
+      type: String,
     },
   },
   {
