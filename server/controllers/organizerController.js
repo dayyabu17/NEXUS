@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const Ticket = require('../models/Ticket');
 
 const ACCENT_CHOICES = ['blue', 'purple', 'green', 'orange'];
 const DEFAULT_ACCENT = 'blue';
@@ -112,6 +113,24 @@ const buildNotifications = (events, readSet = new Set()) => {
     .sort((a, b) => b.createdAt - a.createdAt);
 };
 
+const PLATFORM_FEE_RATE = 0.08;
+const SETTLEMENT_WINDOW_DAYS = 3;
+
+const getNextPayoutDate = (reference = new Date()) => {
+  const date = new Date(reference);
+  date.setHours(0, 0, 0, 0);
+  const FRIDAY = 5;
+  const day = date.getDay();
+  let diff = FRIDAY - day;
+
+  if (diff <= 0) {
+    diff += 7;
+  }
+
+  date.setDate(date.getDate() + diff);
+  return date;
+};
+
 const getOrganizerDashboard = asyncHandler(async (req, res) => {
   const now = new Date();
   const startOfToday = new Date(now);
@@ -218,6 +237,124 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
       rsvps: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.rsvps })),
       revenue: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.revenue })),
       active: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.active })),
+    },
+  });
+});
+
+const getOrganizerEarnings = asyncHandler(async (req, res) => {
+  const events = await Event.find({ organizer: req.user._id }).select('_id title date');
+
+  if (!events.length) {
+    const fallbackPayoutDate = getNextPayoutDate();
+
+    return res.json({
+      metrics: {
+        totalRevenue: 0,
+        netIncome: 0,
+        pendingPayout: 0,
+        totalTickets: 0,
+      },
+      revenueTrend: [],
+      transactions: [],
+      payoutSummary: {
+        nextPayoutDate: fallbackPayoutDate.toISOString(),
+        averageSettlementDelayDays: 0,
+        feeRate: PLATFORM_FEE_RATE,
+      },
+    });
+  }
+
+  const eventIds = events.map((event) => event._id);
+  const settlementThreshold = new Date();
+  settlementThreshold.setDate(settlementThreshold.getDate() - SETTLEMENT_WINDOW_DAYS);
+
+  const tickets = await Ticket.find({
+    event: { $in: eventIds },
+  })
+    .populate('event', 'title date')
+    .populate('user', 'name email')
+    .sort({ createdAt: -1 });
+
+  let totalRevenue = 0;
+  let totalTickets = 0;
+  let pendingPayout = 0;
+  const settlementDelays = [];
+  const revenueByDay = new Map();
+
+  tickets.forEach((ticket) => {
+    const amount = Number(ticket.amountPaid) || 0;
+    const quantity = Number(ticket.quantity) || 1;
+    const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date();
+
+    if (ticket.status === 'confirmed') {
+      totalRevenue += amount;
+      totalTickets += quantity;
+
+      const dayKey = createdAt.toISOString().slice(0, 10);
+      revenueByDay.set(dayKey, (revenueByDay.get(dayKey) || 0) + amount);
+
+      const updatedAt = ticket.updatedAt ? new Date(ticket.updatedAt) : createdAt;
+      const delayMs = Math.max(0, updatedAt.getTime() - createdAt.getTime());
+      settlementDelays.push(delayMs);
+    }
+
+    if (ticket.status !== 'confirmed' || createdAt >= settlementThreshold) {
+      pendingPayout += amount;
+    }
+  });
+
+  const netIncome = Math.max(0, totalRevenue * (1 - PLATFORM_FEE_RATE));
+  const now = new Date();
+  const revenueTrend = [];
+
+  for (let index = 29; index >= 0; index -= 1) {
+    const day = new Date(now);
+    day.setHours(0, 0, 0, 0);
+    day.setDate(day.getDate() - index);
+    const key = day.toISOString().slice(0, 10);
+
+    revenueTrend.push({
+      date: day.toISOString(),
+      revenue: revenueByDay.get(key) || 0,
+    });
+  }
+
+  const averageDelayMs = settlementDelays.length
+    ? settlementDelays.reduce((sum, delay) => sum + delay, 0) / settlementDelays.length
+    : 0;
+  const averageSettlementDelayDays = Number((averageDelayMs / (1000 * 60 * 60 * 24)).toFixed(1));
+
+  const nextPayoutDate = getNextPayoutDate(now);
+
+  const transactions = tickets.slice(0, 20).map((ticket) => {
+    const amount = Number(ticket.amountPaid) || 0;
+    const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date();
+    const buyerName = ticket.user?.name || ticket.email || 'Attendee';
+    const isSettled = ticket.status === 'confirmed' && createdAt < settlementThreshold;
+
+    return {
+      id: ticket._id,
+      event: ticket.event?.title || 'Event',
+      buyer: buyerName,
+      amount,
+      date: createdAt.toISOString(),
+      status: isSettled ? 'Settled' : 'Processing',
+    };
+  });
+
+  res.json({
+    metrics: {
+      totalRevenue: Math.round(totalRevenue),
+      netIncome: Math.round(netIncome),
+      pendingPayout: Math.round(pendingPayout),
+      totalTickets,
+    },
+    revenueTrend,
+    transactions,
+    payoutSummary: {
+      nextPayoutDate: nextPayoutDate.toISOString(),
+      averageSettlementDelayDays,
+      feeRate: PLATFORM_FEE_RATE,
     },
   });
 });
@@ -499,4 +636,5 @@ module.exports = {
   markAllOrganizerNotificationsRead,
   getOrganizerPreferences,
   updateOrganizerPreferences,
+  getOrganizerEarnings,
 };

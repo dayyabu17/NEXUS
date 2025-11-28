@@ -97,7 +97,7 @@ const seedDB = async () => {
         date: new Date(new Date().setDate(new Date().getDate() + 21)), // 21 days from now
         location: 'Sports Arena',
         organizer: organizerUser._id,
-        category: 'Career',
+        category: 'Business',
         status: 'rejected',
         capacity: 300,
         registrationFee: 0,

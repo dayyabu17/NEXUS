@@ -1,8 +1,256 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { motion as Motion } from 'framer-motion';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { motion as Motion, useScroll, useSpring, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import GuestNavbar from './GuestNavbar';
+
+const HeroSpotlight = ({ heroEvent, heroDisplay, onViewEvent, extractId }) => {
+  const sectionRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start center', 'end start'],
+    layoutEffect: false,
+  });
+
+  const heroImageParallax = useTransform(scrollYProgress, [0, 1], [0, -60]);
+  const heroContentParallax = useTransform(scrollYProgress, [0, 1], [0, -25]);
+  const heroAccentScale = useTransform(scrollYProgress, [0, 1], [1, 1.05]);
+
+  const heroImageY = useSpring(heroImageParallax, {
+    stiffness: 80,
+    damping: 18,
+    mass: 0.35,
+  });
+  const heroContentY = useSpring(heroContentParallax, {
+    stiffness: 90,
+    damping: 20,
+    mass: 0.32,
+  });
+  const heroAccent = useSpring(heroAccentScale, {
+    stiffness: 120,
+    damping: 22,
+    mass: 0.28,
+  });
+
+  if (!heroDisplay) {
+    return null;
+  }
+
+  return (
+    <Motion.section
+      ref={sectionRef}
+      layout
+      initial={{ opacity: 0, y: 40 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ type: 'spring', stiffness: 85, damping: 16 }}
+      className="relative min-h-[420px] overflow-hidden rounded-[28px] border border-white/10 bg-[#111a27]/80 shadow-[0_35px_80px_rgba(5,10,20,0.65)]"
+    >
+      <Motion.div className="absolute inset-0 overflow-hidden" style={{ y: heroImageY }}>
+        {heroDisplay.imageUrl ? (
+          <Motion.img
+            layout
+            src={heroDisplay.imageUrl}
+            alt={heroDisplay.title}
+            className="absolute left-0 right-0 -top-[10%] h-[140%] w-full object-cover opacity-70"
+          />
+        ) : (
+          <div className="absolute left-0 right-0 -top-[10%] h-[120%] w-full bg-gradient-to-br from-[#10192a] via-[#101b30] to-[#0a1322] opacity-80" />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-r from-[#0b101b]/95 via-[#0b101b]/75 to-transparent" />
+      </Motion.div>
+      <Motion.div
+        className="relative flex min-h-[420px] flex-col gap-6 p-8 sm:flex-row sm:items-center sm:gap-10 sm:p-12"
+        style={{ y: heroContentY }}
+      >
+        <div className="max-w-2xl space-y-4">
+          <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
+            {heroEvent ? 'Featured Event' : 'Spotlight Event'}
+          </span>
+          <h2 className="text-3xl font-semibold text-white sm:text-4xl">{heroDisplay.title}</h2>
+          {heroDisplay.description && (
+            <p className="text-base text-white/70">{heroDisplay.description}</p>
+          )}
+          <div className="flex flex-wrap gap-4 text-sm text-white/75">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
+              <span aria-hidden>📅</span>
+              <span>
+                {heroDisplay.date
+                  ? new Date(heroDisplay.date).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                      year: 'numeric',
+                    })
+                  : 'Date TBA'}
+              </span>
+            </div>
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
+              <span aria-hidden>📍</span>
+              <span className="max-w-[16rem] truncate" title={heroDisplay.location}>
+                {heroDisplay.location || 'Location TBA'}
+              </span>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => onViewEvent(extractId(heroDisplay))}
+            className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none"
+          >
+            Explore Details
+          </button>
+        </div>
+        <div className="hidden flex-1 justify-end sm:flex">
+          <Motion.div
+            className="h-48 w-48 overflow-hidden rounded-[22px] border border-white/10 bg-[#0c1627]/80"
+            style={{ scale: heroAccent }}
+          >
+            {heroDisplay.imageUrl ? (
+              <Motion.img
+                layout
+                src={heroDisplay.imageUrl}
+                alt={`${heroDisplay.title} spotlight`}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="h-full w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
+            )}
+          </Motion.div>
+        </div>
+      </Motion.div>
+    </Motion.section>
+  );
+};
+
+const RecommendedSection = ({ events, onViewAll, onViewEvent, extractId }) => {
+  const scrollContainerRef = useRef(null);
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  const handleScroll = useCallback(() => {
+    const element = scrollContainerRef.current;
+    if (!element) {
+      return;
+    }
+
+    const totalScroll = element.scrollWidth - element.clientWidth;
+
+    if (totalScroll <= 0) {
+      setScrollProgress(0);
+      return;
+    }
+
+    const ratio = element.scrollLeft / totalScroll;
+    const clamped = Number.isFinite(ratio) ? Math.max(0, Math.min(1, ratio)) : 0;
+    setScrollProgress(clamped);
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      handleScroll();
+    };
+
+    const rafId = window.requestAnimationFrame(() => {
+      handleScroll();
+    });
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      window.cancelAnimationFrame(rafId);
+    };
+  }, [handleScroll, events.length]);
+
+  const progressValue = Number.isFinite(scrollProgress) ? scrollProgress : 0;
+
+  return (
+    <section className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h3 className="text-2xl font-semibold text-white">Recommended for You</h3>
+        <button
+          type="button"
+          onClick={onViewAll}
+          className="text-sm font-semibold text-white/60 transition hover:text-white"
+        >
+          View all
+        </button>
+      </div>
+
+      {events.length === 0 ? (
+        <div className="rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-12 text-center text-sm text-white/60">
+          No recommendations yet. Try another category to discover new experiences.
+        </div>
+      ) : (
+        <div className="relative">
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScroll}
+            className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x"
+          >
+            {events.map((event, index) => {
+              const eventId = extractId(event);
+              const cardKey = eventId ?? `recommended-${index}`;
+              return (
+                <Motion.article
+                  key={`recommended-${cardKey}`}
+                  layout
+                  className="relative min-w-[300px] w-[300px] flex-shrink-0 snap-start overflow-hidden rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-4 shadow-[0_25px_60px_rgba(5,10,20,0.55)]"
+                >
+                  <div className="relative h-40 w-full overflow-hidden rounded-[18px]">
+                    {event.imageUrl ? (
+                      <Motion.img
+                        layout
+                        src={event.imageUrl}
+                        alt={event.title}
+                        className="h-40 w-full rounded-t-xl object-cover"
+                      />
+                    ) : (
+                      <div className="h-40 w-full rounded-t-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
+                    )}
+                    {event.category && (
+                      <span className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                        {event.category}
+                      </span>
+                    )}
+                  </div>
+                  <div className="mt-4 space-y-3">
+                    <h4 className="text-lg font-semibold text-white">{event.title}</h4>
+                    <p className="text-xs text-white/55">
+                      {event.date
+                        ? new Date(event.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })
+                        : 'Date coming soon'}
+                      {' • '}
+                      {event.location || 'Location TBA'}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => eventId && onViewEvent(eventId)}
+                      className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-medium text-white transition hover:border-white/30"
+                      disabled={!eventId}
+                    >
+                      View details
+                    </button>
+                  </div>
+                </Motion.article>
+              );
+            })}
+          </div>
+
+          <div className="pointer-events-none absolute bottom-0 left-0 right-0 translate-y-3">
+            <div className="mx-auto h-[2px] w-24 overflow-hidden rounded-full bg-white/10">
+              <span
+                className="block h-full origin-left bg-white/70 transition-transform duration-200 ease-out"
+                style={{ transform: `scaleX(${progressValue})` }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
 
 const GuestDashboard = () => {
   const [heroEvent, setHeroEvent] = useState(null);
@@ -198,83 +446,27 @@ const GuestDashboard = () => {
 
       <main className="mx-auto max-w-6xl px-6 pb-16 pt-24">
         <section className="space-y-10">
-          <div className="space-y-4">
+          <Motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 90, damping: 18 }}
+            className="space-y-4"
+          >
             <h1 className="text-4xl font-semibold tracking-tight text-white">Discover Events</h1>
             <p className="max-w-2xl text-base text-white/60">
               Browse curated happenings across campus designed for guests. Unlock premium experiences, curated recommendations, and immersive journeys tailored to your interests.
             </p>
-          </div>
+          </Motion.div>
 
           {isLoading ? (
             <div className="h-64 w-full animate-pulse rounded-[28px] border border-white/10 bg-[#131b2a]/70" />
           ) : heroDisplay ? (
-            <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#111a27]/80 shadow-[0_35px_80px_rgba(5,10,20,0.65)]">
-              <div className="absolute inset-0">
-                {heroDisplay.imageUrl ? (
-                  <Motion.img
-                    layout
-                    src={heroDisplay.imageUrl}
-                    alt={heroDisplay.title}
-                    className="h-full w-full object-cover opacity-70"
-                  />
-                ) : (
-                  <div className="h-full w-full bg-gradient-to-br from-[#10192a] via-[#101b30] to-[#0a1322] opacity-80" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#0b101b]/95 via-[#0b101b]/75 to-transparent" />
-              </div>
-              <div className="relative flex flex-col gap-6 p-8 sm:flex-row sm:items-center sm:gap-10 sm:p-12">
-                <div className="max-w-2xl space-y-4">
-                  <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
-                    {heroEvent ? 'Featured Event' : 'Spotlight Event'}
-                  </span>
-                  <h2 className="text-3xl font-semibold text-white sm:text-4xl">{heroDisplay.title}</h2>
-                  {heroDisplay.description && (
-                    <p className="text-base text-white/70">{heroDisplay.description}</p>
-                  )}
-                  <div className="flex flex-wrap gap-4 text-sm text-white/75">
-                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
-                      <span aria-hidden>📅</span>
-                      <span>
-                        {heroDisplay.date
-                          ? new Date(heroDisplay.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            })
-                          : 'Date TBA'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
-                      <span aria-hidden>📍</span>
-                      <span className="max-w-[16rem] truncate" title={heroDisplay.location}>
-                        {heroDisplay.location || 'Location TBA'}
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => handleViewEvent(getEventId(heroDisplay))}
-                    className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none"
-                  >
-                    Explore Details
-                  </button>
-                </div>
-                <div className="hidden flex-1 justify-end sm:flex">
-                  <div className="h-48 w-48 overflow-hidden rounded-[22px] border border-white/10 bg-[#0c1627]/80">
-                    {heroDisplay.imageUrl ? (
-                      <Motion.img
-                        layout
-                        src={heroDisplay.imageUrl}
-                        alt={`${heroDisplay.title} spotlight`}
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="h-full w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
+            <HeroSpotlight
+              heroEvent={heroEvent}
+              heroDisplay={heroDisplay}
+              onViewEvent={handleViewEvent}
+              extractId={getEventId}
+            />
           ) : (
             <div className="flex h-64 w-full flex-col items-center justify-center rounded-[28px] border border-dashed border-white/10 bg-[#131b2a]/70 text-white/60">
               <p className="text-base font-medium">No featured events yet</p>
@@ -282,7 +474,14 @@ const GuestDashboard = () => {
             </div>
           )}
 
-          <div className="sticky top-20 z-40 rounded-[24px] border border-white/10 bg-[#0d1524]/80 px-5 py-4 shadow-[0_18px_50px_rgba(5,10,20,0.55)] backdrop-blur">
+          <Motion.div
+            layout
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ type: 'spring', stiffness: 95, damping: 19, mass: 0.6 }}
+            viewport={{ once: true, amount: 0.4 }}
+            className="sticky top-20 z-40 rounded-[24px] border border-white/10 bg-[#0d1524]/80 px-5 py-4 shadow-[0_18px_50px_rgba(5,10,20,0.55)] backdrop-blur"
+          >
             <div className="flex flex-wrap items-center gap-4">
               <p className="text-sm font-semibold uppercase tracking-wide text-white/55">Browse by category</p>
               <Motion.div
@@ -296,6 +495,8 @@ const GuestDashboard = () => {
                       key={category}
                       layout
                       onClick={() => setActiveCategory(category)}
+                      whileTap={{ scale: 0.96 }}
+                      transition={{ type: 'spring', stiffness: 260, damping: 18 }}
                       className={`whitespace-nowrap rounded-full px-5 py-2 text-sm font-medium transition focus:outline-none ${
                         isActive
                           ? 'bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-500/20'
@@ -308,23 +509,17 @@ const GuestDashboard = () => {
                 })}
               </Motion.div>
             </div>
-          </div>
+          </Motion.div>
 
-          <section className="space-y-5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold text-white">Recommended for You</h3>
-              <button
-                type="button"
-                onClick={() => navigate('/guest/events')}
-                className="text-sm font-semibold text-white/60 transition hover:text-white"
-              >
-                View all
-              </button>
-            </div>
+          {isLoading ? (
+            <section className="space-y-5">
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-semibold text-white">Recommended for You</h3>
+                <span className="text-sm font-semibold text-white/40">Loading…</span>
+              </div>
 
-            <div className="flex gap-6 overflow-x-auto pb-6 no-scrollbar snap-x">
-              {isLoading &&
-                Array.from({ length: 4 }).map((_, index) => (
+              <div className="flex gap-6 overflow-hidden pb-6">
+                {Array.from({ length: 4 }).map((_, index) => (
                   <div
                     key={`recommend-skeleton-${index}`}
                     className="min-w-[260px] flex-shrink-0 rounded-[22px] border border-white/10 bg-[#141b2a] p-4 shadow-[0_20px_50px_rgba(5,10,20,0.55)]"
@@ -336,65 +531,16 @@ const GuestDashboard = () => {
                     </div>
                   </div>
                 ))}
-
-              {!isLoading && visibleRecommended.length === 0 && (
-                <div className="rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-12 text-center text-sm text-white/60">
-                  No recommendations yet. Try another category to discover new experiences.
-                </div>
-              )}
-
-              {!isLoading &&
-                visibleRecommended.map((event, index) => {
-                  const eventId = getEventId(event);
-                  const cardKey = eventId ?? `recommended-${index}`;
-                  return (
-                    <Motion.article
-                      key={`recommended-${cardKey}`}
-                      layout
-                      className="relative min-w-[300px] w-[300px] flex-shrink-0 snap-start overflow-hidden rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-4 shadow-[0_25px_60px_rgba(5,10,20,0.55)]"
-                    >
-                      <div className="relative h-40 w-full overflow-hidden rounded-[18px]">
-                        {event.imageUrl ? (
-                          <Motion.img
-                            layout
-                            src={event.imageUrl}
-                            alt={event.title}
-                            className="h-40 w-full rounded-t-xl object-cover"
-                          />
-                        ) : (
-                          <div className="h-40 w-full rounded-t-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
-                        )}
-                        {event.category && (
-                          <span className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-                            {event.category}
-                          </span>
-                        )}
-                      </div>
-                      <div className="mt-4 space-y-3">
-                        <h4 className="text-lg font-semibold text-white">{event.title}</h4>
-                        <p className="text-xs text-white/55">
-                          {event.date
-                            ? new Date(event.date).toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                              })
-                            : 'Date coming soon'}
-                          {' • '}
-                          {event.location || 'Location TBA'}
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => handleViewEvent(eventId)}
-                          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-medium text-white transition hover:border-white/30"
-                        >
-                          View details
-                        </button>
-                      </div>
-                    </Motion.article>
-                  );
-                })}
-            </div>
-          </section>
+              </div>
+            </section>
+          ) : (
+            <RecommendedSection
+              events={visibleRecommended}
+              onViewAll={() => navigate('/guest/events')}
+              onViewEvent={handleViewEvent}
+              extractId={getEventId}
+            />
+          )}
 
           {errorMessage && !isLoading && (
             <div className="rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-12 text-center">

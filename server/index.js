@@ -16,7 +16,7 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow your Vite frontend
+  origin: 'http://localhost:5173', // Allow your Vite frontend during dev
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' })); // Allows us to parse JSON bodies from requests
@@ -31,10 +31,27 @@ app.use('/api/events', eventRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/tickets', ticketRoutes);
 
-// Basic Route (for testing if the server is up)
-app.get('/', (req, res) => {
-  res.send('Nexus API is running...');
-});
+// -----------------------------------------
+// SERVE STATIC ASSETS IN PRODUCTION
+// -----------------------------------------
+// This block ensures that when you run 'node index.js', it serves the React app
+if (process.env.NODE_ENV === 'production') {
+  // 1. Set static folder (where your React build lives)
+  // We use '../client/dist' because we are currently in the 'server' folder
+  app.use(express.static(path.join(__dirname, '../client/dist')));
+
+  // 2. Handle React Routing (The "Catch-All" Handler)
+  // We use regex /.*/ because string '*' is invalid in newer path-to-regexp versions
+  app.get(/.*/, (req, res) => {
+    res.sendFile(path.resolve(__dirname, '../client', 'dist', 'index.html'));
+  });
+} else {
+  // Fallback for Development mode
+  app.get('/', (req, res) => {
+    res.send('API is running... (Dev Mode)');
+  });
+}
+// -----------------------------------------
 
 // Connect to MongoDB
 const connectDB = async () => {

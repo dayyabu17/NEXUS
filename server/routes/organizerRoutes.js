@@ -11,6 +11,7 @@ const {
 	markAllOrganizerNotificationsRead,
 	getOrganizerPreferences,
 	updateOrganizerPreferences,
+	getOrganizerEarnings,
 } = require('../controllers/organizerController');
 const { protect, organizer } = require('../middleware/authMiddleware');
 
@@ -18,6 +19,7 @@ router.get('/dashboard', protect, organizer, getOrganizerDashboard);
 router.get('/notifications', protect, organizer, getOrganizerNotifications);
 router.post('/notifications/read', protect, organizer, markOrganizerNotificationRead);
 router.post('/notifications/read-all', protect, organizer, markAllOrganizerNotificationsRead);
+router.get('/earnings', protect, organizer, getOrganizerEarnings);
 
 router
 	.route('/preferences')

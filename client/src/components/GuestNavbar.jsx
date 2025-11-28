@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion as Motion } from 'framer-motion';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import NexusIcon from '../assets/icons/nexus-icon.svg';
@@ -6,6 +7,7 @@ import SearchIcon from '../assets/icons/Search.svg';
 import BellIcon from '../assets/icons/Bell.svg';
 import { reverseGeocode } from '../services/locationService';
 import GlobalSearch from './GlobalSearch';
+import api from '../api/axios';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
 
@@ -28,6 +30,42 @@ const NAV_LINKS = [
 ];
 
 const STORAGE_KEY = 'userLocation';
+
+const relativeTimeFormatter =
+  typeof Intl !== 'undefined' && typeof Intl.RelativeTimeFormat === 'function'
+    ? new Intl.RelativeTimeFormat('en', { numeric: 'auto' })
+    : null;
+
+const formatRelativeTime = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const diff = date.getTime() - Date.now();
+  const abs = Math.abs(diff);
+  const minute = 60 * 1000;
+  const hour = 60 * minute;
+  const day = 24 * hour;
+  const ranges = [
+    { limit: minute, value: diff / 1000, unit: 'second' },
+    { limit: hour, value: diff / minute, unit: 'minute' },
+    { limit: day, value: diff / hour, unit: 'hour' },
+    { limit: Infinity, value: diff / day, unit: 'day' },
+  ];
+
+  const range = ranges.find((item) => abs < item.limit) || ranges[ranges.length - 1];
+  const rounded = Math.round(range.value);
+
+  if (relativeTimeFormatter) {
+    return relativeTimeFormatter.format(rounded, range.unit);
+  }
+
+  const suffix = diff < 0 ? 'ago' : 'from now';
+  const amount = Math.abs(rounded);
+  const plural = amount === 1 ? range.unit : `${range.unit}s`;
+  return `${amount} ${plural} ${suffix}`;
+};
 
 const GuestNavbar = () => {
   const navigate = useNavigate();
@@ -58,6 +96,18 @@ const GuestNavbar = () => {
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATAR);
+  const [guestUnreadCount, setGuestUnreadCount] = useState(() => {
+    if (typeof window === 'undefined') {
+      return 0;
+    }
+    const stored = Number(window.localStorage.getItem('guest:notifications:unread'));
+    return Number.isFinite(stored) && stored > 0 ? stored : 0;
+  });
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notificationItems, setNotificationItems] = useState([]);
+  const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [notificationsError, setNotificationsError] = useState('');
+  const notificationsRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -94,8 +144,64 @@ const GuestNavbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const syncUnread = (value) => {
+      if (typeof value === 'number' && Number.isFinite(value)) {
+        setGuestUnreadCount(Math.max(value, 0));
+        return;
+      }
+      const stored = Number(window.localStorage.getItem('guest:notifications:unread'));
+      setGuestUnreadCount(Number.isFinite(stored) && stored > 0 ? stored : 0);
+    };
+
+    const handleStorage = (event) => {
+      if (!event.key || event.key === 'guest:notifications:unread') {
+        syncUnread();
+      }
+    };
+
+    const handleCustom = (event) => {
+      syncUnread(event?.detail);
+    };
+
+    syncUnread();
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('guest:notifications:unread', handleCustom);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('guest:notifications:unread', handleCustom);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isNotificationsOpen) {
+      return undefined;
+    }
+
+    const handleClickAway = (event) => {
+      if (notificationsRef.current && !notificationsRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickAway);
+    return () => {
+      document.removeEventListener('mousedown', handleClickAway);
+    };
+  }, [isNotificationsOpen]);
+
   const guestQuickLinks = useMemo(
     () => [
+      {
+        title: 'Notifications',
+        icon: () => <span className="text-base">🔔</span>,
+        action: () => navigate('/guest/notifications'),
+      },
       {
         title: 'Map View',
         icon: () => <span className="text-base">🗺️</span>,
@@ -114,6 +220,61 @@ const GuestNavbar = () => {
     ],
     [navigate],
   );
+
+  const fetchGuestNotifications = useCallback(async () => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const token = window.localStorage.getItem('token');
+    if (!token) {
+      navigate('/sign-in');
+      return;
+    }
+
+    setNotificationsLoading(true);
+    setNotificationsError('');
+
+    try {
+      const response = await api.get('/events/guest/notifications', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const list = Array.isArray(response.data?.notifications)
+        ? response.data.notifications.slice(0, 5)
+        : [];
+
+      setNotificationItems(list);
+
+      const unreadCount = typeof response.data?.unreadCount === 'number'
+        ? response.data.unreadCount
+        : list.filter((notification) => !notification.isRead).length;
+
+      const sanitized = Math.max(unreadCount, 0);
+      setGuestUnreadCount(sanitized);
+      window.localStorage.setItem('guest:notifications:unread', String(sanitized));
+      if (typeof window.CustomEvent === 'function') {
+        window.dispatchEvent(new window.CustomEvent('guest:notifications:unread', { detail: sanitized }));
+      }
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Unable to load notifications.';
+      setNotificationsError(message);
+
+      if (error?.response?.status === 401 || error?.response?.status === 403) {
+        window.localStorage.removeItem('token');
+        window.localStorage.removeItem('user');
+        navigate('/sign-in');
+      }
+    } finally {
+      setNotificationsLoading(false);
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    if (isNotificationsOpen) {
+      fetchGuestNotifications();
+    }
+  }, [isNotificationsOpen, fetchGuestNotifications]);
 
   const clearPersistedLocation = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -204,17 +365,20 @@ const GuestNavbar = () => {
   const openSearch = () => {
     setIsSearchOpen(true);
     setIsDropdownOpen(false);
+    setIsNotificationsOpen(false);
   };
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
     setIsSearchOpen(false);
+    setIsNotificationsOpen(false);
   };
 
   const closeAll = () => {
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+    setIsNotificationsOpen(false);
   };
 
   const handleNavigate = (path) => {
@@ -269,7 +433,11 @@ const GuestNavbar = () => {
             type="button"
             className="md:hidden flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/80"
             aria-label="Toggle navigation"
-            onClick={() => setIsMobileMenuOpen((prev) => !prev)}
+            onClick={() => {
+              setIsMobileMenuOpen((prev) => !prev);
+              setIsDropdownOpen(false);
+              setIsNotificationsOpen(false);
+            }}
           >
             <span className="text-lg">☰</span>
           </button>
@@ -313,13 +481,117 @@ const GuestNavbar = () => {
             <img src={SearchIcon} alt="Search" className="h-4 w-4" />
           </button>
 
-          <button
-            type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white"
-            aria-label="Notifications"
-          >
-            <img src={BellIcon} alt="Notifications" className="h-4 w-4" />
-          </button>
+          <div className="relative" ref={notificationsRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsNotificationsOpen((prev) => !prev);
+                setIsDropdownOpen(false);
+                setIsSearchOpen(false);
+              }}
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white ${
+                isNotificationsOpen ? 'border-white/25 text-white' : ''
+              }`}
+              aria-haspopup="true"
+              aria-expanded={isNotificationsOpen}
+              aria-label="Notifications"
+            >
+              <img src={BellIcon} alt="Notifications" className="h-4 w-4" />
+              {guestUnreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 py-[2px] text-[10px] font-semibold text-white">
+                  {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
+                </span>
+              )}
+            </button>
+
+            <AnimatePresence>
+              {isNotificationsOpen && (
+                <Motion.div
+                  initial={{ opacity: 0, y: -12, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -12, scale: 0.95 }}
+                  transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
+                  className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-white/10 bg-[#101725]/95 p-4 text-sm text-white/80 shadow-[0_20px_60px_rgba(6,10,20,0.75)]"
+                >
+                  <div className="mb-3 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.32em] text-white/50">
+                    <span>Notifications</span>
+                    <span>{guestUnreadCount} unread</span>
+                  </div>
+
+                  {notificationsLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, index) => (
+                        <div
+                          key={`notif-skeleton-${index}`}
+                          className="animate-pulse rounded-xl border border-white/10 bg-[#151c2b] p-3"
+                        >
+                          <div className="h-3 w-1/3 rounded bg-white/10" />
+                          <div className="mt-2 h-4 w-3/4 rounded bg-white/12" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : notificationsError ? (
+                    <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-4 text-xs text-red-200">
+                      {notificationsError}
+                    </div>
+                  ) : notificationItems.length === 0 ? (
+                    <div className="rounded-xl border border-white/10 bg-[#131c2a] px-3 py-6 text-center text-xs text-white/55">
+                      No notifications yet. We will keep you posted.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {notificationItems.map((notification) => (
+                        <button
+                          key={notification.id}
+                          type="button"
+                          onClick={() => {
+                            setIsNotificationsOpen(false);
+                            navigate(`/events/${notification.eventId}`);
+                          }}
+                          className={`w-full rounded-xl border border-white/10 bg-[#131c2a] px-3 py-3 text-left transition hover:border-white/25 ${
+                            notification.isRead ? 'opacity-70' : 'opacity-100'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.32em] text-white/55">
+                            <span>{notification.headline || 'Update'}</span>
+                            {notification.createdAt && (
+                              <span>{formatRelativeTime(notification.createdAt)}</span>
+                            )}
+                          </div>
+                          <p className="mt-2 text-sm font-semibold text-white">
+                            {notification.eventTitle || 'Event update'}
+                          </p>
+                          {notification.message && (
+                            <p className="mt-1 max-h-10 overflow-hidden text-xs text-white/60">{notification.message}</p>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="mt-4 flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsNotificationsOpen(false);
+                        navigate('/guest/notifications');
+                      }}
+                      className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/80 transition hover:border-white/35 hover:text-white"
+                    >
+                      View all
+                    </button>
+                    <button
+                      type="button"
+                      onClick={fetchGuestNotifications}
+                      className="text-xs font-semibold text-white/50 transition hover:text-white"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                </Motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
           <div className="relative">
             <button
@@ -339,6 +611,18 @@ const GuestNavbar = () => {
                   onClick={() => handleNavigate('/guest/profile')}
                 >
                   Profile
+                </button>
+                <button
+                  type="button"
+                  className="flex w-full items-center justify-between px-4 py-2 text-left transition hover:bg-white/10"
+                  onClick={() => handleNavigate('/guest/notifications')}
+                >
+                  <span>Notifications</span>
+                  {guestUnreadCount > 0 && (
+                    <span className="ml-3 rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-red-200">
+                      {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
+                    </span>
+                  )}
                 </button>
                 <button
                   type="button"
@@ -373,6 +657,18 @@ const GuestNavbar = () => {
                 {label}
               </Link>
             ))}
+            <button
+              type="button"
+              className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left transition hover:border-white/25 hover:text-white"
+              onClick={() => handleNavigate('/guest/notifications')}
+            >
+              <span>Notifications</span>
+              {guestUnreadCount > 0 && (
+                <span className="ml-3 rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-red-200">
+                  {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
+                </span>
+              )}
+            </button>
             <button
               type="button"
               className="block w-full rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left transition hover:border-white/25 hover:text-white"

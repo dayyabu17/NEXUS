@@ -33,6 +33,23 @@ const formatTime = (date) => {
   return `${displayHour}:${minutes}${isPM ? 'PM' : 'AM'} GMT${offsetSign}${offsetSuffix}`;
 };
 
+const formatDisplayName = (value) => {
+  if (!value || typeof value !== 'string') {
+    return 'Organizer';
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return 'Organizer';
+  }
+
+  if (trimmed.length > 23) {
+    return `${trimmed.slice(0, 12)}...`;
+  }
+
+  return trimmed;
+};
+
 const notificationToneStyles = {
   success: {
     accent: 'bg-emerald-500/15',
@@ -98,6 +115,10 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const [notificationsLoaded, setNotificationsLoaded] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
   const [unreadBadge, setUnreadBadge] = useState(0);
+  const [organizerProfile, setOrganizerProfile] = useState({
+    name: 'Organizer',
+    profilePicture: avatarImage,
+  });
   const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [showInitialLoader, setShowInitialLoader] = useState(() => {
     if (suppressInitialLoader || typeof window === 'undefined') {
@@ -125,7 +146,87 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const profileMenuRef = useRef(null);
   const notificationsMenuRef = useRef(null);
 
+  const displayName = useMemo(
+    () => formatDisplayName(organizerProfile.name),
+    [organizerProfile.name],
+  );
+
+  const profileImageSrc = useMemo(() => {
+    const source = organizerProfile.profilePicture;
+    if (source && typeof source === 'string' && source.trim().length > 0) {
+      return source;
+    }
+    return avatarImage;
+  }, [organizerProfile.profilePicture]);
+
   useAccentColorSync();
+
+  useEffect(() => {
+    let isCancelled = false;
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/sign-in');
+      return () => {
+        isCancelled = true;
+      };
+    }
+
+    const fetchProfile = async () => {
+      try {
+        const { data } = await api.get('/auth/profile', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (isCancelled) {
+          return;
+        }
+
+        const normalizedName =
+          typeof data?.name === 'string' && data.name.trim().length > 0
+            ? data.name.trim()
+            : 'Organizer';
+        const normalizedAvatar =
+          typeof data?.profilePicture === 'string' && data.profilePicture.trim().length > 0
+            ? data.profilePicture.trim()
+            : avatarImage;
+
+        setOrganizerProfile({
+          name: normalizedName,
+          profilePicture: normalizedAvatar,
+        });
+
+        try {
+          localStorage.setItem(
+            'user',
+            JSON.stringify({
+              name: normalizedName,
+              email: data?.email,
+              organizationName: data?.organizationName,
+              profilePicture: normalizedAvatar,
+            }),
+          );
+        } catch {
+          // Ignore storage write failures.
+        }
+      } catch (error) {
+        if (error?.response?.status === 401 || error?.response?.status === 403) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          navigate('/sign-in');
+        }
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -533,6 +634,13 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                       Latest updates
                     </h3>
                     <div className="flex items-center gap-2">
+                      <Link
+                        to="/organizer/notifications"
+                        onClick={closeNotifications}
+                        className="rounded-full border border-white/30 px-3 py-1 text-[11px] text-white/70 transition hover:border-white/60 hover:text-white"
+                      >
+                        View all
+                      </Link>
                       {notificationsLoading && <span className="text-xs text-white/40">Loading…</span>}
                       {!notificationsLoading && (
                         <>
@@ -640,12 +748,12 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                 aria-expanded={showProfileMenu}
               >
                 <img
-                  src={avatarImage}
+                  src={profileImageSrc}
                   alt="Organizer avatar"
                   className="h-9 w-9 rounded-full object-cover"
                 />
                 <div className="hidden text-left text-xs sm:block">
-                  <p className="font-semibold text-white">Maria Daniels</p>
+                  <p className="font-semibold text-white">{displayName}</p>
                   <p className="text-white/55">Organizer</p>
                 </div>
               </button>

@@ -42,7 +42,7 @@ const SignIn = () => {
         }
         navigate('/organizer/dashboard', { state: { fromSignIn: true } });
       } else {
-        navigate('/dashboard');
+        navigate('/guest/dashboard');
       }
 
     } catch (err) {

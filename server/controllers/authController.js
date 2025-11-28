@@ -75,6 +75,28 @@ const loginUser = async (req, res) => {
 // @desc    Update user profile (name, email, password)
 // @route   PUT /api/auth/profile
 // @access  Private
+const getUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id)
+    .select('name email role organizationName profilePicture accentPreference brandColor avatarRingEnabled');
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    organizationName: user.organizationName,
+    profilePicture: user.profilePicture,
+    accentPreference: user.accentPreference || DEFAULT_ACCENT,
+    brandColor: user.brandColor || DEFAULT_BRAND_COLOR,
+    avatarRingEnabled: Boolean(user.avatarRingEnabled),
+  });
+});
+
 const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandler
   const user = await User.findById(req.user._id);
 
@@ -137,6 +159,7 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
 
 module.exports = { 
   loginUser, 
+  getUserProfile,
   updateUserProfile,
   updateProfilePicture 
 };
