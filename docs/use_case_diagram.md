@@ -2,62 +2,85 @@
 
 ```mermaid
 usecaseDiagram
-    actor "Guest/Student" as Guest
+    actor "Guest (Student)" as Guest
     actor "Organizer" as Organizer
     actor "Admin" as Admin
 
-    package "Authentication" {
-        usecase "Sign Up" as UC1
-        usecase "Sign In" as UC2
-        usecase "Update Profile" as UC3
+    package "Authentication & Profile" {
+        usecase "Sign Up" as UC_Auth_1
+        usecase "Sign In" as UC_Auth_2
+        usecase "Update Profile" as UC_Auth_3
+        usecase "Upload Profile Picture" as UC_Auth_4
     }
 
-    package "Event Discovery" {
-        usecase "Browse Events" as UC4
-        usecase "Search Events" as UC5
-        usecase "View Event Details" as UC6
-        usecase "View Events on Map" as UC7
+    package "Event Discovery (Public)" {
+        usecase "Browse All Events" as UC_Disc_1
+        usecase "Search Events" as UC_Disc_2
+        usecase "Filter Events by Category" as UC_Disc_3
+        usecase "View Event Details" as UC_Disc_4
+        usecase "View Events on Map" as UC_Disc_5
     }
 
-    package "Ticket Management" {
-        usecase "RSVP / Buy Ticket" as UC8
-        usecase "View My Tickets" as UC9
+    package "Ticketing & Attendance" {
+        usecase "RSVP / Purchase Ticket" as UC_Ticket_1
+        usecase "View My Tickets" as UC_Ticket_2
+        usecase "Access QR Code" as UC_Ticket_3
     }
 
-    package "Event Management" {
-        usecase "Create Event" as UC10
-        usecase "Manage Events" as UC11
-        usecase "View Analytics" as UC12
-        usecase "Check-in Attendees" as UC13
+    package "Organizer Operations" {
+        usecase "View Organizer Dashboard" as UC_Org_1
+        usecase "Create New Event" as UC_Org_2
+        usecase "View My Events" as UC_Org_3
+        usecase "Receive Notifications" as UC_Org_4
+        usecase "View Event Analytics (Earnings/RSVPs)" as UC_Org_5
+        usecase "Check-in Guests" as UC_Org_6
     }
 
-    package "Administration" {
-        usecase "View Admin Dashboard" as UC14
-        usecase "Approve/Reject Events" as UC15
-        usecase "Manage Users" as UC16
+    package "Admin Operations" {
+        usecase "View System Dashboard" as UC_Admin_1
+        usecase "View Pending Events" as UC_Admin_2
+        usecase "Approve/Reject Events" as UC_Admin_3
+        usecase "Delete Events" as UC_Admin_4
+        usecase "Manage Users" as UC_Admin_5
+        usecase "Update User Roles" as UC_Admin_6
     }
 
-    Guest --> UC1
-    Guest --> UC2
-    Guest --> UC3
-    Guest --> UC4
-    Guest --> UC5
-    Guest --> UC6
-    Guest --> UC7
-    Guest --> UC8
-    Guest --> UC9
+    %% Relationships
 
-    Organizer --> UC1
-    Organizer --> UC2
-    Organizer --> UC3
-    Organizer --> UC10
-    Organizer --> UC11
-    Organizer --> UC12
-    Organizer --> UC13
+    %% Guest Interactions
+    Guest --> UC_Auth_1
+    Guest --> UC_Auth_2
+    Guest --> UC_Auth_3
+    Guest --> UC_Disc_1
+    Guest --> UC_Disc_2
+    Guest --> UC_Disc_3
+    Guest --> UC_Disc_4
+    Guest --> UC_Disc_5
+    Guest --> UC_Ticket_1
+    Guest --> UC_Ticket_2
+    Guest --> UC_Ticket_3
 
-    Admin --> UC2
-    Admin --> UC3
-    Admin --> UC14
-    Admin --> UC15
-    Admin --> UC16
+    %% Organizer Interactions
+    Organizer --> UC_Auth_1
+    Organizer --> UC_Auth_2
+    Organizer --> UC_Auth_3
+    Organizer --> UC_Auth_4
+    Organizer --> UC_Org_1
+    Organizer --> UC_Org_2
+    Organizer --> UC_Org_3
+    Organizer --> UC_Org_4
+    Organizer --> UC_Org_5
+    Organizer --> UC_Org_6
+    %% Organizers can also explore events
+    Organizer --> UC_Disc_1
+
+    %% Admin Interactions
+    Admin --> UC_Auth_2
+    Admin --> UC_Auth_3
+    Admin --> UC_Admin_1
+    Admin --> UC_Admin_2
+    Admin --> UC_Admin_3
+    Admin --> UC_Admin_4
+    Admin --> UC_Admin_5
+    Admin --> UC_Admin_6
 ```
