@@ -13,8 +13,8 @@ const notificationToneStyles = {
     accent: 'border-amber-500/25 hover:border-amber-500/35',
   },
   info: {
-    badge: 'bg-sky-500/20 text-sky-100',
-    accent: 'border-sky-500/25 hover:border-sky-500/35',
+    badge: 'bg-accent-500/20 text-white/80',
+    accent: 'border-accent-500/25 hover:border-accent-500/40',
   },
   default: {
     badge: 'bg-white/10 text-white/70',
@@ -276,7 +276,7 @@ const OrganizerNotifications = () => {
                       <button
                         type="button"
                         onClick={() => handleMarkAsRead(notification.id)}
-                        className="text-xs font-medium text-[#8ebcff] transition hover:text-white"
+                        className="text-xs font-medium text-accent-500 transition hover:text-accent-600"
                       >
                         Mark as read
                       </button>

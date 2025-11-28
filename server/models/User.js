@@ -31,6 +31,23 @@ const userSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  accentPreference: {
+    type: String,
+    enum: ['blue', 'purple', 'green', 'orange'],
+    default: 'blue',
+  },
+  brandColor: {
+    type: String,
+    default: '#2563EB',
+  },
+  avatarRingEnabled: {
+    type: Boolean,
+    default: false,
+  },
+  interests: {
+    type: [String],
+    default: [],
+  },
 });
 
 module.exports = mongoose.model('User', userSchema);

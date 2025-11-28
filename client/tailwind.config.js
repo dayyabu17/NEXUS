@@ -12,6 +12,11 @@ export default {
         'nexus-accent': '#FFD700', 
         'nexus-dark': '#000000',   
         'nexus-light': '#FFFFFF',
+        accent: {
+          500: 'var(--color-primary-500)',
+          600: 'var(--color-primary-600)',
+          700: 'var(--color-primary-700)',
+        },
       },
       fontFamily: {
         // Use your custom font as the default sans font

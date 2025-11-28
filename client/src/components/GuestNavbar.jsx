@@ -1,11 +1,25 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import NexusIcon from '../assets/icons/nexus-icon.svg';
 import SearchIcon from '../assets/icons/Search.svg';
 import BellIcon from '../assets/icons/Bell.svg';
-import UserIcon from '../assets/icons/user_filled.svg';
 import { reverseGeocode } from '../services/locationService';
+import GlobalSearch from './GlobalSearch';
+
+const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
+
+const resolveProfileImage = (value) => {
+  if (!value) {
+    return DEFAULT_AVATAR;
+  }
+
+  if (value.startsWith('http://') || value.startsWith('https://')) {
+    return value;
+  }
+
+  return `http://localhost:5000/public${value}`;
+};
 
 const NAV_LINKS = [
   { label: 'Explore', to: '/guest/dashboard' },
@@ -16,6 +30,7 @@ const NAV_LINKS = [
 const STORAGE_KEY = 'userLocation';
 
 const GuestNavbar = () => {
+  const navigate = useNavigate();
   const hasRequestedRef = useRef(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -42,6 +57,63 @@ const GuestNavbar = () => {
     return 'Campus';
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATAR);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const loadAvatar = () => {
+      try {
+        const storedRaw = window.localStorage.getItem('user');
+        if (!storedRaw) {
+          setAvatarUrl(DEFAULT_AVATAR);
+          return;
+        }
+        const stored = JSON.parse(storedRaw);
+        setAvatarUrl(resolveProfileImage(stored?.profilePicture));
+      } catch (error) {
+        console.warn('Unable to parse stored user for avatar', error);
+        setAvatarUrl(DEFAULT_AVATAR);
+      }
+    };
+
+    loadAvatar();
+
+    const handleStorage = (event) => {
+      if (event.key === 'user' || !event.key) {
+        loadAvatar();
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+    };
+  }, []);
+
+  const guestQuickLinks = useMemo(
+    () => [
+      {
+        title: 'Map View',
+        icon: () => <span className="text-base">🗺️</span>,
+        action: () => navigate('/guest/map'),
+      },
+      {
+        title: 'My Tickets',
+        icon: () => <span className="text-base">🎟️</span>,
+        action: () => navigate('/guest/tickets'),
+      },
+      {
+        title: 'Trending',
+        icon: () => <span className="text-base">🔥</span>,
+        action: () => navigate('/guest/dashboard?filter=trending'),
+      },
+    ],
+    [navigate],
+  );
 
   const clearPersistedLocation = useCallback(() => {
     if (typeof window === 'undefined') {
@@ -129,8 +201,8 @@ const GuestNavbar = () => {
     requestLocation();
   }, [locationName, requestLocation]);
 
-  const toggleSearch = () => {
-    setIsSearchOpen((prev) => !prev);
+  const openSearch = () => {
+    setIsSearchOpen(true);
     setIsDropdownOpen(false);
   };
 
@@ -143,6 +215,22 @@ const GuestNavbar = () => {
     setIsDropdownOpen(false);
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
+  };
+
+  const handleNavigate = (path) => {
+    closeAll();
+    navigate(path);
+  };
+
+  const handleSignOut = () => {
+    closeAll();
+    try {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+    } catch (error) {
+      console.warn('Unable to clear stored credentials', error);
+    }
+    navigate('/sign-in');
   };
 
   const handleLocationClick = () => {
@@ -216,25 +304,14 @@ const GuestNavbar = () => {
         </nav>
 
         <div className="flex items-center gap-3">
-          <div className="relative">
-            <button
-              type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white"
-              onClick={toggleSearch}
-              aria-label="Toggle search"
-            >
-              <img src={SearchIcon} alt="Search" className="h-4 w-4" />
-            </button>
-            {isSearchOpen && (
-              <div className="absolute right-0 top-12 w-64 rounded-2xl border border-white/10 bg-[#101725]/95 p-3 shadow-[0_20px_50px_rgba(5,10,20,0.65)]">
-                <input
-                  type="text"
-                  placeholder="Search events"
-                  className="w-full rounded-xl border border-white/10 bg-[#181f2d] px-3 py-2 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
-                />
-              </div>
-            )}
-          </div>
+          <button
+            type="button"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white"
+            onClick={openSearch}
+            aria-label="Open search"
+          >
+            <img src={SearchIcon} alt="Search" className="h-4 w-4" />
+          </button>
 
           <button
             type="button"
@@ -252,28 +329,28 @@ const GuestNavbar = () => {
               aria-haspopup="true"
               aria-expanded={isDropdownOpen}
             >
-              <img src={UserIcon} alt="Profile" className="h-6 w-6" />
+              <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
             </button>
             {isDropdownOpen && (
               <div className="absolute right-0 top-12 w-48 rounded-2xl border border-white/10 bg-[#101725]/95 py-2 text-sm text-white/80 shadow-[0_20px_50px_rgba(5,10,20,0.65)]">
                 <button
                   type="button"
                   className="block w-full px-4 py-2 text-left transition hover:bg-white/10"
-                  onClick={closeAll}
+                  onClick={() => handleNavigate('/guest/profile')}
                 >
                   Profile
                 </button>
                 <button
                   type="button"
                   className="block w-full px-4 py-2 text-left transition hover:bg-white/10"
-                  onClick={closeAll}
+                  onClick={() => handleNavigate('/guest/tickets')}
                 >
                   My Tickets
                 </button>
                 <button
                   type="button"
                   className="block w-full px-4 py-2 text-left text-red-300 transition hover:bg-white/10"
-                  onClick={closeAll}
+                  onClick={handleSignOut}
                 >
                   Sign Out
                 </button>
@@ -296,6 +373,20 @@ const GuestNavbar = () => {
                 {label}
               </Link>
             ))}
+            <button
+              type="button"
+              className="block w-full rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left transition hover:border-white/25 hover:text-white"
+              onClick={() => handleNavigate('/guest/profile')}
+            >
+              Profile
+            </button>
+            <button
+              type="button"
+              className="block w-full rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left text-red-300 transition hover:border-white/25 hover:text-red-200"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </button>
           </nav>
         </div>
       )}
@@ -361,6 +452,12 @@ const GuestNavbar = () => {
           </div>,
           document.body,
         )}
+
+      <GlobalSearch
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        quickLinks={guestQuickLinks}
+      />
     </>
   );
 };

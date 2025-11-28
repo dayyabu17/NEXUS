@@ -10,6 +10,8 @@ import EarningInactiveIcon from '../assets/icons/earning_notactive.svg';
 import searchIcon from '../assets/icons/search.svg';
 import bellIcon from '../assets/icons/Bell.svg';
 import api from '../api/axios';
+import GlobalSearch from './GlobalSearch';
+import useAccentColorSync from '../hooks/useAccentColorSync';
 
 const avatarImage = '/images/default-avatar.jpeg';
 const NOTIFICATION_ANIMATION_MS = 280;
@@ -43,9 +45,9 @@ const notificationToneStyles = {
     dot: 'bg-amber-400',
   },
   info: {
-    accent: 'bg-sky-500/12',
-    iconColor: 'text-sky-200',
-    dot: 'bg-sky-400',
+    accent: 'bg-accent-500/12',
+    iconColor: 'text-accent-500',
+    dot: 'bg-accent-500',
   },
   default: {
     accent: 'bg-white/8',
@@ -63,16 +65,32 @@ const getNotificationInitial = (value) => {
   return trimmed ? trimmed.charAt(0).toUpperCase() : 'N';
 };
 
+const NAV_ITEMS = [
+  {
+    label: 'Dashboard',
+    iconActive: DashboardActiveIcon,
+    iconInactive: DashboardInactiveIcon,
+    path: '/organizer/dashboard',
+  },
+  {
+    label: 'Events',
+    iconInactive: EventInactiveIcon,
+    iconActive: EventActiveIcon,
+    path: '/organizer/events',
+  },
+  {
+    label: 'Earnings',
+    iconInactive: EarningInactiveIcon,
+    iconActive: EarningActiveIcon,
+    path: '/organizer/earnings',
+  },
+];
+
 const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [currentTime, setCurrentTime] = useState(() => formatTime(new Date()));
   const [showSearch, setShowSearch] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [events, setEvents] = useState([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
-  const [eventsLoaded, setEventsLoaded] = useState(false);
-  const [eventsError, setEventsError] = useState('');
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
@@ -90,7 +108,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
       try {
         window.sessionStorage.removeItem('organizer:show-loader');
       } catch {
-        // Ignore access issues from private browsing modes
+        // Ignore storage issues
       }
       return false;
     }
@@ -107,6 +125,8 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const profileMenuRef = useRef(null);
   const notificationsMenuRef = useRef(null);
 
+  useAccentColorSync();
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTime(formatTime(new Date()));
@@ -115,96 +135,17 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
     return () => clearInterval(interval);
   }, []);
 
-  useEffect(() => {
-    if (!showSearch) {
-      return undefined;
+  const formatNotificationTimestamp = useCallback((value) => {
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return '';
     }
 
-    const handleKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        setShowSearch(false);
-      }
-    };
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    window.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [showSearch]);
-
-  useEffect(() => {
-    if (!showSearch || eventsLoaded || eventsLoading) {
-      return;
-    }
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setEventsError('Authentication required to search events.');
-      return;
-    }
-
-    const fetchEvents = async () => {
-      try {
-        setEventsLoading(true);
-        setEventsError('');
-        const response = await api.get('/organizer/events', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEvents(Array.isArray(response.data) ? response.data : []);
-        setEventsLoaded(true);
-      } catch (error) {
-        const message =
-          error?.response?.data?.message || 'Unable to load events right now.';
-        setEventsError(message);
-      } finally {
-        setEventsLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, [showSearch, eventsLoaded, eventsLoading]);
-
-  const upcomingEvents = useMemo(() => {
-    if (!events || events.length === 0) {
-      return [];
-    }
-
-    const now = Date.now();
-    return [...events]
-      .filter((event) => {
-        const eventTime = new Date(event.date).getTime();
-        return !Number.isNaN(eventTime) && eventTime >= now;
-      })
-      .sort((a, b) => new Date(a.date) - new Date(b.date));
-  }, [events]);
-
-  const filteredEvents = useMemo(() => {
-    const trimmed = searchQuery.trim().toLowerCase();
-    if (!trimmed) {
-      return upcomingEvents;
-    }
-
-    return upcomingEvents.filter((event) => {
-      const haystack = [
-        event.title,
-        event.category,
-        Array.isArray(event.tags) ? event.tags.join(' ') : '',
-      ]
-        .join(' ')
-        .toLowerCase();
-
-      return haystack.includes(trimmed);
+    return date.toLocaleDateString(undefined, {
+      month: 'short',
+      day: 'numeric',
     });
-  }, [searchQuery, upcomingEvents]);
-
-  const upcomingPreview = useMemo(
-    () => upcomingEvents.slice(0, 3),
-    [upcomingEvents],
-  );
+  }, []);
 
   useEffect(() => {
     if (!showProfileMenu) {
@@ -241,7 +182,12 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
 
   const handlePreferences = () => {
     setShowProfileMenu(false);
-    navigate('/organizer/settings');
+    navigate('/organizer/account');
+  };
+
+  const handleAppPreferences = () => {
+    setShowProfileMenu(false);
+    navigate('/organizer/preferences');
   };
 
   const handleBrandSpotlight = () => {
@@ -388,18 +334,6 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
     };
   }, [notificationsVisible, showNotifications, notificationsLoaded, notificationsLoading, navigate, closeNotifications]);
 
-  const formatNotificationTimestamp = (value) => {
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      return '';
-    }
-
-    return date.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    });
-  };
-
   useEffect(() => {
     const handleStorageUpdate = (event) => {
       if (event.key === 'organizer:notifications:unread') {
@@ -450,7 +384,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
       try {
         window.sessionStorage.removeItem('organizer:show-loader');
       } catch {
-        // Continue gracefully if storage is unavailable
+        // Ignore storage issues
       }
       return undefined;
     }
@@ -482,26 +416,21 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
     }
   }, []);
 
-  const navItems = [
-    {
-      label: 'Dashboard',
-      iconActive: DashboardActiveIcon,
-      iconInactive: DashboardInactiveIcon,
-      path: '/organizer/dashboard',
-    },
-    {
-      label: 'Events',
-      iconInactive: EventInactiveIcon,
-      iconActive: EventActiveIcon,
-      path: '/organizer/events',
-    },
-    {
-      label: 'Earnings',
-      iconInactive: EarningInactiveIcon,
-      iconActive: EarningActiveIcon,
-      path: '/organizer/earnings',
-    },
-  ];
+  const organizerQuickLinks = useMemo(
+    () => [
+      {
+        title: 'Create Event',
+        icon: '+',
+        action: () => navigate('/organizer/events/create'),
+      },
+      {
+        title: 'Upcoming Events',
+        icon: '↗',
+        action: () => navigate('/organizer/events'),
+      },
+    ],
+    [navigate],
+  );
 
   return (
     <div
@@ -523,7 +452,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
             </button>
 
             <nav className="flex items-center gap-6" data-node-id="156:81">
-              {navItems.map(({ label, path, iconActive, iconInactive }) => {
+              {NAV_ITEMS.map(({ label, path, iconActive, iconInactive }) => {
                 const isActive = location.pathname.startsWith(path);
                 const iconSrc = isActive ? iconActive ?? iconInactive : iconInactive ?? iconActive;
                 return (
@@ -557,17 +486,14 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
             </span>
             <Link
               to="/organizer/events/create"
-              className="font-medium text-white transition-colors hover:text-[#a2cbff]"
+              className="font-medium text-white transition-colors hover:text-accent-500"
               data-node-id="156:84"
             >
               Create Event
             </Link>
             <button
               type="button"
-              onClick={() => {
-                setSearchQuery('');
-                setShowSearch(true);
-              }}
+              onClick={() => setShowSearch(true)}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-transparent text-white transition hover:border-white/30"
               aria-label="Search events"
               data-node-id="156:82"
@@ -646,89 +572,55 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                     <div className="relative mt-4">
                       <ul className="max-h-80 space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-300 scrollbar-thumb-rounded-full dark:scrollbar-thumb-gray-600 dark:scrollbar-track-transparent">
                         {notifications.map((item) => {
-                        const tone = notificationToneStyles[item.tone] || notificationToneStyles.default;
-                        const headline = item.headline || item.type || 'Update';
-                        const headlineLabel = typeof headline === 'string'
-                          ? headline.toUpperCase()
-                          : 'UPDATE';
-                        const primaryTitle = item.eventTitle || item.title || 'New activity';
-                        const timestampLabel = formatNotificationTimestamp(item.createdAt);
-                        const showTimestamp = Boolean(timestampLabel);
+                          const tone = notificationToneStyles[item.tone] || notificationToneStyles.default;
+                          const headline = item.headline || item.type || 'Update';
+                          const headlineLabel = typeof headline === 'string'
+                            ? headline.toUpperCase()
+                            : 'UPDATE';
+                          const primaryTitle = item.eventTitle || item.title || 'New activity';
+                          const timestampLabel = formatNotificationTimestamp(item.createdAt);
+                          const showTimestamp = Boolean(timestampLabel);
 
-                        return (
-                          <li
-                            key={item.id || item._id || `${primaryTitle}-${item.createdAt}`}
-                            className="flex items-start gap-3 rounded-2xl border border-white/10 bg-[rgba(18,21,30,0.9)] px-4 py-3 text-left text-sm text-white/80 shadow-[0_15px_45px_rgba(6,10,20,0.45)] transition hover:border-white/25 hover:bg-[rgba(22,26,36,0.95)]"
-                          >
-                            <div
-                                className={`relative h-12 w-12 overflow-hidden rounded-xl bg-black/60`}
+                          return (
+                            <li
+                              key={item.id ?? `${primaryTitle}-${item.createdAt}`}
+                              className={`group flex items-start gap-3 rounded-3xl border border-transparent bg-white/[0.04] p-4 transition-all hover:border-white/20 hover:bg-white/[0.08] ${tone.accent}`}
                             >
-                              {item.imageUrl ? (
-                                <>
-                                  <img
-                                    src={item.imageUrl}
-                                    alt={primaryTitle}
-                                    className="h-full w-full object-cover"
-                                  />
-                                  <span
-                                    className={`absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border border-[#0b0f18] ${tone.dot}`}
-                                  />
-                                </>
-                              ) : (
-                                <div
-                                  className={`flex h-full w-full items-center justify-center ${tone.accent}`}
-                                >
-                                  <span className={`text-base font-semibold ${tone.iconColor}`}>
-                                    {getNotificationInitial(primaryTitle)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between gap-3">
-                                <span className="text-[11px] uppercase tracking-[0.25em] text-white/55">
-                                  {headlineLabel}
+                              <div className="relative flex h-10 w-10 items-center justify-center rounded-2xl bg-white/5 text-xs font-semibold">
+                                <span className={`absolute -top-1 -right-1 h-2 w-2 rounded-full ${tone.dot}`} />
+                                <span className={`text-base font-bold ${tone.iconColor}`}>
+                                  {getNotificationInitial(item.organizerName || item.title || item.eventTitle)}
                                 </span>
-                                {showTimestamp && (
-                                  <span className="text-[11px] text-white/45">
-                                    {timestampLabel}
-                                  </span>
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between gap-2">
+                                  <p className="text-[10px] font-semibold uppercase tracking-[0.35em] text-white/50">
+                                    {headlineLabel}
+                                  </p>
+                                  {showTimestamp && (
+                                    <span className="text-[10px] font-medium text-white/40">
+                                      {timestampLabel}
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="mt-1 text-sm font-semibold text-white/90">{primaryTitle}</p>
+                                {item.message && (
+                                  <p className="mt-1 text-xs text-white/60">{item.message}</p>
+                                )}
+                                {item.actionLabel && item.actionHref && (
+                                  <Link
+                                    to={item.actionHref}
+                                    className="mt-3 inline-flex items-center gap-1 text-xs font-semibold text-accent-500 transition hover:text-accent-600"
+                                  >
+                                    {item.actionLabel}
+                                    <span aria-hidden="true">↗</span>
+                                  </Link>
                                 )}
                               </div>
-                              <p className="mt-1 text-sm font-semibold text-white">
-                                {primaryTitle}
-                              </p>
-                              {item.message && (
-                                <p className="mt-1 text-xs leading-relaxed text-white/65">
-                                  {item.message}
-                                </p>
-                              )}
-                              {item.tone === 'highlight' && item.stats?.ticketsSold && (
-                                <p className="mt-2 text-xs text-white/70">
-                                  {item.stats.ticketsSold} total ticket{item.stats.ticketsSold === 1 ? '' : 's'} sold so far.
-                                </p>
-                              )}
-                              {item.tone === 'info' && item.stats?.rsvpTotal && (
-                                <p className="mt-2 text-xs text-white/70">
-                                  {item.stats.rsvpTotal} RSVP{item.stats.rsvpTotal === 1 ? '' : 's'} recorded.
-                                </p>
-                              )}
-                            </div>
-                          </li>
-                        );
-                      })}
-                    </ul>
-                      <div className="pointer-events-none absolute bottom-0 left-0 h-12 w-full bg-gradient-to-t from-white to-transparent dark:from-[rgba(12,15,22,0.95)]" />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          closeNotifications();
-                          navigate('/organizer/notifications');
-                        }}
-                        className="mt-4 w-full rounded-2xl border border-white/20 bg-white/5 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/80 transition hover:border-white/40 hover:text-white"
-                      >
-                        View all notifications
-                      </button>
+                            </li>
+                          );
+                        })}
+                      </ul>
                     </div>
                   )}
                 </div>
@@ -741,27 +633,47 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                   setShowProfileMenu((prev) => !prev);
                   closeNotifications();
                 }}
-                className="h-10 w-10 overflow-hidden rounded-full border border-white/30 transition hover:border-white/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className={`flex items-center gap-2 rounded-full border border-white/15 px-1 py-1 transition hover:border-white/35 ${
+                  showProfileMenu ? 'border-white/35 bg-white/5' : ''
+                }`}
                 aria-haspopup="menu"
                 aria-expanded={showProfileMenu}
               >
-                <img src={avatarImage} alt="Profile" className="h-full w-full object-cover" />
+                <img
+                  src={avatarImage}
+                  alt="Organizer avatar"
+                  className="h-9 w-9 rounded-full object-cover"
+                />
+                <div className="hidden text-left text-xs sm:block">
+                  <p className="font-semibold text-white">Maria Daniels</p>
+                  <p className="text-white/55">Organizer</p>
+                </div>
               </button>
               {showProfileMenu && (
-                <div className="absolute right-0 mt-3 w-48 rounded-2xl border border-white/30 bg-[rgba(21,26,36,0.85)] p-3 text-sm text-white shadow-[0_18px_60px_rgba(5,8,17,0.65)] backdrop-blur">
+                <div className="absolute right-0 mt-3 min-w-[180px] rounded-3xl border border-white/10 bg-[#0A0F16]/95 p-3 text-sm shadow-xl backdrop-blur">
                   <button
                     type="button"
                     onClick={handlePreferences}
-                    className="flex w-full items-center justify-between rounded-xl border border-white/0 px-3 py-2 text-left text-white/80 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+                    className="flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left text-white/80 transition hover:bg-white/10 hover:text-white"
                   >
-                    Preferences
+                    Account Settings
+                    <span className="text-[10px] text-white/40">Profile</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAppPreferences}
+                    className="mt-1 flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left text-white/80 transition hover:bg-white/10 hover:text-white"
+                  >
+                    App Preferences
+                    <span className="text-[10px] text-white/40">⌘ + ,</span>
                   </button>
                   <button
                     type="button"
                     onClick={handleLogout}
-                    className="mt-2 flex w-full items-center justify-between rounded-xl border border-transparent px-3 py-2 text-left text-[#ff6464] transition hover:border-[#ff6464]/40 hover:bg-[#ff6464]/10"
+                    className="mt-1 flex w-full items-center justify-between rounded-2xl px-3 py-2 text-left text-rose-300 transition hover:bg-rose-500/20 hover:text-white"
                   >
-                    Logout
+                    Log out
+                    <span className="text-[10px] text-white/40">⇧ ⌘ Q</span>
                   </button>
                 </div>
               )}
@@ -770,360 +682,81 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-[1455px] px-10 pb-16 pt-28">
-        {children}
+      <main className="pt-[132px]">
+        <div className="mx-auto flex w-full max-w-[1455px] gap-8 px-10 pb-16">
+          <section className="relative flex-1">
+            {children}
+          </section>
+
+          {showBrandSpotlight && (
+            <aside className="hidden w-[320px] flex-shrink-0 xl:block">
+              <div className="sticky top-[132px] space-y-6">
+                <div className="rounded-[32px] border border-white/10 bg-white/5 p-6 shadow-[0_20px_60px_rgba(5,8,20,0.45)]">
+                  <h2 className="text-sm font-semibold uppercase tracking-[0.38em] text-white/50">
+                    Brand Spotlight
+                  </h2>
+                  <p className="mt-4 text-sm text-white/70">
+                    Nexus is the command center for your live experiences. Draft, launch, and scale events with
+                    full creative control and real-time analytics.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (brandTimeoutRef.current) {
+                        clearTimeout(brandTimeoutRef.current);
+                        brandTimeoutRef.current = null;
+                      }
+                      setShowBrandSpotlight(false);
+                    }}
+                    className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/25 px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/45 hover:text-white"
+                  >
+                    Close spotlight
+                    <span aria-hidden="true">×</span>
+                  </button>
+                </div>
+                <div className="rounded-[32px] border border-white/5 bg-white/[0.04] p-6">
+                  <h3 className="text-xs font-semibold uppercase tracking-[0.3em] text-white/40">
+                    Quick actions
+                  </h3>
+                  <ul className="mt-4 space-y-3">
+                    {organizerQuickLinks.map((item) => (
+                      <li key={item.title}>
+                        <button
+                          type="button"
+                          onClick={item.action}
+                          className="group flex w-full items-center justify-between rounded-2xl border border-white/5 bg-transparent px-4 py-3 text-left text-sm text-white/80 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+                        >
+                          <span>{item.title}</span>
+                          <span className="flex h-6 w-6 items-center justify-center rounded-full border border-white/20 text-xs text-white/60 transition group-hover:border-white/45 group-hover:text-white">
+                            {item.iconLabel}
+                          </span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </aside>
+          )}
+        </div>
       </main>
 
-      {showSearch && (
-        <SearchOverlay
-          query={searchQuery}
-          onQueryChange={setSearchQuery}
-          onClose={() => setShowSearch(false)}
-          loading={eventsLoading && !eventsLoaded}
-          error={eventsError}
-          upcomingPreview={upcomingPreview}
-          results={filteredEvents}
-          hasQuery={Boolean(searchQuery.trim())}
-        />
-      )}
-
-      {showBrandSpotlight && (
-        <BrandSpotlight onClose={() => setShowBrandSpotlight(false)} />
-      )}
+      <GlobalSearch
+        isOpen={showSearch}
+        onClose={() => setShowSearch(false)}
+        quickLinks={organizerQuickLinks}
+      />
 
       {showInitialLoader && !suppressInitialLoader && (
-        <InitialLoader />
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[#020305]">
+          <div className="flex flex-col items-center gap-4">
+            <img src={nexusIcon} alt="Nexus" className="h-12 w-12 animate-pulse" />
+            <p className="text-xs uppercase tracking-[0.4em] text-white/50">Preparing dashboard</p>
+          </div>
+        </div>
       )}
     </div>
   );
 };
-
-function SearchOverlay({
-  query,
-  onQueryChange,
-  onClose,
-  loading,
-  error,
-  upcomingPreview,
-  results,
-  hasQuery,
-}) {
-  const inputRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
-  const [parallaxOffset, setParallaxOffset] = useState({ x: 0, y: 0 });
-  const closeTimerRef = useRef(null);
-
-  const handleRequestClose = useCallback(() => {
-    if (closeTimerRef.current) {
-      return;
-    }
-
-    setIsVisible(false);
-    closeTimerRef.current = setTimeout(() => {
-      closeTimerRef.current = null;
-      onClose();
-    }, 220);
-  }, [onClose]);
-
-  useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
-  }, []);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setIsVisible(true));
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  useEffect(() => {
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') {
-        handleRequestClose();
-      }
-    };
-
-    window.addEventListener('keydown', handleEscape);
-    return () => {
-      window.removeEventListener('keydown', handleEscape);
-    };
-  }, [handleRequestClose]);
-
-  const handleParallaxMove = (event) => {
-    if (hasQuery) {
-      return;
-    }
-
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const relativeX = (event.clientX - bounds.left) / bounds.width;
-    const relativeY = (event.clientY - bounds.top) / bounds.height;
-
-    const normalizedX = Math.max(-1, Math.min(1, relativeX * 2 - 1));
-    const normalizedY = Math.max(-1, Math.min(1, relativeY * 2 - 1));
-
-    setParallaxOffset({ x: normalizedX, y: normalizedY });
-  };
-
-  const resetParallax = () => {
-    setParallaxOffset({ x: 0, y: 0 });
-  };
-
-  const handleBackdropClick = (event) => {
-    if (event.target === event.currentTarget) {
-      handleRequestClose();
-    }
-  };
-  useEffect(() => () => {
-    if (closeTimerRef.current) {
-      clearTimeout(closeTimerRef.current);
-      closeTimerRef.current = null;
-    }
-  }, []);
-
-  const formatEventMeta = (event) => {
-    const eventDate = new Date(event.date);
-    if (Number.isNaN(eventDate.getTime())) {
-      return 'Date to be announced';
-    }
-
-    const dateLabel = eventDate.toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    });
-
-    const timeLabel = eventDate.toLocaleTimeString(undefined, {
-      hour: 'numeric',
-      minute: '2-digit',
-    });
-
-    return `${dateLabel} • ${timeLabel}`;
-  };
-
-  return (
-    <div
-      className={`fixed inset-0 z-[1200] flex items-start justify-center px-4 py-10 transition-opacity duration-300 ease-out ${
-        isVisible ? 'opacity-100 bg-black/60 backdrop-blur' : 'opacity-0 bg-black/40 backdrop-blur-sm'
-      }`}
-      onClick={handleBackdropClick}
-    >
-      <div
-        className={`w-full max-w-2xl rounded-3xl border border-white/10 bg-[rgba(15,19,29,0.92)] px-6 py-6 text-white shadow-[0_30px_120px_rgba(4,8,18,0.7)] transition-all duration-300 ease-out ${
-          isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
-        }`}
-      >
-        <div className="relative">
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(event) => onQueryChange(event.target.value)}
-            placeholder="Search events, categories, or tags..."
-            className="w-full rounded-2xl border border-white/15 bg-[rgba(20,24,34,0.85)] px-4 py-3 text-base text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
-          />
-          <button
-            type="button"
-            onClick={handleRequestClose}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/15 px-3 py-1 text-xs text-white/70 transition hover:border-white/35 hover:text-white"
-          >
-            Esc
-          </button>
-        </div>
-
-        <div className="mt-6 space-y-6">
-          <section>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
-              Shortcuts
-            </h3>
-            <div className="mt-3 flex flex-col gap-2">
-              <Link
-                to="/organizer/events/create"
-                className="flex items-center justify-between rounded-2xl border border-white/10 bg-[rgba(28,33,44,0.85)] px-4 py-3 text-sm font-medium text-white transition hover:border-white/25 hover:bg-[rgba(35,40,52,0.9)]"
-                onClick={onClose}
-              >
-                <span className="flex items-center gap-3">
-                  <span className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-white/10 text-lg" aria-hidden>
-                    +
-                  </span>
-                  Create event
-                </span>
-                <span className="text-xs text-white/50">Shortcut</span>
-              </Link>
-            </div>
-          </section>
-
-          <section>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
-                {hasQuery ? 'Search results' : 'Upcoming'}
-              </h3>
-              {!hasQuery && upcomingPreview.length > 0 && (
-                <span className="text-xs text-white/50">Next {upcomingPreview.length} events</span>
-              )}
-            </div>
-
-            <div
-              className="mt-3 space-y-2"
-              onMouseMove={handleParallaxMove}
-              onMouseLeave={resetParallax}
-            >
-              {loading && !error && (
-                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
-                  Loading events...
-                </div>
-              )}
-
-              {error && (
-                <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
-                  {error}
-                </div>
-              )}
-
-              {!loading && !error && results.length === 0 && (
-                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
-                  {hasQuery
-                    ? 'No events matched your search.'
-                    : 'You have no upcoming events yet.'}
-                </div>
-              )}
-
-              {!loading && !error &&
-                results.slice(0, hasQuery ? 6 : 3).map((event, index) => {
-                  const depth = index + 1;
-                  const translateX = parallaxOffset.x * depth * 6;
-                  const translateY = parallaxOffset.y * depth * 6;
-                  const style = hasQuery
-                    ? { transition: 'transform 150ms ease-out' }
-                    : {
-                        transform: `translate3d(${translateX}px, ${translateY}px, 0)`,
-                        transition: 'transform 150ms ease-out',
-                      };
-
-                  return (
-                    <Link
-                      key={event.id}
-                      to={`/organizer/events/${event.id}`}
-                      onClick={onClose}
-                      className="flex items-center justify-between rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white transition hover:border-white/25 hover:bg-[#1e2433]"
-                      style={style}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-semibold">{event.title}</span>
-                        <span className="text-xs text-white/55">
-                          {event.category ? `${event.category} • ` : ''}
-                          {formatEventMeta(event)}
-                        </span>
-                      </div>
-                      <span className="text-xs text-white/45">View</span>
-                    </Link>
-                  );
-                })}
-            </div>
-          </section>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function BrandSpotlight({ onClose }) {
-  const [entering, setEntering] = useState(true);
-
-  useEffect(() => {
-    const frame = requestAnimationFrame(() => setEntering(false));
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setEntering(true);
-      setTimeout(onClose, 250);
-    }, 10000);
-
-    return () => clearTimeout(timer);
-  }, [onClose]);
-
-  const handleManualClose = () => {
-    setEntering(true);
-    setTimeout(onClose, 250);
-  };
-
-  return (
-    <div
-      className={`fixed inset-0 z-[1300] flex items-center justify-center px-6 transition-opacity duration-250 ease-out ${
-        entering ? 'opacity-0 bg-black/40 backdrop-blur-sm' : 'opacity-100 bg-black/70 backdrop-blur'
-      }`}
-    >
-      <div
-        className={`relative flex w-full max-w-lg flex-col items-center gap-6 overflow-hidden rounded-[32px] border border-white/15 bg-[rgba(10,14,24,0.9)] px-10 py-12 text-center text-white shadow-[0_40px_120px_rgba(4,8,20,0.55)] transition-transform duration-250 ease-out ${
-          entering ? 'translate-y-6 scale-[0.96]' : 'translate-y-0 scale-100'
-        }`}
-      >
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute -top-32 left-1/2 h-64 w-64 -translate-x-1/2 rounded-full bg-[#5b8bff] blur-3xl" />
-          <div className="absolute bottom-[-120px] right-[-80px] h-56 w-56 rounded-full bg-[#ff6f91] blur-3xl" />
-        </div>
-
-        <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white/5">
-          <img
-            src={nexusIcon}
-            alt="Nexus icon"
-            className={`h-10 w-10 transition-transform duration-[1200ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-              entering ? 'scale-50 opacity-0 rotate-[-12deg]' : 'scale-100 opacity-100 rotate-0'
-            }`}
-          />
-        </div>
-
-        <div className="relative space-y-3">
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/55">
-            Nexus Event Management System
-          </p>
-          <h2 className="text-2xl font-semibold text-white">
-            Orchestrate unforgettable experiences.
-          </h2>
-          <p className="text-sm leading-relaxed text-white/70">
-            Nexus centralizes your event workflows—planning, ticketing, team collaboration, and live performance insights—inside a single, beautifully intuitive command center.
-          </p>
-        </div>
-
-        <div className="relative flex w-full flex-col gap-3 text-xs text-white/60 sm:flex-row sm:items-center sm:justify-center">
-          <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-5 py-3">
-            <span className="font-semibold text-white">Adaptive Dashboards</span>
-            <span className="text-white/50">Realtime momentum & revenue signals</span>
-          </div>
-          <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/5 px-5 py-3">
-            <span className="font-semibold text-white">Organizer DNA</span>
-            <span className="text-white/50">Personalized automations for your brand</span>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleManualClose}
-          className="relative rounded-full border border-white/20 px-6 py-2 text-xs font-semibold uppercase tracking-[0.25em] text-white/75 transition hover:border-white/40 hover:text-white"
-        >
-          Dismiss
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function InitialLoader() {
-  return (
-    <div className="fixed inset-0 z-[1400] flex items-center justify-center bg-[#050811]">
-      <div className="flex flex-col items-center gap-4">
-        <div className="relative flex h-20 w-20 items-center justify-center rounded-full bg-white/5">
-          <div className="absolute inset-0 rounded-full border border-white/20" />
-          <img
-            src={nexusIcon}
-            alt="Nexus loading"
-            className="h-10 w-10 animate-spin"
-            style={{ animationDuration: '1.6s' }}
-          />
-        </div>
-        <p className="text-xs font-semibold uppercase tracking-[0.4em] text-white/60">Loading</p>
-      </div>
-    </div>
-  );
-}
 
 export default OrganizerLayoutDark;

@@ -12,12 +12,15 @@ import OrganizerEvents from './components/OrganizerEvents';
 import OrganizerEarnings from './components/OrganizerEarnings';
 import OrganizerCreateEvent from './components/OrganizerCreateEvent';
 import OrganizerEventView from './components/OrganizerEventView';
+import OrganizerAccount from './components/OrganizerAccount';
 import OrganizerPreferences from './components/OrganizerPreferences';
 import OrganizerNotifications from './components/OrganizerNotifications';
 import GuestDashboard from './components/GuestDashboard';
 import GuestMap from './components/GuestMap';
 import PaymentCallback from './components/PaymentCallback';
 import MyTickets from './pages/MyTickets';
+import GuestProfile from './components/GuestProfile';
+import GuestEvents from './pages/GuestEvents';
 
 function App() {
   return (
@@ -37,12 +40,16 @@ function App() {
       <Route path="/organizer/events/create" element={<OrganizerCreateEvent />} />
       <Route path="/organizer/events/:id" element={<OrganizerEventView />} />
       <Route path="/organizer/earnings" element={<OrganizerEarnings />} />
-      <Route path="/organizer/settings" element={<OrganizerPreferences />} />
+      <Route path="/organizer/account" element={<OrganizerAccount />} />
+      <Route path="/organizer/preferences" element={<OrganizerPreferences />} />
+      <Route path="/organizer/settings" element={<OrganizerAccount />} />
       <Route path="/organizer/notifications" element={<OrganizerNotifications />} />
 
       <Route path="/guest/dashboard" element={<GuestDashboard />} />
       <Route path="/guest/map" element={<GuestMap />} />
       <Route path="/guest/tickets" element={<MyTickets />} />
+      <Route path="/guest/events" element={<GuestEvents />} />
+      <Route path="/guest/profile" element={<GuestProfile />} />
       <Route path="/events/:id" element={<EventDetails />} />
       <Route path="/payment/callback" element={<PaymentCallback />} />
       <Route path="/dashboard" element={<GuestDashboard />} /> 

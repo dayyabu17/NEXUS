@@ -2,7 +2,10 @@ const User = require('../models/User');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const upload = require('../utils/fileUpload');
-const asyncHandler = require('express-async-handler')
+const asyncHandler = require('express-async-handler');
+
+const DEFAULT_ACCENT = 'blue';
+const DEFAULT_BRAND_COLOR = '#2563EB';
 
 // @desc    Auth user & get token
 // @route   POST /api/auth/login
@@ -55,7 +58,12 @@ const loginUser = async (req, res) => {
       name: user.name,
       email: user.email,
       role: user.role,
-      token: token,
+      organizationName: user.organizationName,
+      profilePicture: user.profilePicture,
+      accentPreference: user.accentPreference || DEFAULT_ACCENT,
+      brandColor: user.brandColor || DEFAULT_BRAND_COLOR,
+      avatarRingEnabled: Boolean(user.avatarRingEnabled),
+      token,
     });
 
   } catch (error) {
@@ -86,7 +94,11 @@ const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandl
       name: updatedUser.name,
       email: updatedUser.email,
       role: updatedUser.role,
-      profilePicture: updatedUser.profilePicture, // Include profilePicture
+      organizationName: updatedUser.organizationName,
+      profilePicture: updatedUser.profilePicture,
+      accentPreference: updatedUser.accentPreference || DEFAULT_ACCENT,
+      brandColor: updatedUser.brandColor || DEFAULT_BRAND_COLOR,
+      avatarRingEnabled: Boolean(updatedUser.avatarRingEnabled),
     });
   } else {
     res.status(404).json({ message: 'User not found' });
@@ -99,13 +111,12 @@ const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandl
 const updateProfilePicture = asyncHandler(async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
-      res.status(400);
-      throw new Error(err); // Multer errors will be caught here
+      const message = typeof err === 'string' ? err : err?.message || 'Unable to upload image.';
+      return res.status(400).json({ message });
     }
 
     if (!req.file) {
-      res.status(400);
-      throw new Error('No file selected for upload.');
+      return res.status(400).json({ message: 'No file selected for upload.' });
     }
 
     const user = await User.findById(req.user._id);
@@ -119,8 +130,7 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
         profilePicture: updatedUser.profilePicture,
       });
     } else {
-      res.status(404);
-      throw new Error('User not found');
+      return res.status(404).json({ message: 'User not found' });
     }
   });
 });

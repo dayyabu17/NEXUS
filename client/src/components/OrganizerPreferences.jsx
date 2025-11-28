@@ -1,161 +1,291 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
+import {
+  ACCENT_OPTIONS,
+  ACCENT_STORAGE_KEY,
+  resolveAccentPalette,
+  DEFAULT_ACCENT,
+  DEFAULT_BRAND_COLOR,
+} from '../constants/accentTheme';
+import { hexToRgba } from '../utils/color';
 
-const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
 const MotionSection = motion.section;
+const BRAND_COLOR_STORAGE_KEY = 'organizer:preferences:brand-color';
+const AVATAR_RING_STORAGE_KEY = 'organizer:preferences:avatar-ring-enabled';
+const hexPattern = /^#([0-9A-Fa-f]{6})$/;
 
-const resolveProfileImage = (value) => {
-  if (!value) {
-    return DEFAULT_AVATAR;
+const readStoredAccent = () => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_ACCENT;
+  }
+  const stored = window.localStorage.getItem(ACCENT_STORAGE_KEY);
+  const isValid = ACCENT_OPTIONS.some((option) => option.id === stored);
+  return isValid ? stored : DEFAULT_ACCENT;
+};
+
+const readStoredBrandColor = () => {
+  if (typeof window === 'undefined') {
+    return DEFAULT_BRAND_COLOR;
+  }
+  const stored = window.localStorage.getItem(BRAND_COLOR_STORAGE_KEY);
+  return stored && hexPattern.test(stored) ? stored : DEFAULT_BRAND_COLOR;
+};
+
+const readStoredAvatarRing = () => {
+  if (typeof window === 'undefined') {
+    return false;
+  }
+  return window.localStorage.getItem(AVATAR_RING_STORAGE_KEY) === 'true';
+};
+
+const syncStoredUser = (update) => {
+  if (typeof window === 'undefined') {
+    return;
   }
 
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
+  try {
+    const raw = window.localStorage.getItem('user');
+    if (!raw) {
+      return;
+    }
+    const parsed = JSON.parse(raw);
+    const nextUser = { ...parsed, ...update };
+    window.localStorage.setItem('user', JSON.stringify(nextUser));
+  } catch (error) {
+    console.warn('Unable to sync stored user preferences', error);
+  }
+};
+
+const broadcastAccentChange = (accent) => {
+  if (typeof window === 'undefined') {
+    return;
   }
 
-  return `http://localhost:5000/public${value}`;
+  try {
+    window.localStorage.setItem(ACCENT_STORAGE_KEY, accent);
+    window.dispatchEvent(new CustomEvent('organizer:accent-color', { detail: accent }));
+  } catch (error) {
+    console.warn('Unable to broadcast accent change', error);
+  }
 };
 
 const OrganizerPreferences = () => {
-  const [profile, setProfile] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [avatarPreview, setAvatarPreview] = useState(DEFAULT_AVATAR);
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [status, setStatus] = useState({ type: '', message: '' });
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [accentColor, setAccentColor] = useState(readStoredAccent);
+  const [brandColor, setBrandColor] = useState(readStoredBrandColor);
+  const [avatarRing, setAvatarRing] = useState(readStoredAvatarRing);
+  const [brandColorError, setBrandColorError] = useState('');
+  const [loadingPreferences, setLoadingPreferences] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [preferencesStatus, setPreferencesStatus] = useState({ type: '', message: '' });
+
+  const activeAccentOption = useMemo(
+    () => ACCENT_OPTIONS.find((option) => option.id === accentColor) ?? ACCENT_OPTIONS[0],
+    [accentColor],
+  );
+  const activeAccentPalette = useMemo(() => resolveAccentPalette(accentColor), [accentColor]);
+  const registerPreviewStyle = useMemo(
+    () => ({
+      backgroundColor: activeAccentPalette[600],
+      color: '#ffffff',
+      boxShadow: `0 16px 40px ${hexToRgba(activeAccentPalette[600], 0.32)}`,
+    }),
+    [activeAccentPalette],
+  );
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) {
-      return;
-    }
+    let isMounted = true;
 
-    try {
-      const parsed = JSON.parse(storedUser);
-      setProfile((prev) => ({
-        ...prev,
-        name: parsed?.name || '',
-        email: parsed?.email || '',
-      }));
-      setAvatarPreview(resolveProfileImage(parsed?.profilePicture));
-    } catch {
-      setAvatarPreview(DEFAULT_AVATAR);
-    }
+    const loadPreferences = async () => {
+      if (typeof window === 'undefined') {
+        setLoadingPreferences(false);
+        return;
+      }
+
+      const token = window.localStorage.getItem('token');
+      if (!token) {
+        setLoadingPreferences(false);
+        return;
+      }
+
+      try {
+        const response = await api.get('/organizer/preferences', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        const { accentPreference, brandColor: savedBrandColor, avatarRingEnabled } = response.data || {};
+        const normalizedAccent = ACCENT_OPTIONS.some((option) => option.id === accentPreference)
+          ? accentPreference
+          : DEFAULT_ACCENT;
+        const normalizedBrand = savedBrandColor && hexPattern.test(savedBrandColor)
+          ? savedBrandColor.toUpperCase()
+          : DEFAULT_BRAND_COLOR;
+        const normalizedAvatarRing = Boolean(avatarRingEnabled);
+
+        setAccentColor(normalizedAccent);
+        setBrandColor(normalizedBrand);
+        setAvatarRing(normalizedAvatarRing);
+
+        broadcastAccentChange(normalizedAccent);
+        window.localStorage.setItem(BRAND_COLOR_STORAGE_KEY, normalizedBrand);
+        window.localStorage.setItem(AVATAR_RING_STORAGE_KEY, String(normalizedAvatarRing));
+
+        syncStoredUser({
+          accentPreference: normalizedAccent,
+          brandColor: normalizedBrand,
+          avatarRingEnabled: normalizedAvatarRing,
+        });
+      } catch (error) {
+        if (!isMounted) {
+          return;
+        }
+        const message = error?.response?.data?.message || 'Unable to load your preferences.';
+        setPreferencesStatus({ type: 'error', message });
+      } finally {
+        if (isMounted) {
+          setLoadingPreferences(false);
+        }
+      }
+    };
+
+    loadPreferences();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
-  const updateStoredUser = (update) => {
-    const stored = localStorage.getItem('user');
-    if (!stored) {
-      return;
+  const persistPreferences = async (payload) => {
+    if (typeof window === 'undefined') {
+      return false;
     }
 
-    try {
-      const parsed = JSON.parse(stored);
-      const nextUser = { ...parsed, ...update };
-      localStorage.setItem('user', JSON.stringify(nextUser));
-      window.dispatchEvent(new Event('storage'));
-    } catch {
-      // ignore storage sync issues
-    }
-  };
-
-  const handleProfileFieldChange = (event) => {
-    const { name, value } = event.target;
-    setProfile((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleAvatarSelection = (event) => {
-    const file = event.target.files?.[0];
-    setAvatarFile(file || null);
-
-    if (file) {
-      setAvatarPreview(URL.createObjectURL(file));
-    }
-  };
-
-  const handleAvatarUpload = async () => {
-    if (!avatarFile) {
-      setStatus({ type: 'error', message: 'Select an image first.' });
-      return;
-    }
-
-    setUploadingAvatar(true);
-    setStatus({ type: '', message: '' });
-
-    try {
-      const token = localStorage.getItem('token');
-      const formData = new FormData();
-      formData.append('profilePicture', avatarFile);
-
-      const response = await api.put('/auth/profile/picture', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data',
-        },
+    const token = window.localStorage.getItem('token');
+    if (!token) {
+      setPreferencesStatus({
+        type: 'error',
+        message: 'Please sign in again to save your preferences.',
       });
-
-      const nextProfilePicture = response?.data?.profilePicture;
-      if (nextProfilePicture) {
-        updateStoredUser({ profilePicture: nextProfilePicture });
-        setAvatarPreview(resolveProfileImage(nextProfilePicture));
-      }
-      setAvatarFile(null);
-      setStatus({ type: 'success', message: response?.data?.message || 'Avatar updated successfully.' });
-    } catch (error) {
-      const message = error?.response?.data?.message || 'Could not upload avatar.';
-      setStatus({ type: 'error', message });
-    } finally {
-      setUploadingAvatar(false);
-    }
-  };
-
-  const handleProfileSubmit = async (event) => {
-    event.preventDefault();
-    setStatus({ type: '', message: '' });
-
-    if (profile.password && profile.password !== profile.confirmPassword) {
-      setStatus({ type: 'error', message: 'Passwords do not match.' });
-      return;
+      return false;
     }
 
-    setSavingProfile(true);
+    setIsSaving(true);
+    setPreferencesStatus({ type: '', message: '' });
 
     try {
-      const token = localStorage.getItem('token');
-      const payload = {
-        name: profile.name,
-        email: profile.email,
-      };
-
-      if (profile.password) {
-        payload.password = profile.password;
-      }
-
-      const response = await api.put('/auth/profile', payload, {
+      await api.put('/organizer/preferences', payload, {
         headers: { Authorization: `Bearer ${token}` },
       });
-
-      updateStoredUser(response.data);
-      setProfile((prev) => ({
-        ...prev,
-        password: '',
-        confirmPassword: '',
-      }));
-      setStatus({ type: 'success', message: 'Profile updated successfully.' });
+      return true;
     } catch (error) {
-      const message = error?.response?.data?.message || 'Unable to update profile.';
-      setStatus({ type: 'error', message });
+      const message = error?.response?.data?.message || 'Unable to update preferences.';
+      setPreferencesStatus({ type: 'error', message });
+      return false;
     } finally {
-      setSavingProfile(false);
+      setIsSaving(false);
     }
   };
+
+  const handleAccentSelect = async (value) => {
+    if (loadingPreferences || accentColor === value) {
+      return;
+    }
+
+    const previousAccent = accentColor;
+    setAccentColor(value);
+    broadcastAccentChange(value);
+    syncStoredUser({ accentPreference: value });
+
+    const persisted = await persistPreferences({ accentPreference: value });
+    if (!persisted) {
+      setAccentColor(previousAccent);
+      broadcastAccentChange(previousAccent);
+      syncStoredUser({ accentPreference: previousAccent });
+    }
+  };
+
+  const handleBrandColorInput = async (value) => {
+    const previousColor = brandColor;
+    setBrandColor(value);
+
+    if (!value) {
+      setBrandColorError('Enter a hex color like #2563EB.');
+      return;
+    }
+
+    if (!hexPattern.test(value)) {
+      setBrandColorError('Hex codes should include a leading # and six characters.');
+      return;
+    }
+
+    if (loadingPreferences) {
+      setBrandColorError('');
+      setBrandColor(value.toUpperCase());
+      return;
+    }
+
+    const normalized = value.toUpperCase();
+    if (normalized === previousColor) {
+      setBrandColorError('');
+      setBrandColor(normalized);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(BRAND_COLOR_STORAGE_KEY, normalized);
+      }
+      syncStoredUser({ brandColor: normalized });
+      return;
+    }
+
+    setBrandColorError('');
+    setBrandColor(normalized);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(BRAND_COLOR_STORAGE_KEY, normalized);
+    }
+    syncStoredUser({ brandColor: normalized });
+
+    const persisted = await persistPreferences({ brandColor: normalized });
+    if (!persisted) {
+      setBrandColor(previousColor);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(BRAND_COLOR_STORAGE_KEY, previousColor);
+      }
+      syncStoredUser({ brandColor: previousColor });
+    }
+  };
+
+  const handleBrandColorPicker = (event) => {
+    handleBrandColorInput(event.target.value);
+  };
+
+  const handleAvatarRingToggle = async () => {
+    if (loadingPreferences) {
+      return;
+    }
+
+    const next = !avatarRing;
+    const previous = avatarRing;
+
+    setAvatarRing(next);
+    if (typeof window !== 'undefined') {
+      window.localStorage.setItem(AVATAR_RING_STORAGE_KEY, String(next));
+    }
+    syncStoredUser({ avatarRingEnabled: next });
+
+    const persisted = await persistPreferences({ avatarRingEnabled: next });
+    if (!persisted) {
+      setAvatarRing(previous);
+      if (typeof window !== 'undefined') {
+        window.localStorage.setItem(AVATAR_RING_STORAGE_KEY, String(previous));
+      }
+      syncStoredUser({ avatarRingEnabled: previous });
+    }
+  };
+
+  const accentButtonDisabled = loadingPreferences || isSaving;
 
   return (
     <OrganizerLayoutDark>
@@ -163,147 +293,184 @@ const OrganizerPreferences = () => {
         className="pb-20"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 0.5, ease: 'easeOut' }}
+        transition={{ duration: 0.4, ease: 'easeOut' }}
       >
-        <header className="mb-10 flex flex-col gap-3">
-          <h1 className="text-4xl font-semibold text-white">Preferences</h1>
-          <p className="text-sm text-white/60">
-            Update how you appear across Nexus and keep your account details secure.
-          </p>
+        <header className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h1 className="text-4xl font-semibold text-white">App Preferences</h1>
+            <p className="text-sm text-white/60">
+              Tune the appearance of your organizer surfaces and update public-facing branding.
+            </p>
+          </div>
+          {(loadingPreferences || isSaving) && (
+            <span className="text-xs font-medium text-white/50">
+              {loadingPreferences ? 'Loading preferences…' : 'Saving…'}
+            </span>
+          )}
         </header>
 
-        {status.message && (
+        {preferencesStatus.message && (
           <div
             className={`mb-8 rounded-2xl border px-4 py-4 text-sm ${
-              status.type === 'error'
+              preferencesStatus.type === 'error'
                 ? 'border-red-500/40 bg-red-500/10 text-red-200'
                 : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-100'
             }`}
           >
-            {status.message}
+            {preferencesStatus.message}
           </div>
         )}
 
-        <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
-          <div className="rounded-3xl border border-white/10 bg-[rgba(14,17,25,0.88)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
-            <span className="text-xs uppercase tracking-[0.3em] text-white/50">Profile image</span>
-            <div className="mt-6 flex flex-col items-center gap-6">
-              <div className="relative h-36 w-36 overflow-hidden rounded-3xl border border-white/10 bg-black/60">
-                <img src={avatarPreview} alt="Profile" className="h-full w-full object-cover" />
-              </div>
-              <div className="flex w-full flex-col gap-4">
-                <label
-                  htmlFor="avatar-upload"
-                  className="flex cursor-pointer items-center justify-center rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-sm text-white/80 transition hover:border-white/35 hover:text-white"
+        <section className="mb-12 rounded-3xl border border-white/10 bg-[rgba(14,18,27,0.92)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
+          <div className="flex flex-col gap-2">
+            <span className="text-xs uppercase tracking-[0.35em] text-white/45">App Appearance</span>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <h2 className="text-2xl font-semibold text-white">Accent palette</h2>
+              <span className="text-xs text-white/45">Selected: {activeAccentOption.label}</span>
+            </div>
+            <p className="text-sm text-white/55">
+              These accents will power highlights, buttons, and focus rings throughout the organizer experience.
+            </p>
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {ACCENT_OPTIONS.map((option) => {
+              const isActive = option.id === accentColor;
+              const palette = resolveAccentPalette(option.id);
+              const swatch = palette[600];
+              const cardShadowStyle = isActive
+                ? { boxShadow: `0 18px 60px ${hexToRgba(swatch, 0.35)}` }
+                : undefined;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleAccentSelect(option.id)}
+                  disabled={accentButtonDisabled}
+                  className={`group flex flex-col gap-4 rounded-3xl border p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
+                    isActive
+                      ? 'border-white/40 bg-white/10'
+                      : 'border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.06]'
+                  }`}
+                  style={cardShadowStyle}
                 >
-                  Choose new avatar
-                </label>
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarSelection}
-                  className="hidden"
-                />
+                  <span
+                    className="inline-flex h-12 w-12 items-center justify-center rounded-full text-sm font-semibold text-white transition"
+                    style={{
+                      backgroundColor: swatch,
+                      boxShadow: isActive
+                        ? `0 0 0 4px ${hexToRgba('#ffffff', 0.35)}`
+                        : `0 0 0 2px ${hexToRgba('#ffffff', 0.18)}`,
+                    }}
+                  >
+                    {option.label.charAt(0)}
+                  </span>
+                  <div className="space-y-1">
+                    <p className="text-sm font-semibold text-white">{option.label}</p>
+                    <p className="text-xs text-white/55">{option.description}</p>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-white">Public preview</p>
+                <p className="text-xs text-white/55">
+                  This color will appear on your public event pages (e.g., the ‘Register’ button).
+                </p>
+              </div>
+              <button
+                type="button"
+                className="rounded-full px-6 py-2 text-sm font-semibold shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                style={registerPreviewStyle}
+                aria-label="Register button preview"
+              >
+                Register
+              </button>
+            </div>
+          </div>
+
+          <p className="mt-6 text-xs text-white/40">
+            We store your selection locally so you can keep iterating before rolling it out to attendees.
+          </p>
+        </section>
+
+        <section className="rounded-3xl border border-white/10 bg-[rgba(14,18,27,0.92)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
+          <div className="flex flex-col gap-2">
+            <span className="text-xs uppercase tracking-[0.35em] text-white/45">Profile Identity</span>
+            <h2 className="text-2xl font-semibold text-white">Public brand color</h2>
+            <p className="text-sm text-white/55">
+              This shade powers key touchpoints on your guest-facing experiences like the register button and badges.
+            </p>
+          </div>
+
+          <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
+            <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
+              <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="brand-color">
+                Hex value
+              </label>
+              <input
+                id="brand-color"
+                value={brandColor}
+                onChange={(event) => handleBrandColorInput(event.target.value)}
+                disabled={loadingPreferences}
+                className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                placeholder="#2563EB"
+              />
+              <input
+                type="color"
+                value={brandColor}
+                onChange={handleBrandColorPicker}
+                disabled={loadingPreferences}
+                className="h-12 w-full cursor-pointer rounded-2xl border border-white/15 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-60"
+                aria-label="Pick brand color"
+              />
+              {brandColorError ? (
+                <p className="text-xs text-rose-300">{brandColorError}</p>
+              ) : (
+                <p className="text-xs text-white/40">Saved locally—apply it to your themes when you are ready.</p>
+              )}
+            </div>
+
+            <div className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.02] p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-sm font-semibold text-white">Avatar ring</p>
+                  <p className="text-xs text-white/55">
+                    Highlight your profile image with a verified glow across public listings.
+                  </p>
+                </div>
                 <button
                   type="button"
-                  onClick={handleAvatarUpload}
-                  disabled={!avatarFile || uploadingAvatar}
-                  className="rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50"
+                  onClick={handleAvatarRingToggle}
+                  disabled={loadingPreferences || isSaving}
+                  className={`relative flex h-8 w-16 items-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-60 ${
+                    avatarRing ? 'bg-emerald-500/60' : 'bg-white/20'
+                  }`}
+                  aria-pressed={avatarRing}
                 >
-                  {uploadingAvatar ? 'Uploading…' : 'Update avatar'}
+                  <span
+                    className={`absolute left-1 top-1 inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#0B1120] transition ${
+                      avatarRing ? 'translate-x-8' : 'translate-x-0'
+                    }`}
+                  >
+                    {avatarRing ? 'ON' : 'OFF'}
+                  </span>
                 </button>
-                <p className="text-xs text-white/45">
-                  Use a square image at least 400px wide to keep things crisp.
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-white/50">
+                <p>
+                  Once enabled, guests will see a subtle animated border around your avatar, reinforcing trust and
+                  authenticity on your event pages.
                 </p>
               </div>
             </div>
           </div>
-
-          <form
-            onSubmit={handleProfileSubmit}
-            className="rounded-3xl border border-white/10 bg-[rgba(14,17,25,0.88)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)] space-y-8"
-          >
-            <div className="grid gap-6 sm:grid-cols-2">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="name">
-                  Display name
-                </label>
-                <input
-                  id="name"
-                  name="name"
-                  value={profile.name}
-                  onChange={handleProfileFieldChange}
-                  className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
-                  placeholder="Enter your name"
-                />
-              </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="email">
-                  Email address
-                </label>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={profile.email}
-                  onChange={handleProfileFieldChange}
-                  className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
-                  placeholder="you@example.com"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-sm font-semibold uppercase tracking-[0.25em] text-white/50">Security</h2>
-                <p className="mt-2 text-xs text-white/45">
-                  Update your password regularly to keep your account safe.
-                </p>
-              </div>
-              <div className="grid gap-6 sm:grid-cols-2">
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="password">
-                    New password
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    value={profile.password}
-                    onChange={handleProfileFieldChange}
-                    className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
-                    placeholder="Leave blank to keep current"
-                  />
-                </div>
-                <div className="flex flex-col gap-2">
-                  <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="confirmPassword">
-                    Confirm password
-                  </label>
-                  <input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    value={profile.confirmPassword}
-                    onChange={handleProfileFieldChange}
-                    className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
-                    placeholder="Repeat new password"
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end">
-              <button
-                type="submit"
-                disabled={savingProfile}
-                className="rounded-2xl border border-white/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {savingProfile ? 'Saving…' : 'Save changes'}
-              </button>
-            </div>
-          </form>
-        </div>
+        </section>
       </MotionSection>
     </OrganizerLayoutDark>
   );

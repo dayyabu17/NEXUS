@@ -606,8 +606,8 @@ const OrganizerCreateEvent = () => {
                           onClick={() => handleCategorySelect(category)}
                           className={`rounded-full px-4 py-2 text-sm font-medium transition focus:outline-none ${
                             isActive
-                              ? 'bg-blue-600 text-white border border-blue-600 shadow-lg shadow-blue-500/20'
-                              : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-blue-500'
+                              ? 'bg-accent-600 text-white border border-accent-600 shadow-lg shadow-accent-500/20'
+                              : 'bg-slate-900 text-slate-400 border border-slate-700 hover:border-accent-500'
                           }`}
                         >
                           {category}

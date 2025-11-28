@@ -34,6 +34,10 @@ const eventSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'], // <--- Admin controls this
       default: 'pending',
     },
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
     category: {
       type: String,
       enum: ['Technology', 'Academic', 'Social', 'Sports', 'Music', 'Business', 'Arts', 'Health', 'Religious', 'Culture', 'Others'],

@@ -48,6 +48,13 @@
 
 /* --- End Font Definitions --- */
 
+:root {
+  /* Default: Nexus Blue */
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

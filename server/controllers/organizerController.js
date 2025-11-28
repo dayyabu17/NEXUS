@@ -2,6 +2,11 @@ const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
 const User = require('../models/User');
 
+const ACCENT_CHOICES = ['blue', 'purple', 'green', 'orange'];
+const DEFAULT_ACCENT = 'blue';
+const DEFAULT_BRAND_COLOR = '#2563EB';
+const HEX_PATTERN = /^#([0-9A-Fa-f]{6})$/;
+
 const calculatePercentageChange = (current, previous) => {
   if (!previous) {
     return current === 0 ? 0 : 100;
@@ -214,6 +219,56 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
       revenue: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.revenue })),
       active: trendBuckets.map((bucket) => ({ date: bucket.date, value: bucket.active })),
     },
+  });
+});
+
+const getOrganizerPreferences = asyncHandler(async (req, res) => {
+  res.json({
+    accentPreference: req.user?.accentPreference || DEFAULT_ACCENT,
+    brandColor: req.user?.brandColor || DEFAULT_BRAND_COLOR,
+    avatarRingEnabled: Boolean(req.user?.avatarRingEnabled),
+  });
+});
+
+const updateOrganizerPreferences = asyncHandler(async (req, res) => {
+  const { accentPreference, brandColor, avatarRingEnabled } = req.body || {};
+
+  const updates = {};
+
+  if (accentPreference !== undefined) {
+    if (!ACCENT_CHOICES.includes(accentPreference)) {
+      res.status(400);
+      throw new Error('Accent selection is not supported.');
+    }
+    updates.accentPreference = accentPreference;
+  }
+
+  if (brandColor !== undefined) {
+    if (typeof brandColor !== 'string' || !HEX_PATTERN.test(brandColor)) {
+      res.status(400);
+      throw new Error('Brand color must be a valid hex string.');
+    }
+    updates.brandColor = brandColor.toUpperCase();
+  }
+
+  if (avatarRingEnabled !== undefined) {
+    updates.avatarRingEnabled = Boolean(avatarRingEnabled);
+  }
+
+  if (Object.keys(updates).length === 0) {
+    res.status(400);
+    throw new Error('No valid preference update supplied.');
+  }
+
+  const updatedUser = await User.findByIdAndUpdate(req.user._id, updates, {
+    new: true,
+    runValidators: true,
+  }).select('accentPreference brandColor avatarRingEnabled');
+
+  res.json({
+    accentPreference: updatedUser?.accentPreference || DEFAULT_ACCENT,
+    brandColor: updatedUser?.brandColor || DEFAULT_BRAND_COLOR,
+    avatarRingEnabled: Boolean(updatedUser?.avatarRingEnabled),
   });
 });
 
@@ -442,4 +497,6 @@ module.exports = {
   getOrganizerNotifications,
   markOrganizerNotificationRead,
   markAllOrganizerNotificationsRead,
+  getOrganizerPreferences,
+  updateOrganizerPreferences,
 };

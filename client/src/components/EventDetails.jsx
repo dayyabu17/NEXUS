@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
@@ -6,6 +6,8 @@ import GuestNavbar from './GuestNavbar';
 import api from '../api/axios';
 import { getTravelTime } from '../services/locationService';
 import EventCheckoutModal from './EventCheckoutModal';
+import { resolveAccentPalette, DEFAULT_ACCENT, DEFAULT_BRAND_COLOR } from '../constants/accentTheme';
+import { hexToRgba } from '../utils/color';
 
 const EVENT_MARKER_ICON = new L.Icon({
     iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -21,6 +23,7 @@ const USER_MARKER_ICON = new L.Icon({
 
 const DEFAULT_CENTER = [9.05785, 7.49508];
 const LOCATION_STORAGE_KEY = 'userLocation';
+const hexPattern = /^#([0-9A-Fa-f]{6})$/;
 
 const FitBounds = ({ points }) => {
     const map = useMap();
@@ -57,6 +60,89 @@ const EventDetails = () => {
     const [isComputingDistance, setIsComputingDistance] = useState(false);
     const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
     const [currentUser, setCurrentUser] = useState(null);
+    const [ticketStatus, setTicketStatus] = useState({ checked: false, hasTicket: false, ticketId: null });
+
+    const accentId = useMemo(
+        () => eventData?.organizer?.accentPreference || DEFAULT_ACCENT,
+        [eventData?.organizer?.accentPreference],
+    );
+
+    const accentPalette = useMemo(() => resolveAccentPalette(accentId), [accentId]);
+
+    const brandColor = useMemo(() => {
+        const candidate = eventData?.organizer?.brandColor;
+        if (typeof candidate === 'string' && hexPattern.test(candidate)) {
+            return candidate.toUpperCase();
+        }
+        return DEFAULT_BRAND_COLOR;
+    }, [eventData?.organizer?.brandColor]);
+
+    const accentStyles = useMemo(
+        () => ({
+            chipBg: hexToRgba(accentPalette[500], 0.18),
+            chipBorder: hexToRgba(accentPalette[500], 0.32),
+            badgeBg: hexToRgba(accentPalette[600], 0.22),
+            badgeBorder: hexToRgba(accentPalette[600], 0.38),
+            highlight: accentPalette[600],
+            highlightSoft: hexToRgba(accentPalette[500], 0.9),
+            cardGradient: `linear-gradient(135deg, ${hexToRgba(accentPalette[500], 0.55)} 0%, ${hexToRgba(accentPalette[700], 0.6)} 100%)`,
+            cardShadow: `0 30px 80px ${hexToRgba(accentPalette[700], 0.35)}`,
+            avatarRing: `0 0 0 3px ${hexToRgba(accentPalette[500], 0.45)}`,
+            pathColor: hexToRgba(accentPalette[500], 0.75),
+        }),
+        [accentPalette],
+    );
+
+    const brandStyles = useMemo(
+        () => ({
+            color: brandColor,
+            soft: hexToRgba(brandColor, 0.85),
+            shadow: `0 20px 55px ${hexToRgba(brandColor, 0.3)}`,
+        }),
+        [brandColor],
+    );
+
+    const eventIdentifier = eventData?._id || eventData?.id;
+    const hasTicket = ticketStatus.hasTicket;
+    const ticketButtonLabel = hasTicket ? 'You’re attending' : 'Get Ticket';
+
+    const fetchTicketStatus = useCallback(async () => {
+        if (!eventIdentifier) {
+            return;
+        }
+
+        if (!currentUser?._id) {
+            setTicketStatus((prev) =>
+                prev.checked ? prev : { checked: true, hasTicket: false, ticketId: null },
+            );
+            return;
+        }
+
+        if (typeof window === 'undefined') {
+            return;
+        }
+
+        const token = window.localStorage.getItem('token');
+        if (!token) {
+            setTicketStatus({ checked: true, hasTicket: false, ticketId: null });
+            return;
+        }
+
+        try {
+            const response = await api.get(`/tickets/status/${eventIdentifier}`, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+
+            setTicketStatus({
+                checked: true,
+                hasTicket: Boolean(response.data?.hasTicket),
+                ticketId: response.data?.ticketId || null,
+            });
+        } catch (statusError) {
+            console.warn('Ticket status unavailable', statusError);
+            setTicketStatus({ checked: true, hasTicket: false, ticketId: null });
+        }
+    }, [currentUser?._id, eventIdentifier]);
 
     useEffect(() => {
         let isMounted = true;
@@ -115,6 +201,28 @@ const EventDetails = () => {
             console.warn('Unable to parse stored user details', storageError);
         }
     }, []);
+
+    useEffect(() => {
+        if (!eventIdentifier) {
+            return;
+        }
+
+        setTicketStatus({ checked: false, hasTicket: false, ticketId: null });
+    }, [eventIdentifier]);
+
+    useEffect(() => {
+        if (!eventIdentifier) {
+            return;
+        }
+
+        fetchTicketStatus();
+    }, [eventIdentifier, fetchTicketStatus]);
+
+    const handleOpenCheckout = () => {
+        if (!hasTicket) {
+            setIsCheckoutOpen(true);
+        }
+    };
 
     useEffect(() => {
         let isMounted = true;
@@ -357,15 +465,27 @@ const EventDetails = () => {
             <main className="pb-24">
                 <section className="relative mx-4 mt-6 overflow-hidden rounded-3xl border border-white/10 shadow-[0_40px_120px_rgba(5,10,30,0.35)]" style={heroStyles}>
                     <div className="relative z-10 flex flex-col gap-6 px-8 py-24 md:px-16 md:py-32 lg:py-40">
-                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-sm font-semibold uppercase tracking-wide text-white/90 backdrop-blur">
+                        <span
+                            className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur"
+                            style={{
+                                backgroundColor: accentStyles.badgeBg,
+                                borderColor: accentStyles.badgeBorder,
+                            }}
+                        >
                             {eventData.category || 'Featured Event'}
                         </span>
                         <h1 className="max-w-3xl text-4xl font-bold leading-tight text-white md:text-5xl lg:text-6xl">
                             {eventData.title}
                         </h1>
                         <p className="text-lg text-white/80 md:text-xl">{formattedDate}</p>
-                        <div className="flex flex-wrap gap-4 text-sm text-white/70">
-                            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                        <div className="flex flex-wrap gap-4 text-sm text-white/80">
+                            <span
+                                className="inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur"
+                                style={{
+                                    backgroundColor: accentStyles.chipBg,
+                                    borderColor: accentStyles.chipBorder,
+                                }}
+                            >
                                 <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                     <path d="M12 22s8-4.5 8-11a8 8 0 0 0-16 0c0 6.5 8 11 8 11Z" />
                                     <circle cx="12" cy="11" r="3" />
@@ -373,12 +493,33 @@ const EventDetails = () => {
                                 {eventData.location || 'Location coming soon'}
                             </span>
                             {travelTimeLabel && (
-                                <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 backdrop-blur">
+                                <span
+                                    className="inline-flex items-center gap-2 rounded-full border px-4 py-2 backdrop-blur"
+                                    style={{
+                                        backgroundColor: accentStyles.chipBg,
+                                        borderColor: accentStyles.chipBorder,
+                                    }}
+                                >
                                     <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                                         <path d="M12 6v6l3 3" strokeLinecap="round" strokeLinejoin="round" />
                                         <circle cx="12" cy="12" r="9" />
                                     </svg>
                                     {travelTimeLabel}
+                                </span>
+                            )}
+                            {hasTicket && (
+                                <span
+                                    className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide text-white"
+                                    style={{
+                                        backgroundColor: accentStyles.badgeBg,
+                                        borderColor: accentStyles.badgeBorder,
+                                    }}
+                                >
+                                    <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                                        <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+                                        <path d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                    You’re attending
                                 </span>
                             )}
                         </div>
@@ -398,7 +539,15 @@ const EventDetails = () => {
                         <div className="rounded-3xl border border-white/10 bg-[#0b1220]/80 p-6 shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
                             <h3 className="text-sm font-semibold uppercase tracking-widest text-white/60">Hosted by</h3>
                             <div className="mt-4 flex items-center gap-4">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600 text-lg font-semibold text-white">
+                                <div
+                                    className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold text-white shadow-lg transition"
+                                    style={{
+                                        background: accentStyles.highlight,
+                                        boxShadow: eventData.organizer?.avatarRingEnabled
+                                            ? accentStyles.avatarRing
+                                            : '0 0 0 1px rgba(255,255,255,0.12)',
+                                    }}
+                                >
                                     {eventData.organizer?.name?.[0]?.toUpperCase() || 'N'}
                                 </div>
                                 <div>
@@ -415,7 +564,13 @@ const EventDetails = () => {
 
                     <aside className="space-y-6">
                         <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050b18] shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
-                            <div className="absolute right-6 top-6 z-20 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white/80 backdrop-blur">
+                            <div
+                                className="absolute right-6 top-6 z-20 rounded-full border px-4 py-2 text-sm font-semibold text-white backdrop-blur"
+                                style={{
+                                    backgroundColor: accentStyles.badgeBg,
+                                    borderColor: accentStyles.badgeBorder,
+                                }}
+                            >
                                 {isComputingDistance ? 'Calculating distance…' : distanceLabel || distanceError || 'Distance unavailable'}
                             </div>
                             <div className="h-[380px]">
@@ -472,7 +627,12 @@ const EventDetails = () => {
                                                     [userLocation.lat, userLocation.lng],
                                                     [eventData.locationLatitude, eventData.locationLongitude],
                                                 ]}
-                                                pathOptions={{ color: '#38bdf8', weight: 3, dashArray: '8 8', opacity: 0.7 }}
+                                                pathOptions={{
+                                                    color: accentStyles.pathColor,
+                                                    weight: 3,
+                                                    dashArray: '8 8',
+                                                    opacity: 0.8,
+                                                }}
                                             />
                                         )}
                                     </MapContainer>
@@ -489,7 +649,13 @@ const EventDetails = () => {
                             )}
                         </div>
 
-                        <div className="rounded-3xl border border-white/10 bg-gradient-to-br from-blue-600/60 to-purple-600/40 p-6 shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
+                        <div
+                            className="rounded-3xl border border-white/10 p-6"
+                            style={{
+                                background: accentStyles.cardGradient,
+                                boxShadow: accentStyles.cardShadow,
+                            }}
+                        >
                             <div className="flex items-center justify-between gap-4">
                                 <div>
                                     <p className="text-sm uppercase tracking-[0.3em] text-white/60">Ticket</p>
@@ -497,15 +663,27 @@ const EventDetails = () => {
                                 </div>
                                 <button
                                     type="button"
-                                    onClick={() => setIsCheckoutOpen(true)}
-                                    className="inline-flex items-center justify-center rounded-full bg-white px-6 py-2 text-sm font-semibold text-blue-700 transition hover:bg-blue-100"
+                                    onClick={handleOpenCheckout}
+                                    disabled={hasTicket}
+                                    style={{
+                                        '--brand-color': brandStyles.color,
+                                        '--brand-soft': brandStyles.soft,
+                                        boxShadow: brandStyles.shadow,
+                                    }}
+                                    className="inline-flex items-center justify-center rounded-full bg-[var(--brand-color)] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
-                                    Get Ticket
+                                    {ticketButtonLabel}
                                 </button>
                             </div>
-                            <p className="mt-4 text-xs text-white/70">
-                                Secure your spot now. You can cancel anytime up to 24 hours before the event.
-                            </p>
+                            {hasTicket ? (
+                                <p className="mt-4 text-sm text-white/85">
+                                    You’re all set! Your ticket is saved under My Tickets—see you there.
+                                </p>
+                            ) : (
+                                <p className="mt-4 text-xs text-white/70">
+                                    Secure your spot now. You can cancel anytime up to 24 hours before the event.
+                                </p>
+                            )}
                         </div>
                     </aside>
                 </section>
@@ -516,6 +694,12 @@ const EventDetails = () => {
                 event={eventData}
                 userId={currentUser?._id}
                 email={currentUser?.email}
+                theme={{
+                    brandColor,
+                    accentColor: accentStyles.highlight,
+                }}
+                hasTicket={hasTicket}
+                onPurchaseComplete={fetchTicketStatus}
             />
         </div>
     );

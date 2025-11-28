@@ -5,27 +5,115 @@ import api from '../api/axios';
 import GuestNavbar from './GuestNavbar';
 
 const GuestDashboard = () => {
-  const [events, setEvents] = useState([]);
+  const [heroEvent, setHeroEvent] = useState(null);
+  const [recommended, setRecommended] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
+  const handleViewEvent = (eventId) => {
+    if (!eventId) {
+      return;
+    }
+    navigate(`/events/${eventId}`);
+  };
+
+  const getEventId = (event) => {
+    if (!event) {
+      return null;
+    }
+    if (event._id) {
+      try {
+        return event._id.toString();
+      } catch {
+        return `${event._id}`;
+      }
+    }
+    if (event.id) {
+      try {
+        return event.id.toString();
+      } catch {
+        return `${event.id}`;
+      }
+    }
+    return null;
+  };
+
   useEffect(() => {
     let isMounted = true;
 
-    const fetchEvents = async () => {
+    const fetchDashboard = async () => {
+      setIsLoading(true);
+
+      let userId;
+      if (typeof window !== 'undefined') {
+        try {
+          const storedRaw = window.localStorage.getItem('user');
+          if (storedRaw) {
+            const stored = JSON.parse(storedRaw);
+            userId = stored?._id;
+          }
+        } catch (error) {
+          console.warn('Unable to parse stored user details', error);
+        }
+      }
+
+      const requestConfig = {};
+      if (userId) {
+        requestConfig.params = { userId };
+      }
+
       try {
-        const response = await api.get('/events');
+        const response = await api.get('/events/dashboard', requestConfig);
         if (!isMounted) {
           return;
         }
-        setEvents(Array.isArray(response.data) ? response.data : []);
+
+        const { heroEvent: hero, recommendedEvents, recentEvents } = response.data || {};
+
+        const heroId = getEventId(hero);
+
+        const dedupeById = (list = []) => {
+          if (!Array.isArray(list)) {
+            return [];
+          }
+          const seen = new Set();
+          return list.filter((item) => {
+            const id = getEventId(item);
+            if (!id) {
+              return true;
+            }
+            if (seen.has(id)) {
+              return false;
+            }
+            seen.add(id);
+            return true;
+          });
+        };
+
+        const excludeHero = (list = []) =>
+          list.filter((item) => {
+            if (!heroId) {
+              return true;
+            }
+            return getEventId(item) !== heroId;
+          });
+
+        const sanitizedRecommended = excludeHero(dedupeById(recommendedEvents)).slice(0, 6);
+        const sanitizedRecent = excludeHero(dedupeById(recentEvents));
+
+        setHeroEvent(hero || null);
+        setRecommended(sanitizedRecommended);
+        setAllEvents(sanitizedRecent);
         setErrorMessage('');
       } catch (error) {
-        console.error('Failed to fetch events', error);
+        console.error('Failed to fetch dashboard data', error);
         if (isMounted) {
-          setEvents([]);
+          setHeroEvent(null);
+          setRecommended([]);
+          setAllEvents([]);
           setErrorMessage('Unable to load events right now. Please try again later.');
         }
       } finally {
@@ -35,53 +123,74 @@ const GuestDashboard = () => {
       }
     };
 
-    fetchEvents();
+    fetchDashboard();
 
     return () => {
       isMounted = false;
     };
   }, []);
 
+  const combinedEvents = useMemo(() => {
+    const map = new Map();
+    const addToMap = (event) => {
+      const id = getEventId(event);
+      if (!id) {
+        return;
+      }
+      map.set(id, event);
+    };
+
+    if (heroEvent) {
+      addToMap(heroEvent);
+    }
+    recommended.forEach(addToMap);
+    allEvents.forEach(addToMap);
+
+    return Array.from(map.values());
+  }, [heroEvent, recommended, allEvents]);
+
   const categories = useMemo(() => {
-    if (!events.length) {
+    if (!combinedEvents.length) {
       return ['All'];
     }
     const distinct = new Set(
-      events
-        .map((event) => event.category)
+      combinedEvents
+        .map((event) => event?.category)
         .filter((category) => typeof category === 'string' && category.trim().length > 0),
     );
     return ['All', ...distinct];
-  }, [events]);
+  }, [combinedEvents]);
 
-  const filteredEvents = useMemo(() => {
+  useEffect(() => {
     if (activeCategory === 'All') {
-      return events;
-    }
-    return events.filter((event) => event.category === activeCategory);
-  }, [activeCategory, events]);
-
-  const sortedEvents = useMemo(() => {
-    if (!events.length) {
-      return [];
+      return;
     }
 
-    const toEpoch = (value) => {
-      const time = new Date(value).getTime();
-      return Number.isNaN(time) ? 0 : time;
-    };
+    const categoryExists = combinedEvents.some((event) => event?.category === activeCategory);
+    if (!categoryExists) {
+      setActiveCategory('All');
+    }
+  }, [combinedEvents, activeCategory]);
 
-    return [...events].sort((a, b) => toEpoch(b.date) - toEpoch(a.date));
-  }, [events]);
+  const visibleRecommended = useMemo(() => {
+    if (activeCategory === 'All') {
+      return recommended;
+    }
+    return recommended.filter((event) => event?.category === activeCategory);
+  }, [activeCategory, recommended]);
 
-  const featuredEvent = useMemo(() => sortedEvents[0], [sortedEvents]);
-
-  const recommendedEvents = useMemo(() => {
-    const base = activeCategory === 'All'
-      ? sortedEvents
-      : sortedEvents.filter((event) => event.category === activeCategory);
-    return base.slice(0, 6);
-  }, [activeCategory, sortedEvents]);
+  const heroDisplay = useMemo(() => {
+    if (heroEvent) {
+      return heroEvent;
+    }
+    if (visibleRecommended.length) {
+      return visibleRecommended[0];
+    }
+    if (allEvents.length) {
+      return allEvents[0];
+    }
+    return null;
+  }, [heroEvent, visibleRecommended, allEvents]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -98,32 +207,36 @@ const GuestDashboard = () => {
 
           {isLoading ? (
             <div className="h-64 w-full animate-pulse rounded-[28px] border border-white/10 bg-[#131b2a]/70" />
-          ) : featuredEvent ? (
+          ) : heroDisplay ? (
             <section className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[#111a27]/80 shadow-[0_35px_80px_rgba(5,10,20,0.65)]">
               <div className="absolute inset-0">
-                <Motion.img
-                  layout
-                  src={featuredEvent.imageUrl}
-                  alt={featuredEvent.title}
-                  className="h-full w-full object-cover opacity-70"
-                />
+                {heroDisplay.imageUrl ? (
+                  <Motion.img
+                    layout
+                    src={heroDisplay.imageUrl}
+                    alt={heroDisplay.title}
+                    className="h-full w-full object-cover opacity-70"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-[#10192a] via-[#101b30] to-[#0a1322] opacity-80" />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0b101b]/95 via-[#0b101b]/75 to-transparent" />
               </div>
               <div className="relative flex flex-col gap-6 p-8 sm:flex-row sm:items-center sm:gap-10 sm:p-12">
                 <div className="max-w-2xl space-y-4">
                   <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white/80">
-                    Featured Event
+                    {heroEvent ? 'Featured Event' : 'Spotlight Event'}
                   </span>
-                  <h2 className="text-3xl font-semibold text-white sm:text-4xl">{featuredEvent.title}</h2>
-                  {featuredEvent.description && (
-                    <p className="text-base text-white/70">{featuredEvent.description}</p>
+                  <h2 className="text-3xl font-semibold text-white sm:text-4xl">{heroDisplay.title}</h2>
+                  {heroDisplay.description && (
+                    <p className="text-base text-white/70">{heroDisplay.description}</p>
                   )}
                   <div className="flex flex-wrap gap-4 text-sm text-white/75">
                     <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
                       <span aria-hidden>📅</span>
                       <span>
-                        {featuredEvent.date
-                          ? new Date(featuredEvent.date).toLocaleDateString('en-US', {
+                        {heroDisplay.date
+                          ? new Date(heroDisplay.date).toLocaleDateString('en-US', {
                               month: 'short',
                               day: 'numeric',
                               year: 'numeric',
@@ -133,26 +246,31 @@ const GuestDashboard = () => {
                     </div>
                     <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[#151d2b]/70 px-4 py-2">
                       <span aria-hidden>📍</span>
-                      <span className="max-w-[16rem] truncate" title={featuredEvent.location}>
-                        {featuredEvent.location || 'Location TBA'}
+                      <span className="max-w-[16rem] truncate" title={heroDisplay.location}>
+                        {heroDisplay.location || 'Location TBA'}
                       </span>
                     </div>
                   </div>
                   <button
                     type="button"
+                    onClick={() => handleViewEvent(getEventId(heroDisplay))}
                     className="mt-2 inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 focus:outline-none"
                   >
-                    Register Now
+                    Explore Details
                   </button>
                 </div>
                 <div className="hidden flex-1 justify-end sm:flex">
                   <div className="h-48 w-48 overflow-hidden rounded-[22px] border border-white/10 bg-[#0c1627]/80">
-                    <Motion.img
-                      layout
-                      src={featuredEvent.imageUrl}
-                      alt={`${featuredEvent.title} spotlight`}
-                      className="h-full w-full object-cover"
-                    />
+                    {heroDisplay.imageUrl ? (
+                      <Motion.img
+                        layout
+                        src={heroDisplay.imageUrl}
+                        alt={`${heroDisplay.title} spotlight`}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950" />
+                    )}
                   </div>
                 </div>
               </div>
@@ -197,6 +315,7 @@ const GuestDashboard = () => {
               <h3 className="text-2xl font-semibold text-white">Recommended for You</h3>
               <button
                 type="button"
+                onClick={() => navigate('/guest/events')}
                 className="text-sm font-semibold text-white/60 transition hover:text-white"
               >
                 View all
@@ -218,186 +337,70 @@ const GuestDashboard = () => {
                   </div>
                 ))}
 
-              {!isLoading && recommendedEvents.length === 0 && (
+              {!isLoading && visibleRecommended.length === 0 && (
                 <div className="rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-12 text-center text-sm text-white/60">
                   No recommendations yet. Try another category to discover new experiences.
                 </div>
               )}
 
               {!isLoading &&
-                recommendedEvents.map((event) => (
-                  <Motion.article
-                    key={`recommended-${event._id}`}
-                    layout
-                    className="relative min-w-[300px] w-[300px] flex-shrink-0 snap-start overflow-hidden rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-4 shadow-[0_25px_60px_rgba(5,10,20,0.55)]"
-                  >
-                    <div className="relative h-40 w-full overflow-hidden rounded-[18px]">
-                      {event.imageUrl ? (
-                        <Motion.img
-                          layout
-                          src={event.imageUrl}
-                          alt={event.title}
-                          className="h-40 w-full rounded-t-xl object-cover"
-                        />
-                      ) : (
-                        <div className="h-40 w-full rounded-t-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
-                      )}
-                      {event.category && (
-                        <span className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
-                          {event.category}
-                        </span>
-                      )}
-                    </div>
-                    <div className="mt-4 space-y-3">
-                      <h4 className="text-lg font-semibold text-white">{event.title}</h4>
-                      <p className="text-xs text-white/55">
-                        {event.date
-                          ? new Date(event.date).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })
-                          : 'Date coming soon'}
-                        {' • '}
-                        {event.location || 'Location TBA'}
-                      </p>
-                      <button
-                        type="button"
-                        onClick={() => navigate(`/events/${event._id}`)}
-                        className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-medium text-white transition hover:border-white/30"
-                      >
-                        View details
-                      </button>
-                    </div>
-                  </Motion.article>
-                ))}
-            </div>
-          </section>
-
-          <section className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold text-white">All Events</h3>
-              <p className="text-sm text-white/55">Showing {filteredEvents.length} experiences</p>
-            </div>
-
-            <Motion.div layout className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
-            {isLoading &&
-              Array.from({ length: 6 }).map((_, index) => (
-                <div
-                  key={`skeleton-${index}`}
-                  className="flex h-full flex-col overflow-hidden rounded-[22px] border border-white/10 bg-[#141b2a] shadow-[0_25px_60px_rgba(7,11,20,0.45)]"
-                >
-                  <div className="h-44 w-full animate-pulse bg-[#1c2537]" />
-                  <div className="space-y-4 px-5 py-6">
-                    <div className="space-y-2">
-                      <div className="h-4 w-3/4 animate-pulse rounded bg-[#1f283a]" />
-                      <div className="h-3 w-full animate-pulse rounded bg-[#1f283a]" />
-                    </div>
-                    <div className="space-y-2 text-sm">
-                      <div className="h-3 w-2/3 animate-pulse rounded bg-[#223048]" />
-                      <div className="h-3 w-1/2 animate-pulse rounded bg-[#223048]" />
-                    </div>
-                    <div className="flex gap-2">
-                      <div className="h-6 w-20 animate-pulse rounded-full bg-[#223048]" />
-                      <div className="h-6 w-16 animate-pulse rounded-full bg-[#223048]" />
-                    </div>
-                    <div className="h-3 w-1/2 animate-pulse rounded bg-[#223048]" />
-                  </div>
-                </div>
-              ))}
-
-            {!isLoading && filteredEvents.length === 0 && !errorMessage && (
-              <Motion.div
-                layout
-                className="col-span-full flex flex-col items-center justify-center rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-16 text-center text-white/60"
-              >
-                <p className="text-lg font-semibold text-white">No events found</p>
-                <p className="mt-2 max-w-md text-sm text-white/55">
-                  Try selecting a different category or check back later for upcoming campus experiences.
-                </p>
-              </Motion.div>
-            )}
-
-            {!isLoading && errorMessage && (
-              <Motion.div
-                layout
-                className="col-span-full flex flex-col items-center justify-center rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-16 text-center"
-              >
-                <p className="text-lg font-medium text-white">{errorMessage}</p>
-              </Motion.div>
-            )}
-
-            {!isLoading &&
-              filteredEvents.map((event) => (
-                <Motion.article
-                  key={event._id}
-                  layout
-                  onClick={() => navigate(`/events/${event._id}`)}
-                  className="cursor-pointer overflow-hidden rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] shadow-[0_25px_70px_rgba(5,10,20,0.6)]"
-                >
-                  <div className="relative h-48 w-full overflow-hidden">
-                    <Motion.img
+                visibleRecommended.map((event, index) => {
+                  const eventId = getEventId(event);
+                  const cardKey = eventId ?? `recommended-${index}`;
+                  return (
+                    <Motion.article
+                      key={`recommended-${cardKey}`}
                       layout
-                      src={event.imageUrl}
-                      alt={event.title}
-                      className="h-full w-full object-cover"
-                    />
-                    {event.category && (
-                      <span className="absolute left-4 top-4 rounded-full bg-blue-600/90 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white">
-                        {event.category}
-                      </span>
-                    )}
-                  </div>
-                  <div className="space-y-5 px-6 py-6">
-                    <div className="space-y-2">
-                      <h2 className="text-2xl font-semibold text-white">{event.title}</h2>
-                      {event.description && (
-                        <p className="text-sm text-white/60">{event.description}</p>
-                      )}
-                    </div>
-                    <div className="space-y-3 text-sm text-white/70">
-                      <div className="flex items-center justify-between rounded-xl border border-white/5 bg-[#151d2b]/70 px-4 py-3">
-                        <span className="text-white/55">Date</span>
-                        <span className="font-medium text-white/85">
+                      className="relative min-w-[300px] w-[300px] flex-shrink-0 snap-start overflow-hidden rounded-[22px] border border-white/10 bg-[rgba(17,24,38,0.88)] p-4 shadow-[0_25px_60px_rgba(5,10,20,0.55)]"
+                    >
+                      <div className="relative h-40 w-full overflow-hidden rounded-[18px]">
+                        {event.imageUrl ? (
+                          <Motion.img
+                            layout
+                            src={event.imageUrl}
+                            alt={event.title}
+                            className="h-40 w-full rounded-t-xl object-cover"
+                          />
+                        ) : (
+                          <div className="h-40 w-full rounded-t-xl bg-gradient-to-br from-slate-700 via-slate-800 to-slate-900" />
+                        )}
+                        {event.category && (
+                          <span className="absolute left-3 top-3 rounded-full bg-blue-600/90 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-white">
+                            {event.category}
+                          </span>
+                        )}
+                      </div>
+                      <div className="mt-4 space-y-3">
+                        <h4 className="text-lg font-semibold text-white">{event.title}</h4>
+                        <p className="text-xs text-white/55">
                           {event.date
                             ? new Date(event.date).toLocaleDateString('en-US', {
                                 month: 'short',
                                 day: 'numeric',
-                                year: 'numeric',
                               })
-                            : 'TBD'}
-                        </span>
+                            : 'Date coming soon'}
+                          {' • '}
+                          {event.location || 'Location TBA'}
+                        </p>
+                        <button
+                          type="button"
+                          onClick={() => handleViewEvent(eventId)}
+                          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-1 text-xs font-medium text-white transition hover:border-white/30"
+                        >
+                          View details
+                        </button>
                       </div>
-                      <div className="flex items-center justify-between rounded-xl border border-white/5 bg-[#151d2b]/70 px-4 py-3">
-                        <span className="text-white/55">Location</span>
-                        <span className="max-w-[60%] truncate text-right font-medium text-white/85" title={event.location}>
-                          {event.location || 'TBD'}
-                        </span>
-                      </div>
-                    </div>
-                    {Array.isArray(event.tags) && event.tags.length > 0 && (
-                      <div className="flex flex-wrap items-center gap-2 text-xs text-blue-300">
-                        {event.tags.map((tag) => (
-                          <span key={tag} className="rounded-full bg-blue-600/10 px-3 py-1">
-                            #{tag}
-                          </span>
-                        ))}
-                      </div>
-                    )}
-                    <div className="flex items-center justify-between border-t border-white/10 pt-4 text-sm text-white/70">
-                      <span>
-                        {typeof event.capacity === 'number' && typeof event.rsvpCount === 'number'
-                          ? `${Math.max(event.capacity - event.rsvpCount, 0)} spots left`
-                          : 'RSVPs open'}
-                      </span>
-                      <span className="font-semibold text-white">
-                        {event.registrationFee > 0 ? `₦${Number(event.registrationFee).toLocaleString()}` : 'Free'}
-                      </span>
-                    </div>
-                  </div>
-                </Motion.article>
-              ))}
-            </Motion.div>
+                    </Motion.article>
+                  );
+                })}
+            </div>
           </section>
+
+          {errorMessage && !isLoading && (
+            <div className="rounded-[22px] border border-dashed border-white/15 bg-[#101624]/80 px-6 py-12 text-center">
+              <p className="text-sm font-medium text-white">{errorMessage}</p>
+            </div>
+          )}
         </section>
       </main>
     </div>

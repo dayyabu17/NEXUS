@@ -398,7 +398,7 @@ const OrganizerDashboard = () => {
                 exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
                 transition={{ duration: 1.6, ease: 'easeInOut' }}
             >
-              <div className="absolute h-32 w-32 rounded-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 blur-2xl animate-[spin_12s_linear_infinite]" />
+              <div className="absolute h-32 w-32 rounded-full bg-gradient-to-r from-accent-700 via-accent-600 to-accent-500 blur-2xl animate-[spin_12s_linear_infinite]" />
               <img
                 src={organizerProfile.avatar}
                 alt="Organizer profile"

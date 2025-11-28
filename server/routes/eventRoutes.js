@@ -1,8 +1,9 @@
 const express = require('express');
-const { getPublicEvents, getPublicEventById } = require('../controllers/eventController');
+const { getPublicEvents, getPublicEventById, getDashboardData } = require('../controllers/eventController');
 
 const router = express.Router();
 
+router.get('/dashboard', getDashboardData);
 router.get('/', getPublicEvents);
 router.get('/:id', getPublicEventById);
 

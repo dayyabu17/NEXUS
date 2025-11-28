@@ -26,12 +26,12 @@ const updateEventSales = async (event, quantity) => {
 
 const initializeRSVP = async (req, res) => {
   try {
-    const { userId, eventId, quantity = 1, email } = req.body;
+    const { userId, eventId, email } = req.body;
     if (!userId || !eventId || !email) {
       return res.status(400).json({ success: false, message: 'Missing required fields.' });
     }
 
-    const qty = Math.max(1, parseInt(quantity, 10));
+    const qty = 1;
     const event = await Event.findById(eventId);
     debugPayment('DEBUG PAYMENT:', {
       title: event?.title,
@@ -41,6 +41,20 @@ const initializeRSVP = async (req, res) => {
 
     if (!event) {
       return res.status(404).json({ success: false, message: 'Event not found.' });
+    }
+
+    const existingTicket = await Ticket.findOne({
+      user: userId,
+      event: eventId,
+      status: 'confirmed',
+    });
+
+    if (existingTicket) {
+      return res.status(409).json({
+        success: false,
+        message: 'You already have a ticket for this event.',
+        ticketId: existingTicket._id,
+      });
     }
 
     const costPerTicket = getSafeNumber(event.price, 0) || getSafeNumber(event.registrationFee, 0);
@@ -159,7 +173,22 @@ const verifyPayment = async (req, res) => {
       return res.status(200).json({ success: true, ticketId: existingTicket._id });
     }
 
-    const ticketQty = Math.max(1, Number(quantity) || 1);
+    const ticketQty = 1;
+
+    const existingConfirmedTicket = await Ticket.findOne({
+      event: eventId,
+      user: userId,
+      status: 'confirmed',
+    });
+
+    if (existingConfirmedTicket) {
+      debugPayment('User already owns ticket for event, skipping creation.');
+      return res.status(200).json({
+        success: true,
+        ticketId: existingConfirmedTicket._id,
+        alreadyRegistered: true,
+      });
+    }
 
     try {
       const newTicket = await Ticket.create({
