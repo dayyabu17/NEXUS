@@ -209,6 +209,16 @@ const StatSparkline = ({ data, color = '#4d997a', animate, delay = 0, id }) => {
   );
 };
 
+/**
+ * OrganizerDashboard component.
+ * Displays the main dashboard for organizers, including:
+ * - Summary statistics (RSVPs, Revenue, Active Events) with sparklines.
+ * - List of upcoming events.
+ * - Recent activities feed.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerDashboard component.
+ */
 const OrganizerDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);

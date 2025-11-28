@@ -8,6 +8,10 @@ const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
+/**
+ * Configure default marker icons for Leaflet.
+ * Fixes missing icon issues by using a CDN.
+ */
 const MARKER_ICON_CONFIGURED = () => {
   delete L.Icon.Default.prototype._getIconUrl;
   L.Icon.Default.mergeOptions({
@@ -22,6 +26,15 @@ MARKER_ICON_CONFIGURED();
 const MIN_QUERY_LENGTH = 3;
 const DEBOUNCE_DELAY = 500;
 const DEFAULT_COORDS = { lat: 9.05785, lng: 7.49508 }; // Abuja fallback keeps the map centered in Nigeria.
+
+/**
+ * Component to re-center the map when the position changes.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Object} props.position - The new center coordinates { lat, lng }.
+ * @returns {null} This component does not render any visible elements.
+ */
 const RecenterMap = ({ position }) => {
   const map = useMap();
 
@@ -36,6 +49,18 @@ const RecenterMap = ({ position }) => {
   return null;
 };
 
+/**
+ * LocationPicker component.
+ * Allows users to search for a location or select it from a list of suggestions.
+ * Displays a map preview of the selected location.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {string} props.value - The current address value.
+ * @param {Object} props.coordinates - The current coordinates { lat, lng }.
+ * @param {Function} props.onChange - Callback function called when location changes.
+ * @returns {JSX.Element} The rendered LocationPicker component.
+ */
 const LocationPicker = ({ value, coordinates, onChange }) => {
   const [query, setQuery] = useState(() => value || '');
   const [suggestions, setSuggestions] = useState([]);

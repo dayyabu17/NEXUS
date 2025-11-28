@@ -1,6 +1,16 @@
 import React from 'react';
 import nexusLogo from '../assets/nexus-logo.svg'; // Uncomment when ready
 
+/**
+ * AuthLayout component.
+ * Provides a common layout for authentication pages (Sign In, Sign Up).
+ * Features a split-screen design with a form area on the left and an image on the right.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The authentication form component to render.
+ * @returns {JSX.Element} The rendered AuthLayout component.
+ */
 const AuthLayout = ({ children }) => {
   return (
     // changed bg-nexus-light to bg-slate-950 to match your app theme

@@ -4,6 +4,18 @@ const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 const Event = require('./models/Event'); // Import the Event model
 
+/**
+ * @module seed
+ * @description Script to seed the database with initial users and events.
+ * Creates an admin, an organizer, a guest user, and sample events.
+ */
+
+/**
+ * Connects to the database and populates it with sample data.
+ * Clears existing users and events before seeding.
+ * @async
+ * @function seedDB
+ */
 const seedDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);

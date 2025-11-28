@@ -4,6 +4,17 @@ import api from '../api/axios';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg'; 
 
+/**
+ * Settings component.
+ * Allows administrators to update their profile information and profile picture.
+ * Features:
+ * - Update name and email.
+ * - Change password.
+ * - Upload new profile picture.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered Settings component.
+ */
 const Settings = () => {
   const [formData, setFormData] = useState({
     name: '',

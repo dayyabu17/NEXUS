@@ -63,6 +63,20 @@ const getNotificationInitial = (value) => {
   return trimmed ? trimmed.charAt(0).toUpperCase() : 'N';
 };
 
+/**
+ * OrganizerLayoutDark component.
+ * Provides the main layout structure for the organizer interface, including:
+ * - Persistent top navigation bar.
+ * - Profile and Notification dropdowns.
+ * - Global search functionality.
+ * - Dynamic time display.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {React.ReactNode} props.children - The content to render within the layout.
+ * @param {boolean} [props.suppressInitialLoader=false] - Whether to skip the initial loading animation.
+ * @returns {JSX.Element} The rendered OrganizerLayoutDark component.
+ */
 const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const location = useLocation();
   const navigate = useNavigate();

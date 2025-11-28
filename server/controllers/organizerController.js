@@ -2,6 +2,19 @@ const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
 const User = require('../models/User');
 
+/**
+ * @module controllers/organizerController
+ * @description Controller for handling organizer-related operations, including dashboard stats, event management, and notifications.
+ */
+
+/**
+ * Calculates the percentage change between two values.
+ *
+ * @function calculatePercentageChange
+ * @param {number} current - The current value.
+ * @param {number} previous - The previous value.
+ * @returns {number} The percentage change, rounded to 1 decimal place.
+ */
 const calculatePercentageChange = (current, previous) => {
   if (!previous) {
     return current === 0 ? 0 : 100;
@@ -11,8 +24,25 @@ const calculatePercentageChange = (current, previous) => {
   return Number(change.toFixed(1));
 };
 
+/**
+ * Returns the singular or plural form of a word based on the count.
+ *
+ * @function pluralize
+ * @param {number} count - The count.
+ * @param {string} singular - The singular form of the word.
+ * @param {string} plural - The plural form of the word.
+ * @returns {string} The correct form of the word.
+ */
 const pluralize = (count, singular, plural) => (count === 1 ? singular : plural);
 
+/**
+ * Builds a list of notifications based on event activities.
+ *
+ * @function buildNotifications
+ * @param {Array<Object>} events - The list of events.
+ * @param {Set<string>} [readSet=new Set()] - A set of read notification IDs.
+ * @returns {Array<Object>} A sorted list of notification objects.
+ */
 const buildNotifications = (events, readSet = new Set()) => {
   const notifications = [];
 
@@ -107,6 +137,16 @@ const buildNotifications = (events, readSet = new Set()) => {
     .sort((a, b) => b.createdAt - a.createdAt);
 };
 
+/**
+ * Retrieves the dashboard data for an organizer.
+ * Includes statistics, upcoming events, recent activities, and notifications.
+ *
+ * @function getOrganizerDashboard
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with dashboard data.
+ * @throws {Error} - Throws an error if the database query fails.
+ */
 const getOrganizerDashboard = asyncHandler(async (req, res) => {
   const now = new Date();
   const startOfToday = new Date(now);
@@ -217,6 +257,14 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Retrieves notifications for an organizer.
+ *
+ * @function getOrganizerNotifications
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with notifications and unread count.
+ */
 const getOrganizerNotifications = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
   const readSet = new Set(req.user.notificationReads || []);
@@ -229,6 +277,17 @@ const getOrganizerNotifications = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Marks a specific notification as read for an organizer.
+ *
+ * @function markOrganizerNotificationRead
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {String} req.body.id - The notification ID to mark as read.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with success status and updated unread count.
+ * @throws {Error} - Returns a 400 error if ID is missing.
+ */
 const markOrganizerNotificationRead = asyncHandler(async (req, res) => {
   const { id } = req.body;
 
@@ -252,6 +311,14 @@ const markOrganizerNotificationRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount });
 });
 
+/**
+ * Marks all notifications as read for an organizer.
+ *
+ * @function markAllOrganizerNotificationsRead
+ * @param {Object} req - The Express request object.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with success status and unread count of 0.
+ */
 const markAllOrganizerNotificationsRead = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
   const notifications = buildNotifications(events);
@@ -266,6 +333,18 @@ const markAllOrganizerNotificationsRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount: 0 });
 });
 
+/**
+ * Retrieves events created by the organizer.
+ * Supports filtering by status and searching by title.
+ *
+ * @function getOrganizerEvents
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.query - The query parameters.
+ * @param {String} [req.query.status] - Filter by event status ('pending', 'approved', 'rejected').
+ * @param {String} [req.query.search] - Search by event title.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the list of events.
+ */
 const getOrganizerEvents = asyncHandler(async (req, res) => {
   const { status, search } = req.query;
 
@@ -295,6 +374,17 @@ const getOrganizerEvents = asyncHandler(async (req, res) => {
   })));
 });
 
+/**
+ * Retrieves details for a specific event created by the organizer.
+ *
+ * @function getOrganizerEventDetails
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.params - The route parameters.
+ * @param {String} req.params.id - The ID of the event.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with event details.
+ * @throws {Error} - Returns a 404 error if the event is not found.
+ */
 const getOrganizerEventDetails = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -322,6 +412,16 @@ const getOrganizerEventDetails = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Creates a new event for the organizer.
+ *
+ * @function createOrganizerEvent
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.body - The request body containing event details.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the created event details.
+ * @throws {Error} - Returns a 400 error if required fields are missing or invalid.
+ */
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
     title,

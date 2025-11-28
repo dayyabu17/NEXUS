@@ -36,6 +36,17 @@ const formatDateLabel = (value) => {
   });
 };
 
+/**
+ * OrganizerNotifications component.
+ * Displays a list of notifications for the organizer.
+ * Features include:
+ * - Filtering by read/unread status.
+ * - Marking individual notifications as read.
+ * - Marking all notifications as read.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerNotifications component.
+ */
 const OrganizerNotifications = () => {
   const navigate = useNavigate();
   const [notifications, setNotifications] = useState([]);

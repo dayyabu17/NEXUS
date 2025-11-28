@@ -4,9 +4,23 @@ const jwt = require('jsonwebtoken');
 const upload = require('../utils/fileUpload');
 const asyncHandler = require('express-async-handler')
 
-// @desc    Auth user & get token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * @module controllers/authController
+ * @description Controller for handling authentication and user profile management.
+ */
+
+/**
+ * Authenticates a user and issues a JWT token.
+ *
+ * @function loginUser
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {String} req.body.email - The user's email.
+ * @param {String} req.body.password - The user's password.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with user details and JWT token.
+ * @throws {Error} - Returns a 400 error if credentials are invalid or 500 for server errors.
+ */
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -64,9 +78,22 @@ const loginUser = async (req, res) => {
   }
 };
 
-// @desc    Update user profile (name, email, password)
-// @route   PUT /api/auth/profile
-// @access  Private
+/**
+ * Updates the authenticated user's profile information.
+ * Allows updating name, email, and password.
+ *
+ * @function updateUserProfile
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.user - The authenticated user attached by middleware.
+ * @param {String} req.user._id - The user's ID.
+ * @param {Object} req.body - The request body.
+ * @param {String} [req.body.name] - The new name (optional).
+ * @param {String} [req.body.email] - The new email (optional).
+ * @param {String} [req.body.password] - The new password (optional).
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the updated user details.
+ * @throws {Error} - Returns a 404 error if the user is not found.
+ */
 const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandler
   const user = await User.findById(req.user._id);
 
@@ -93,9 +120,19 @@ const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandl
   }
 });
 
-// @desc    Upload user profile picture
-// @route   PUT /api/auth/profile/picture
-// @access  Private
+/**
+ * Uploads and updates the user's profile picture.
+ * Uses the configured Multer upload middleware.
+ *
+ * @function updateProfilePicture
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.user - The authenticated user attached by middleware.
+ * @param {String} req.user._id - The user's ID.
+ * @param {Object} req.file - The uploaded file object (from Multer).
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the new profile picture path.
+ * @throws {Error} - Returns a 400 error for upload failures or no file, 404 if user not found.
+ */
 const updateProfilePicture = asyncHandler(async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {

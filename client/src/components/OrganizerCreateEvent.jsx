@@ -112,6 +112,14 @@ const formatTimeDisplay = (value) => {
   return `${twoDigit(numericHours)}:${twoDigit(numericMinutes)}`;
 };
 
+/**
+ * OrganizerCreateEvent component.
+ * Allows organizers to create new events with detailed information including
+ * title, description, date/time, location, capacity, and pricing.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerCreateEvent component.
+ */
 const OrganizerCreateEvent = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState(() => ({ ...INITIAL_FORM }));

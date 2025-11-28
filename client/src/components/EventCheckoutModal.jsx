@@ -3,11 +3,20 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
+/**
+ * Currency formatter for Nigerian Naira (NGN).
+ * @type {Intl.NumberFormat}
+ */
 const currencyFormatter = new Intl.NumberFormat('en-NG', {
   style: 'currency',
   currency: 'NGN',
 });
 
+/**
+ * Formats a price value. Returns 'Free' if amount is 0 or invalid.
+ * @param {number|string} amount - The amount to format.
+ * @returns {string} The formatted price string.
+ */
 const formatPrice = (amount) => {
   const numeric = Number(amount);
   if (!Number.isFinite(numeric) || numeric <= 0) {
@@ -16,6 +25,20 @@ const formatPrice = (amount) => {
   return currencyFormatter.format(numeric);
 };
 
+/**
+ * EventCheckoutModal component.
+ * Displays a modal for users to select ticket quantity and proceed with RSVP/Payment.
+ * Handles both free and paid events.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {boolean} props.isOpen - Whether the modal is open.
+ * @param {Function} props.onClose - Callback to close the modal.
+ * @param {Object} props.event - The event object details.
+ * @param {string} props.userId - The ID of the user.
+ * @param {string} props.email - The email of the user.
+ * @returns {React.ReactPortal|null} The rendered modal or null if closed.
+ */
 const EventCheckoutModal = ({ isOpen, onClose, event, userId, email }) => {
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);

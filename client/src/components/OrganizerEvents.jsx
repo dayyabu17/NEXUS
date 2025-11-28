@@ -57,6 +57,17 @@ const getStatusBadge = (status) => {
   }
 };
 
+/**
+ * OrganizerEvents component.
+ * Displays a list of all events managed by the organizer.
+ * Features include:
+ * - Filtering events by status (Pending, Approved, Rejected).
+ * - Grouping events by date.
+ * - Displaying event details in a card format.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered OrganizerEvents component.
+ */
 const OrganizerEvents = () => {
   const navigate = useNavigate();
   const [events, setEvents] = useState([]);

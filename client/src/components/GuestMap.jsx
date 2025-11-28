@@ -25,6 +25,13 @@ const DEFAULT_CENTER = [9.05785, 7.49508];
 const DEFAULT_ZOOM = 13;
 const LOCATION_STORAGE_KEY = 'userLocation';
 
+/**
+ * Fits the map view to contain all the given markers.
+ *
+ * @function fitBoundsToMarkers
+ * @param {L.Map} mapInstance - The Leaflet map instance.
+ * @param {Array<Object>} markers - Array of marker objects with lat and lng properties.
+ */
 const fitBoundsToMarkers = (mapInstance, markers) => {
   if (!mapInstance || markers.length === 0) {
     return;
@@ -37,6 +44,14 @@ const fitBoundsToMarkers = (mapInstance, markers) => {
   });
 };
 
+/**
+ * Component to automatically adjust map bounds when markers change.
+ *
+ * @component
+ * @param {Object} props - Component props.
+ * @param {Array<Object>} props.markers - The list of active markers.
+ * @returns {null} This component does not render any visible elements.
+ */
 const FlyToBounds = ({ markers }) => {
   const mapInstance = useMap();
   const markersRef = useRef(markers);
@@ -55,6 +70,14 @@ const FlyToBounds = ({ markers }) => {
   return null;
 };
 
+/**
+ * GuestMap component.
+ * Displays a map with event markers, allowing guests to explore events geographically.
+ * Supports switching between 'Explore' and 'My Schedule' views.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered GuestMap component.
+ */
 const GuestMap = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

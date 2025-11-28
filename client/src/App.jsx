@@ -19,6 +19,14 @@ import GuestMap from './components/GuestMap';
 import PaymentCallback from './components/PaymentCallback';
 import MyTickets from './pages/MyTickets';
 
+/**
+ * Main App component.
+ * Defines the routing structure for the application.
+ * Handles routes for Authentication, Admin, Organizer, and Guest views.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered App component with routing.
+ */
 function App() {
   return (
     <Routes>

@@ -4,6 +4,17 @@ import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import GuestNavbar from './GuestNavbar';
 
+/**
+ * GuestDashboard component.
+ * Displays a dashboard for guests to discover, view, and search for events.
+ * Features include:
+ * - Featured event section
+ * - Recommended events carousel
+ * - Filterable list of all events by category
+ *
+ * @component
+ * @returns {JSX.Element} The rendered GuestDashboard component.
+ */
 const GuestDashboard = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);

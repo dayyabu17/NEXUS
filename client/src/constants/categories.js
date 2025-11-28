@@ -1,3 +1,8 @@
+/**
+ * List of predefined event categories used across the application.
+ * @constant
+ * @type {string[]}
+ */
 export const EVENT_CATEGORIES = [
   'Technology',
   'Academic',

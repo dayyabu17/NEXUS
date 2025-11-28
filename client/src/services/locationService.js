@@ -8,6 +8,16 @@ const distanceMatrixApiKey = import.meta.env.VITE_DISTANCE_MATRIX_API_KEY;
 
 // console.log("DEBUG: Using Hardcoded Key:", API_KEY);
 
+/**
+ * Helper function to perform a fetch request and handle errors.
+ *
+ * @async
+ * @function withGuardedFetch
+ * @param {string} url - The URL to fetch.
+ * @param {Object} [options={}] - Fetch options.
+ * @returns {Promise<any>} The parsed JSON response.
+ * @throws {Error} Throws an error if the response is not OK.
+ */
 const withGuardedFetch = async (url, options = {}) => {
   const response = await fetch(url, options);
 
@@ -25,6 +35,15 @@ const withGuardedFetch = async (url, options = {}) => {
   return response.json();
 };
 
+/**
+ * Searches for an address using the Geocoding API.
+ *
+ * @async
+ * @function searchAddress
+ * @param {string} query - The address to search for.
+ * @returns {Promise<Array<Object>>} A list of location results with formatted labels.
+ * @throws {Error} Throws an error if the API request fails.
+ */
 export const searchAddress = async (query) => {
   const trimmed = query?.trim();
   if (!trimmed) {
@@ -78,6 +97,16 @@ export const searchAddress = async (query) => {
   });
 };
 
+/**
+ * Calculates travel time between an origin and a destination using the Distance Matrix API.
+ *
+ * @async
+ * @function getTravelTime
+ * @param {Object} origin - The starting point with lat and lng properties.
+ * @param {Object} destination - The destination with lat and lng properties.
+ * @returns {Promise<Object>} The distance matrix element containing duration and distance.
+ * @throws {Error} Throws an error if parameters are missing or the API request fails.
+ */
 export const getTravelTime = async (origin, destination) => {
   if (!origin || !destination) {
     throw new Error('Origin and destination are required to compute travel time.');
@@ -102,6 +131,16 @@ export const getTravelTime = async (origin, destination) => {
   return element;
 };
 
+/**
+ * Performs reverse geocoding to find a location name from coordinates.
+ *
+ * @async
+ * @function reverseGeocode
+ * @param {number} lat - The latitude.
+ * @param {number} lng - The longitude.
+ * @returns {Promise<string>} The name of the location (e.g., city or area).
+ * @throws {Error} Throws an error if coordinates are invalid or the API request fails.
+ */
 export const reverseGeocode = async (lat, lng) => {
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
     throw new Error('Latitude and longitude are required for reverse geocoding.');

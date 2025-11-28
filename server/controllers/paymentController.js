@@ -5,17 +5,40 @@ const Event = require('../models/Event');
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 const FRONTEND_FALLBACK = 'http://localhost:5173';
 const paymentDebugEnabled = process.env.PAYMENT_DEBUG === 'true';
+
+/**
+ * Logs payment-related information if debugging is enabled.
+ *
+ * @function debugPayment
+ * @param {...any} args - The arguments to log.
+ */
 const debugPayment = (...args) => {
   if (paymentDebugEnabled) {
     console.log(...args);
   }
 };
 
+/**
+ * Safely parses a value to a number, providing a fallback if needed.
+ *
+ * @function getSafeNumber
+ * @param {any} value - The value to parse.
+ * @param {number} [fallback=0] - The fallback value.
+ * @returns {number} The parsed number or the fallback.
+ */
 const getSafeNumber = (value, fallback = 0) => {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+/**
+ * Updates the ticket sales and RSVP count for an event.
+ *
+ * @function updateEventSales
+ * @param {Object} event - The event document to update.
+ * @param {number} quantity - The number of tickets sold.
+ * @returns {Promise<void>}
+ */
 const updateEventSales = async (event, quantity) => {
   const increment = getSafeNumber(quantity, 1);
   const currentSold = getSafeNumber(event.ticketsSold, getSafeNumber(event.rsvpCount, 0));
@@ -24,6 +47,21 @@ const updateEventSales = async (event, quantity) => {
   await event.save();
 };
 
+/**
+ * Initializes an RSVP or ticket purchase process.
+ * Handles both free events and paid events via Paystack.
+ *
+ * @function initializeRSVP
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.body - The request body.
+ * @param {String} req.body.userId - The ID of the user.
+ * @param {String} req.body.eventId - The ID of the event.
+ * @param {number} [req.body.quantity=1] - The quantity of tickets.
+ * @param {String} req.body.email - The user's email.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the initialization result.
+ * @throws {Error} - Returns various error codes for missing fields, full capacity, or payment gateway issues.
+ */
 const initializeRSVP = async (req, res) => {
   try {
     const { userId, eventId, quantity = 1, email } = req.body;
@@ -120,6 +158,17 @@ const initializeRSVP = async (req, res) => {
   }
 };
 
+/**
+ * Verifies a payment transaction with Paystack and creates a ticket if successful.
+ *
+ * @function verifyPayment
+ * @param {Object} req - The Express request object.
+ * @param {Object} req.query - The query parameters.
+ * @param {String} req.query.reference - The payment reference to verify.
+ * @param {Object} res - The Express response object.
+ * @returns {Promise<void>} Sends a JSON response with the verification result and ticket ID.
+ * @throws {Error} - Returns various error codes for invalid reference, failed payment, or database errors.
+ */
 const verifyPayment = async (req, res) => {
   const { reference } = req.query;
 

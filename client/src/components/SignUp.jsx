@@ -3,6 +3,15 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthLayout from './AuthLayout';
 
+/**
+ * SignUp component.
+ * Provides a registration form for new users.
+ * Supports switching between 'guest' and 'organizer' roles.
+ * Organizers have an additional field for organization name.
+ *
+ * @component
+ * @returns {JSX.Element} The rendered SignUp component.
+ */
 const SignUp = () => {
   // 'guest' or 'organizer'
   const [userType, setUserType] = useState('guest'); 
