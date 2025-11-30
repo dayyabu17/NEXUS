@@ -5,6 +5,7 @@ import GuestNavbar from './GuestNavbar';
 import NexusIDCard from './NexusIDCard';
 import AchievementBadges from './AchievementBadges';
 import api from '../api/axios';
+import ThemeSelector from './ThemeSelector';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
 const MotionSection = motion.section;
@@ -41,6 +42,7 @@ const GuestProfile = () => {
   const [tickets, setTickets] = useState([]);
   const [loadingMetrics, setLoadingMetrics] = useState(true);
   const [activeTab, setActiveTab] = useState('history');
+  const tabs = useMemo(() => [{ id: 'history', label: 'History' }, { id: 'achievements', label: 'Achievements' }, { id: 'appearance', label: 'Appearance' }], []);
 
   useEffect(() => {
     try {
@@ -570,28 +572,32 @@ const GuestProfile = () => {
 
             <div className="space-y-6">
               <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 p-2 text-xs font-semibold uppercase tracking-[0.26em] text-white/60">
-                {['history', 'achievements'].map((tab) => (
+                {tabs.map((tab) => (
                   <button
-                    key={tab}
+                    key={tab.id}
                     type="button"
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => setActiveTab(tab.id)}
                     className={`flex-1 rounded-full px-5 py-2 transition ${
-                      activeTab === tab
+                      activeTab === tab.id
                         ? 'bg-white text-black shadow-[0_10px_40px_rgba(255,255,255,0.25)]'
                         : 'text-white/60 hover:text-white'
                     }`}
                   >
-                    {tab === 'history' ? 'History' : 'Achievements'}
+                    {tab.label}
                   </button>
                 ))}
               </div>
 
-              {activeTab === 'history' ? (
-                historyContent
-              ) : (
+              {activeTab === 'history' && historyContent}
+
+              {activeTab === 'achievements' && (
                 <div className="rounded-3xl border border-white/10 bg-[#0d1423]/65 p-8 shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
                   <AchievementBadges stats={ticketMetrics} loading={loadingMetrics} />
                 </div>
+              )}
+
+              {activeTab === 'appearance' && (
+                <ThemeSelector />
               )}
             </div>
           </div>

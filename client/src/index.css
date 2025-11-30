@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 /* --- Euclid Circular A Font Definitions --- */
 
 /* Regular (400) */
@@ -55,9 +59,6 @@
   --color-primary-700: #1d4ed8;
 }
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 html {
   color-scheme: dark;

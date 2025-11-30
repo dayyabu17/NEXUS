@@ -489,16 +489,16 @@ const GuestNavbar = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(10,15,25,0.75)] backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-slate-200 bg-white/80 backdrop-blur-xl dark:border-slate-800 dark:bg-slate-950/80">
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={handleBrandInfoToggle}
-            className={`flex h-10 w-10 items-center justify-center rounded-2xl border bg-[#141c2c]/90 p-2 transition-all duration-300 ${
+            className={`flex h-10 w-10 items-center justify-center rounded-2xl border bg-white p-2 text-slate-900 transition-all duration-300 dark:bg-[#141c2c]/90 dark:text-white ${
               isBrandInfoOpen
-                ? 'border-white/30 shadow-[0_8px_30px_rgba(132,94,247,0.45)]'
-                : 'border-white/10 hover:border-white/20 hover:shadow-[0_6px_22px_rgba(132,94,247,0.35)]'
+                ? 'border-blue-400 shadow-[0_8px_30px_rgba(132,94,247,0.35)] dark:border-white/30'
+                : 'border-slate-200 hover:border-blue-400 hover:shadow-[0_6px_22px_rgba(132,94,247,0.35)] dark:border-white/10 dark:hover:border-white/20'
             }`}
             aria-label="About Nexus"
           >
@@ -507,22 +507,22 @@ const GuestNavbar = () => {
           <button
             type="button"
             onClick={handleLocationClick}
-            className="hidden md:flex cursor-pointer items-center gap-2 rounded-full border border-white/10 bg-[#141c2c]/80 px-3 py-1 text-xs font-medium text-white/70 transition hover:border-white/20"
+            className="hidden md:flex cursor-pointer items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 text-xs font-medium text-slate-700 transition hover:border-blue-400 hover:text-blue-600 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300"
             aria-haspopup="dialog"
             aria-expanded={isModalOpen}
           >
             <span aria-hidden>📍</span>
             <span className="max-w-[120px] truncate" title={locationName}>{locationName}</span>
-            <span aria-hidden className="text-[10px] text-white/60">▾</span>
+            <span aria-hidden className="text-[10px] text-slate-500 dark:text-slate-400">▾</span>
           </button>
         </div>
 
-        <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-white/70">
+        <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
           {NAV_LINKS.map(({ label, to }) => (
             <Link
               key={label}
               to={to}
-              className="transition hover:text-white"
+              className="text-slate-600 transition hover:text-blue-600 dark:text-slate-400 dark:hover:text-white"
               onClick={closeAll}
             >
               {label}
@@ -534,7 +534,7 @@ const GuestNavbar = () => {
           <div className="hidden md:flex items-center gap-3">
             <button
               type="button"
-              className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white"
+              className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-[#121824] dark:text-white/70 dark:hover:bg-[#1b2335]"
               onClick={openSearch}
               aria-label="Open search"
             >
@@ -550,8 +550,8 @@ const GuestNavbar = () => {
                   setIsSearchOpen(false);
                   setIsBrandInfoOpen(false);
                 }}
-                className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white ${
-                  isNotificationsOpen ? 'border-white/25 text-white' : ''
+                className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 hover:text-slate-900 dark:border-white/10 dark:bg-[#121824] dark:text-white/70 dark:hover:bg-[#1b2335] ${
+                  isNotificationsOpen ? 'border-blue-400 text-blue-600 dark:border-white/25 dark:text-white' : ''
                 }`}
                 aria-haspopup="true"
                 aria-expanded={isNotificationsOpen}
@@ -657,7 +657,7 @@ const GuestNavbar = () => {
             <div className="relative">
               <button
                 type="button"
-                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-white/10 bg-[#121824]"
+                className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-[#121824] dark:text-white/70 dark:hover:bg-[#1b2335]"
                 onClick={toggleDropdown}
                 aria-haspopup="true"
                 aria-expanded={isDropdownOpen}
@@ -706,7 +706,7 @@ const GuestNavbar = () => {
 
           <button
             type="button"
-            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/80 md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-[#121824] dark:text-white/80 dark:hover:bg-[#1b2335] md:hidden"
             aria-label="Toggle navigation"
             onClick={() => {
               setIsMobileMenuOpen((prev) => !prev);
@@ -751,7 +751,7 @@ const GuestNavbar = () => {
                 <button
                   type="button"
                   onClick={handleLocationClick}
-                  className="flex w-full items-center justify-between rounded-2xl border border-white/25 bg-white/10 px-4 py-3 text-sm font-semibold text-white/85 transition hover:border-white/45 hover:bg-white/15"
+                  className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-blue-300 hover:text-blue-600 dark:border-white/25 dark:bg-white/10 dark:text-white/85 dark:hover:border-white/45 dark:hover:bg-white/15"
                   aria-haspopup="dialog"
                   aria-expanded={isModalOpen}
                 >
@@ -759,7 +759,7 @@ const GuestNavbar = () => {
                     <span aria-hidden>📍</span>
                     <span className="truncate">{locationName}</span>
                   </span>
-                  <span aria-hidden className="text-xs">▾</span>
+                  <span aria-hidden className="text-xs text-slate-500 dark:text-white/80">▾</span>
                 </button>
               </Motion.div>
 
@@ -775,7 +775,7 @@ const GuestNavbar = () => {
                     key={`mobile-overlay-${label}`}
                     type="button"
                     onClick={() => handleNavigate(to)}
-                    className="text-2xl font-semibold uppercase tracking-[0.24em] text-white/85 transition hover:text-white"
+                    className="text-2xl font-semibold uppercase tracking-[0.24em] text-slate-800 transition hover:text-blue-500 dark:text-white/85 dark:hover:text-white"
                   >
                     {label}
                   </button>
@@ -792,7 +792,7 @@ const GuestNavbar = () => {
                 <button
                   type="button"
                   onClick={openSearch}
-                  className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/15 transition hover:border-white/50 hover:bg-white/25"
+                  className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/30 dark:bg-white/15 dark:text-white/85 dark:hover:border-white/50 dark:hover:bg-white/25"
                   aria-label="Open search"
                 >
                   <img src={SearchIcon} alt="Search" className="h-5 w-5" />
@@ -800,7 +800,7 @@ const GuestNavbar = () => {
                 <button
                   type="button"
                   onClick={() => handleNavigate('/guest/notifications')}
-                  className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/15 transition hover:border-white/50 hover:bg-white/25"
+                  className="relative flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/30 dark:bg-white/15 dark:text-white/85 dark:hover:border-white/50 dark:hover:bg-white/25"
                   aria-label="View notifications"
                 >
                   <img src={BellIcon} alt="Notifications" className="h-5 w-5" />
@@ -813,7 +813,7 @@ const GuestNavbar = () => {
                 <button
                   type="button"
                   onClick={() => handleNavigate('/guest/profile')}
-                  className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-white/30 bg-white/15 transition hover:border-white/50 hover:bg-white/25"
+                  className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full border border-slate-200 bg-white transition hover:bg-slate-100 dark:border-white/30 dark:bg-white/15 dark:hover:border-white/50 dark:hover:bg-white/25"
                   aria-label="View profile"
                 >
                   <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
