@@ -37,11 +37,11 @@ const GuestEvents = lazy(() => import('./pages/GuestEvents')); // Note: This was
 // --- 2. Loading Fallback Component ---
 // This shows while the browser fetches the specific page chunk
 const LoadingFallback = () => (
-  <div className="flex justify-center items-center h-screen bg-gray-50">
+  <div className="flex h-screen items-center justify-center bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
     <div className="flex flex-col items-center gap-4">
       {/* You can replace this with your Nexus Logo or a Spinner */}
-      <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-      <p className="text-gray-600 font-medium">Loading Nexus...</p>
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      <p className="font-medium text-slate-600 dark:text-slate-300">Loading Nexus...</p>
     </div>
   </div>
 );

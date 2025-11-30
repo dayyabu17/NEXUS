@@ -237,18 +237,18 @@ const GuestMap = () => {
   }, [map]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <GuestNavbar />
       <div className="relative">
         <div className="absolute inset-x-0 top-16 z-40 flex justify-center px-4">
-          <div className="flex items-center gap-2 rounded-full border border-white/10 bg-[rgba(10,15,25,0.75)] px-2 py-2 text-sm font-medium text-white/80 shadow-[0_20px_60px_rgba(5,10,20,0.55)] backdrop-blur-xl">
+          <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white/90 px-2 py-2 text-sm font-medium text-slate-700 shadow-lg backdrop-blur-xl dark:border-slate-800 dark:bg-slate-900/90 dark:text-white">
             <button
               type="button"
               onClick={() => setActiveView('explore')}
               className={`rounded-full px-4 py-1 transition ${
                 activeView === 'explore'
                   ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                  : 'text-white/70 hover:bg-white/10'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/10'
               }`}
             >
               Explore
@@ -259,7 +259,7 @@ const GuestMap = () => {
               className={`rounded-full px-4 py-1 transition ${
                 activeView === 'schedule'
                   ? 'bg-amber-500 text-black shadow-lg shadow-amber-500/20'
-                  : 'text-white/70 hover:bg-white/10'
+                  : 'text-slate-600 hover:bg-slate-100 dark:text-white/70 dark:hover:bg-white/10'
               }`}
             >
               My Schedule
@@ -268,13 +268,13 @@ const GuestMap = () => {
         </div>
 
         <div className="pt-16 px-4">
-          <div className="relative z-0 overflow-hidden rounded-xl border-4 border-slate-800">
+          <div className="relative z-0 overflow-hidden rounded-2xl border border-slate-200 shadow-lg dark:border-slate-800">
             <MapContainer
               center={userLocation ? [userLocation.lat, userLocation.lng] : DEFAULT_CENTER}
               zoom={DEFAULT_ZOOM}
               scrollWheelZoom
-              className="w-full"
-              style={{ background: '#0b1220', height: MAP_HEIGHT }}
+              className="w-full bg-slate-200 grayscale-0 dark:bg-slate-900 dark:invert dark:hue-rotate-180 dark:brightness-95"
+              style={{ height: MAP_HEIGHT }}
               ref={setMap}
             >
               <TileLayer
@@ -305,7 +305,7 @@ const GuestMap = () => {
                   <Tooltip direction="top" offset={[0, -40]} opacity={1} permanent>
                     {marker.title?.length > 15 ? `${marker.title.substring(0, 15)}...` : marker.title}
                   </Tooltip>
-                  <Popup className="rounded-xl border border-white/10 bg-[#0f1729] text-white">
+                  <Popup className="rounded-xl border border-slate-200 bg-white text-slate-900 dark:border-slate-800 dark:bg-[#0f1729] dark:text-white">
                     <div className="w-56 space-y-3">
                       <div className="overflow-hidden rounded-lg">
                         <img
@@ -316,7 +316,7 @@ const GuestMap = () => {
                       </div>
                       <div className="space-y-1">
                         <h3 className="text-base font-semibold">{marker.title}</h3>
-                        <p className="text-xs text-white/60">
+                        <p className="text-xs text-slate-600 dark:text-white/60">
                           {marker.date
                             ? new Date(marker.date).toLocaleDateString('en-US', {
                                 month: 'short',
@@ -344,14 +344,14 @@ const GuestMap = () => {
         </div>
 
         {isLoading && (
-          <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-[#0b1220]/60 text-sm text-white/60">
+          <div className="pointer-events-none absolute inset-0 z-30 flex items-center justify-center bg-slate-200/70 text-sm text-slate-600 dark:bg-[#0b1220]/60 dark:text-white/60">
             Loading events…
           </div>
         )}
 
         {!isLoading && errorMessage && (
           <div className="pointer-events-none absolute inset-x-0 top-24 z-30 flex justify-center">
-            <div className="rounded-2xl border border-white/10 bg-[#101725]/95 px-5 py-3 text-sm text-white/80 shadow-[0_20px_60px_rgba(5,10,20,0.55)]">
+            <div className="rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm text-slate-700 shadow-lg dark:border-slate-800 dark:bg-[#101725]/95 dark:text-white/80 dark:shadow-[0_20px_60px_rgba(5,10,20,0.55)]">
               {errorMessage}
             </div>
           </div>

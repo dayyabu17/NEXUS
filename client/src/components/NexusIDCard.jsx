@@ -155,7 +155,7 @@ const NexusIDCard = ({
       <button
         type="button"
         onClick={onShare}
-        className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:border-white/35 hover:text-white"
+        className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:border-white/35"
       >
         Share ID
       </button>

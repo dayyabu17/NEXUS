@@ -70,14 +70,14 @@ const MyTickets = () => {
   const hasTickets = useMemo(() => tickets.length > 0, [tickets]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <GuestNavbar />
 
       <main className="mx-auto max-w-6xl px-6 pb-16 pt-24">
         <header className="mb-10 space-y-3">
-          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-white/40">My wallet</p>
-          <h1 className="text-4xl font-semibold text-white">Your Tickets</h1>
-          <p className="max-w-2xl text-base text-white/60">
+          <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/40">My wallet</p>
+          <h1 className="text-4xl font-semibold text-slate-900 dark:text-white">Your Tickets</h1>
+          <p className="max-w-2xl text-base text-slate-600 dark:text-white/60">
             Access every experience you have unlocked. Flip a ticket to reveal its QR code for entry.
           </p>
         </header>
@@ -87,20 +87,20 @@ const MyTickets = () => {
             {[...Array(3)].map((_, index) => (
               <div
                 key={index}
-                className="h-80 animate-pulse rounded-[28px] border border-white/10 bg-[#131b2a]/70"
+                className="h-80 animate-pulse rounded-[28px] border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-[#131b2a]/70"
               />
             ))}
           </div>
         )}
 
         {status === STATUS.ERROR && (
-          <div className="flex flex-col items-center justify-center gap-4 rounded-[28px] border border-red-500/40 bg-red-500/10 px-6 py-12 text-center">
-            <h2 className="text-2xl font-semibold text-white">We hit a snag</h2>
-            <p className="max-w-xl text-sm text-white/70">{message}</p>
+          <div className="flex flex-col items-center justify-center gap-4 rounded-[28px] border border-red-200 bg-red-50 px-6 py-12 text-center dark:border-red-500/40 dark:bg-red-500/10">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">We hit a snag</h2>
+            <p className="max-w-xl text-sm text-slate-600 dark:text-white/70">{message}</p>
             <button
               type="button"
               onClick={() => navigate('/guest/dashboard')}
-              className="inline-flex items-center justify-center rounded-full bg-white px-5 py-2 text-sm font-semibold text-black transition hover:bg-white/90"
+              className="inline-flex items-center justify-center rounded-full bg-blue-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-blue-500"
             >
               Explore Events
             </button>
@@ -111,13 +111,13 @@ const MyTickets = () => {
           <Motion.div
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex flex-col items-center justify-center gap-5 rounded-[28px] border border-white/10 bg-[#11192a]/80 px-6 py-16 text-center shadow-[0_30px_80px_rgba(5,10,20,0.55)]"
+            className="flex flex-col items-center justify-center gap-5 rounded-[28px] border border-slate-200 bg-white px-6 py-16 text-center shadow-sm dark:border-white/10 dark:bg-[#11192a]/80 dark:shadow-[0_30px_80px_rgba(5,10,20,0.55)]"
           >
-            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white/15 bg-white/5">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full border border-slate-200 bg-slate-100 dark:border-white/15 dark:bg-white/5">
               <span className="text-2xl" aria-hidden>🎟️</span>
             </div>
-            <h2 className="text-2xl font-semibold text-white">No tickets yet</h2>
-            <p className="max-w-md text-sm text-white/60">
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">No tickets yet</h2>
+            <p className="max-w-md text-sm text-slate-600 dark:text-white/60">
               When you RSVP or purchase an event pass, it will appear here instantly. Discover new events to fill your wallet.
             </p>
             <button

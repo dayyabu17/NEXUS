@@ -389,12 +389,12 @@ const OrganizerDashboard = () => {
 
   return (
     <OrganizerLayoutDark suppressInitialLoader>
-      <div className="relative min-h-screen bg-slate-950">
+      <div className="relative min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
         <AnimatePresence mode="wait">
           {showSplash && (
               <Motion.div
               key="splash"
-              className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950"
+              className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-50 dark:bg-slate-950"
                 exit={{ opacity: 0, scale: 1.1, filter: 'blur(10px)' }}
                 transition={{ duration: 1.6, ease: 'easeInOut' }}
             >
@@ -402,13 +402,13 @@ const OrganizerDashboard = () => {
               <img
                 src={organizerProfile.avatar}
                 alt="Organizer profile"
-                className="relative z-10 h-24 w-24 rounded-full border-4 border-slate-950 object-cover shadow-[0_10px_40px_rgba(46,134,222,0.45)]"
+                className="relative z-10 h-24 w-24 rounded-full border-4 border-white object-cover shadow-[0_10px_40px_rgba(46,134,222,0.45)] dark:border-slate-950"
               />
               <Motion.h1
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2, duration: 1.2, ease: 'easeOut' }}
-                className="relative z-10 mt-8 text-2xl font-bold text-white"
+                className="relative z-10 mt-8 text-2xl font-bold text-slate-900 dark:text-white"
               >
                 Welcome to Nexus, {organizerProfile.firstName}
               </Motion.h1>
@@ -417,7 +417,7 @@ const OrganizerDashboard = () => {
         </AnimatePresence>
 
         {loading && !showSplash && (
-          <div className="flex min-h-[50vh] items-center justify-center text-sm text-white/60">
+          <div className="flex min-h-[50vh] items-center justify-center text-sm text-slate-600 dark:text-white/60">
             Loading dashboard...
           </div>
         )}

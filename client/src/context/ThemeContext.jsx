@@ -58,10 +58,22 @@ export const ThemeProvider = ({ children }) => {
 
     const applyThemeToDom = (mode) => {
       const root = document.documentElement;
+      const body = document.body;
+
+      if (!root) {
+        return;
+      }
+
       if (mode === 'dark') {
         root.classList.add('dark');
+        if (body) {
+          body.classList.add('dark');
+        }
       } else {
         root.classList.remove('dark');
+        if (body) {
+          body.classList.remove('dark');
+        }
       }
     };
 

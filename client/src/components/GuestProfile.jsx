@@ -302,13 +302,13 @@ const GuestProfile = () => {
 
   const historyContent = (
     <div className="space-y-10">
-      <section className="rounded-3xl border border-white/10 bg-[#0d1423]/65 p-6 shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/65 dark:shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">Ticket metrics</p>
-            <h3 className="text-xl font-semibold text-white">Your campus footprint</h3>
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/55">Ticket metrics</p>
+            <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Your campus footprint</h3>
           </div>
-          {loadingMetrics && <span className="text-xs text-white/45">Syncing…</span>}
+          {loadingMetrics && <span className="text-xs text-slate-500 dark:text-white/45">Syncing…</span>}
         </div>
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
           {[{
@@ -323,39 +323,39 @@ const GuestProfile = () => {
           }].map(({ label, value }) => (
             <div
               key={label}
-              className="rounded-2xl border border-white/10 bg-[#101a2c]/80 px-4 py-5"
+              className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-5 dark:border-slate-800 dark:bg-[#101a2c]/80"
             >
-              <p className="text-[11px] uppercase tracking-[0.32em] text-white/45">{label}</p>
-              <p className="mt-3 text-2xl font-semibold text-white">{loadingMetrics ? '—' : value}</p>
+              <p className="text-[11px] uppercase tracking-[0.32em] text-slate-500 dark:text-white/45">{label}</p>
+              <p className="mt-3 text-2xl font-semibold text-slate-900 dark:text-white">{loadingMetrics ? '—' : value}</p>
             </div>
           ))}
         </div>
         <button
           type="button"
           onClick={() => navigate('/guest/tickets')}
-          className="mt-6 inline-flex items-center justify-center rounded-2xl border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-white/75 transition hover:border-white/30"
+          className="mt-6 inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/10 dark:text-white/75 dark:hover:border-slate-600"
         >
           View my tickets
         </button>
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-[#0d1423]/65 p-6 shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
+      <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/65 dark:shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">History</p>
-          <h3 className="text-xl font-semibold text-white">Recent check-ins</h3>
-          <p className="text-xs text-white/45">A snapshot of the latest events tied to your Nexus ID.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/55">History</p>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Recent check-ins</h3>
+          <p className="text-xs text-slate-500 dark:text-white/45">A snapshot of the latest events tied to your Nexus ID.</p>
         </div>
         {loadingMetrics ? (
           <div className="mt-6 space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div
                 key={`history-skeleton-${index}`}
-                className="h-16 animate-pulse rounded-2xl border border-white/10 bg-[#121c2a]/70"
+                className="h-16 animate-pulse rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-[#121c2a]/70"
               />
             ))}
           </div>
         ) : recentTickets.length === 0 ? (
-          <div className="mt-6 rounded-2xl border border-dashed border-white/15 bg-[#10192d]/70 px-6 py-10 text-center text-sm text-white/50">
+          <div className="mt-6 rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-6 py-10 text-center text-sm text-slate-600 dark:border-slate-800 dark:bg-[#10192d]/70 dark:text-white/50">
             No events yet. Grab a ticket to unlock your journey log.
           </div>
         ) : (
@@ -363,21 +363,21 @@ const GuestProfile = () => {
             {recentTickets.map((ticket) => (
               <div
                 key={ticket.id}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/10 bg-[#10192d]/80 px-4 py-4"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4 dark:border-slate-800 dark:bg-[#10192d]/80"
               >
                 <div className="space-y-1">
-                  <p className="text-sm font-semibold text-white">{ticket.title}</p>
-                  <p className="text-xs text-white/45">{ticket.location}</p>
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">{ticket.title}</p>
+                  <p className="text-xs text-slate-600 dark:text-white/45">{ticket.location}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs uppercase tracking-[0.28em] text-white/45">
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-500 dark:text-white/45">
                     {ticket.date ? ticket.date.toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
                       year: 'numeric',
                     }) : 'Date tba'}
                   </p>
-                  <span className={`text-xs font-semibold ${ticket.isUpcoming ? 'text-emerald-300' : 'text-white/55'}`}>
+                  <span className={`text-xs font-semibold ${ticket.isUpcoming ? 'text-emerald-500 dark:text-emerald-300' : 'text-slate-600 dark:text-white/55'}`}>
                     {ticket.isUpcoming ? 'Upcoming' : 'Completed'}
                   </span>
                 </div>
@@ -387,17 +387,17 @@ const GuestProfile = () => {
         )}
       </section>
 
-      <section className="rounded-3xl border border-white/10 bg-[#0d1423]/65 p-8 shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
+      <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/65 dark:shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
         <div className="flex flex-col gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">Account</p>
-          <h3 className="text-xl font-semibold text-white">Profile settings</h3>
-          <p className="text-xs text-white/45">Tune your identity details and keep your credentials fresh.</p>
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/55">Account</p>
+          <h3 className="text-xl font-semibold text-slate-900 dark:text-white">Profile settings</h3>
+          <p className="text-xs text-slate-500 dark:text-white/45">Tune your identity details and keep your credentials fresh.</p>
         </div>
 
         <form onSubmit={handleProfileSubmit} className="mt-8 space-y-8">
           <div className="grid gap-6 sm:grid-cols-2">
             <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="name">
+              <label className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-white/50" htmlFor="name">
                 Display name
               </label>
               <input
@@ -405,12 +405,12 @@ const GuestProfile = () => {
                 name="name"
                 value={profile.name}
                 onChange={handleFieldChange}
-                className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-white/35 focus:outline-none"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-blue-500"
                 placeholder="Add your name"
               />
             </div>
             <div className="flex flex-col gap-2">
-              <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="email">
+              <label className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-white/50" htmlFor="email">
                 Email
               </label>
               <input
@@ -419,7 +419,7 @@ const GuestProfile = () => {
                 type="email"
                 value={profile.email}
                 onChange={handleFieldChange}
-                className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-white/35 focus:outline-none"
+                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-blue-500"
                 placeholder="you@example.com"
               />
             </div>
@@ -427,12 +427,12 @@ const GuestProfile = () => {
 
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-semibold uppercase tracking-[0.25em] text-white/55">Security</h4>
-              <p className="mt-2 text-xs text-white/45">Update your password to keep your account secure.</p>
+              <h4 className="text-sm font-semibold uppercase tracking-[0.25em] text-slate-600 dark:text-white/55">Security</h4>
+              <p className="mt-2 text-xs text-slate-500 dark:text-white/45">Update your password to keep your account secure.</p>
             </div>
             <div className="grid gap-6 sm:grid-cols-2">
               <div className="flex flex-col gap-2">
-                <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="password">
+                <label className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-white/50" htmlFor="password">
                   New password
                 </label>
                 <input
@@ -441,12 +441,12 @@ const GuestProfile = () => {
                   type="password"
                   value={profile.password}
                   onChange={handleFieldChange}
-                  className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-white/35 focus:outline-none"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-blue-500"
                   placeholder="Leave blank to keep current"
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="confirmPassword">
+                <label className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-white/50" htmlFor="confirmPassword">
                   Confirm password
                 </label>
                 <input
@@ -455,14 +455,14 @@ const GuestProfile = () => {
                   type="password"
                   value={profile.confirmPassword}
                   onChange={handleFieldChange}
-                  className="rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/35 focus:border-white/35 focus:outline-none"
+                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-blue-400 focus:outline-none dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-400 dark:focus:border-blue-500"
                   placeholder="Repeat new password"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-white/10 bg-black/30 px-5 py-4 text-xs text-white/50">
+          <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-xs text-slate-600 dark:border-slate-800 dark:bg-black/30 dark:text-white/50">
             <p>Tip: Use a mix of letters, numbers, and symbols for stronger security.</p>
           </div>
 
@@ -470,7 +470,7 @@ const GuestProfile = () => {
             <button
               type="submit"
               disabled={savingProfile}
-              className="rounded-2xl border border-white/15 bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-2xl border border-transparent bg-blue-600 px-6 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
             >
               {savingProfile ? 'Saving…' : 'Save changes'}
             </button>
@@ -481,7 +481,7 @@ const GuestProfile = () => {
   );
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <GuestNavbar />
 
       <main className="mx-auto max-w-6xl px-6 pb-20 pt-24">
@@ -492,11 +492,11 @@ const GuestProfile = () => {
           className="space-y-12"
         >
           <header className="flex flex-col gap-3">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
+            <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 shadow-sm dark:border-slate-800 dark:bg-white/5 dark:text-white/60">
               Profile
             </div>
-            <h1 className="text-4xl font-semibold text-white">Your guest identity</h1>
-            <p className="text-sm text-white/55">
+            <h1 className="text-4xl font-semibold text-slate-900 dark:text-white">Your guest identity</h1>
+            <p className="text-sm text-slate-600 dark:text-white/55">
               Step into a futuristic dossier that evolves with every Nexus experience you attend.
             </p>
           </header>
@@ -505,8 +505,8 @@ const GuestProfile = () => {
             <div
               className={`rounded-2xl border px-4 py-4 text-sm ${
                 status.type === 'error'
-                  ? 'border-red-500/40 bg-red-500/10 text-red-200'
-                  : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-100'
+                  ? 'border-red-500/40 bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-200'
+                  : 'border-emerald-400/30 bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-100'
               }`}
             >
               {status.message}
@@ -524,20 +524,20 @@ const GuestProfile = () => {
               />
 
               {shareFeedback && (
-                <div className="rounded-2xl border border-white/15 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                <div className="rounded-2xl border border-emerald-400/40 bg-emerald-100 px-4 py-3 text-sm text-emerald-700 shadow-sm dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-100">
                   {shareFeedback}
                 </div>
               )}
 
-              <section className="rounded-3xl border border-white/12 bg-[#0d1423]/75 p-7 shadow-[0_24px_70px_rgba(5,10,25,0.48)]">
+              <section className="rounded-3xl border border-slate-200 bg-white p-7 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/75 dark:shadow-[0_24px_70px_rgba(5,10,25,0.48)]">
                 <div className="flex flex-col items-center gap-4 text-center">
-                  <div className="relative h-28 w-28 overflow-hidden rounded-3xl border border-white/10 bg-[#10192f]">
+                  <div className="relative h-28 w-28 overflow-hidden rounded-3xl border border-slate-200 bg-slate-100 text-slate-600 dark:border-slate-800 dark:bg-[#10192f]">
                     <img src={avatarPreview} alt="Profile avatar" className="h-full w-full object-cover" />
                   </div>
                   <div className="space-y-2">
-                    <p className="text-lg font-semibold text-white">{profile.name || 'Guest Explorer'}</p>
-                    <p className="text-sm text-white/60">{profile.email || 'Add your email to personalize'}</p>
-                    <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/60">
+                    <p className="text-lg font-semibold text-slate-900 dark:text-white">{profile.name || 'Guest Explorer'}</p>
+                    <p className="text-sm text-slate-600 dark:text-white/60">{profile.email || 'Add your email to personalize'}</p>
+                    <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600 dark:border-slate-800 dark:bg-white/5 dark:text-white/60">
                       {badgeText}
                     </span>
                   </div>
@@ -546,7 +546,7 @@ const GuestProfile = () => {
                 <div className="mt-6 space-y-4 text-sm">
                   <label
                     htmlFor="avatar-upload"
-                    className="block cursor-pointer rounded-2xl border border-white/15 bg-white/5 px-4 py-3 text-center text-white/80 transition hover:border-white/30 hover:text-white"
+                    className="block cursor-pointer rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-slate-700 transition hover:bg-slate-100 dark:border-slate-800 dark:bg-white/5 dark:text-white/80 dark:hover:border-slate-600 dark:hover:text-white"
                   >
                     Choose new photo
                   </label>
@@ -561,17 +561,17 @@ const GuestProfile = () => {
                     type="button"
                     onClick={handleAvatarUpload}
                     disabled={!avatarFile || uploadingAvatar}
-                    className="w-full rounded-2xl border border-white/10 bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="w-full rounded-2xl border border-transparent bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {uploadingAvatar ? 'Uploading…' : 'Update photo'}
                   </button>
-                  <p className="text-xs text-white/45">Use a square image at least 400px wide for best results.</p>
+                  <p className="text-xs text-slate-500 dark:text-white/45">Use a square image at least 400px wide for best results.</p>
                 </div>
               </section>
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-3 rounded-full border border-white/10 bg-white/5 p-2 text-xs font-semibold uppercase tracking-[0.26em] text-white/60">
+              <div className="flex items-center gap-3 rounded-full border border-slate-200 bg-white p-2 text-xs font-semibold uppercase tracking-[0.26em] text-slate-600 shadow-sm dark:border-slate-800 dark:bg-white/5 dark:text-white/60">
                 {tabs.map((tab) => (
                   <button
                     key={tab.id}
@@ -579,8 +579,8 @@ const GuestProfile = () => {
                     onClick={() => setActiveTab(tab.id)}
                     className={`flex-1 rounded-full px-5 py-2 transition ${
                       activeTab === tab.id
-                        ? 'bg-white text-black shadow-[0_10px_40px_rgba(255,255,255,0.25)]'
-                        : 'text-white/60 hover:text-white'
+                        ? 'bg-blue-600 text-white shadow-[0_10px_30px_rgba(37,99,235,0.35)]'
+                        : 'text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white'
                     }`}
                   >
                     {tab.label}
@@ -591,7 +591,7 @@ const GuestProfile = () => {
               {activeTab === 'history' && historyContent}
 
               {activeTab === 'achievements' && (
-                <div className="rounded-3xl border border-white/10 bg-[#0d1423]/65 p-8 shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
+                <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/65 dark:shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
                   <AchievementBadges stats={ticketMetrics} loading={loadingMetrics} />
                 </div>
               )}

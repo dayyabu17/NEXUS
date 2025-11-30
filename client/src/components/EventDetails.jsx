@@ -397,22 +397,22 @@ const EventDetails = () => {
     const travelTimeLabel = distanceInfo?.duration?.text;
 
     const renderSkeleton = () => (
-        <div className="min-h-screen bg-slate-950 text-white">
+        <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
             <GuestNavbar />
             <div className="animate-pulse space-y-10 px-6 py-24">
-                <div className="h-[320px] rounded-3xl bg-slate-900" />
+                <div className="h-[320px] rounded-3xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
                 <div className="grid gap-8 md:grid-cols-3">
-                    <div className="md:col-span-2 space-y-6">
-                        <div className="h-6 w-3/4 rounded bg-slate-800" />
+                    <div className="space-y-6 md:col-span-2">
+                        <div className="h-6 w-3/4 rounded bg-slate-200 dark:bg-slate-800" />
                         <div className="space-y-3">
-                            <div className="h-4 rounded bg-slate-800" />
-                            <div className="h-4 rounded bg-slate-800" />
-                            <div className="h-4 rounded bg-slate-800" />
+                            <div className="h-4 rounded bg-slate-200 dark:bg-slate-800" />
+                            <div className="h-4 rounded bg-slate-200 dark:bg-slate-800" />
+                            <div className="h-4 rounded bg-slate-200 dark:bg-slate-800" />
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <div className="h-40 rounded-2xl bg-slate-900" />
-                        <div className="h-32 rounded-2xl bg-slate-900" />
+                        <div className="h-40 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
+                        <div className="h-32 rounded-2xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
                     </div>
                 </div>
             </div>
@@ -425,11 +425,11 @@ const EventDetails = () => {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-slate-950 text-white">
+            <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
                 <GuestNavbar />
                 <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
-                    <h1 className="text-3xl font-semibold text-white">Event details unavailable</h1>
-                    <p className="mt-4 max-w-xl text-white/60">{error}</p>
+                    <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Event details unavailable</h1>
+                    <p className="mt-4 max-w-xl text-slate-500 dark:text-slate-400">{error}</p>
                 </div>
             </div>
         );
@@ -437,11 +437,11 @@ const EventDetails = () => {
 
     if (!eventData) {
         return (
-            <div className="min-h-screen bg-slate-950 text-white">
+            <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
                 <GuestNavbar />
                 <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
-                    <h1 className="text-3xl font-semibold text-white">Event not found</h1>
-                    <p className="mt-4 max-w-xl text-white/60">
+                    <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Event not found</h1>
+                    <p className="mt-4 max-w-xl text-slate-500 dark:text-slate-400">
                         We could not locate the event you are looking for. Please double-check the link or explore other experiences.
                     </p>
                 </div>
@@ -460,10 +460,10 @@ const EventDetails = () => {
     const mapCenter = mapPoints[0] || DEFAULT_CENTER;
 
     return (
-        <div className="min-h-screen bg-slate-950 text-white">
+        <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
             <GuestNavbar />
             <main className="pb-24">
-                <section className="relative mx-4 mt-6 overflow-hidden rounded-3xl border border-white/10 shadow-[0_40px_120px_rgba(5,10,30,0.35)]" style={heroStyles}>
+            <section className="relative mx-4 mt-6 overflow-hidden rounded-3xl border border-slate-200 shadow-2xl dark:border-slate-800 dark:shadow-[0_40px_120px_rgba(5,10,30,0.35)]" style={heroStyles}>
                     <div className="relative z-10 flex flex-col gap-6 px-8 py-24 md:px-16 md:py-32 lg:py-40">
                         <span
                             className="inline-flex w-fit items-center gap-2 rounded-full border px-4 py-1 text-sm font-semibold uppercase tracking-wide text-white backdrop-blur"
@@ -529,15 +529,15 @@ const EventDetails = () => {
 
                 <section className="mx-auto mt-12 grid max-w-6xl gap-10 px-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1.1fr)]">
                     <article className="space-y-10">
-                        <div className="rounded-3xl border border-white/10 bg-[#0b1220]/80 p-8 shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
-                            <h2 className="text-xl font-semibold text-white">About this experience</h2>
-                            <p className="mt-4 leading-relaxed text-white/70">
+                        <div className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-[#0b1220]/80 dark:shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
+                            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">About this experience</h2>
+                            <p className="mt-4 leading-relaxed text-slate-800 dark:text-white/70">
                                 {eventData.description || 'The organizer will share more information about this experience shortly.'}
                             </p>
                         </div>
 
-                        <div className="rounded-3xl border border-white/10 bg-[#0b1220]/80 p-6 shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
-                            <h3 className="text-sm font-semibold uppercase tracking-widest text-white/60">Hosted by</h3>
+                        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-[#0b1220]/80 dark:shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
+                            <h3 className="text-sm font-semibold uppercase tracking-widest text-slate-500 dark:text-white/60">Hosted by</h3>
                             <div className="mt-4 flex items-center gap-4">
                                 <div
                                     className="flex h-12 w-12 items-center justify-center rounded-full text-lg font-semibold text-white shadow-lg transition"
@@ -551,11 +551,11 @@ const EventDetails = () => {
                                     {eventData.organizer?.name?.[0]?.toUpperCase() || 'N'}
                                 </div>
                                 <div>
-                                    <p className="text-lg font-semibold text-white">
+                                    <p className="text-lg font-semibold text-slate-900 dark:text-white">
                                         {eventData.organizer?.organizationName || eventData.organizer?.name || 'Nexus Organizer'}
                                     </p>
                                     {eventData.organizer?.email && (
-                                        <p className="text-sm text-white/60">{eventData.organizer.email}</p>
+                                        <p className="text-sm text-slate-600 dark:text-white/60">{eventData.organizer.email}</p>
                                     )}
                                 </div>
                             </div>
@@ -563,9 +563,9 @@ const EventDetails = () => {
                     </article>
 
                     <aside className="space-y-6">
-                        <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-[#050b18] shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
+                        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-xl dark:border-slate-800 dark:bg-[#050b18] dark:shadow-[0_30px_80px_rgba(5,10,25,0.35)]">
                             <div
-                                className="absolute right-6 top-6 z-20 rounded-full border px-4 py-2 text-sm font-semibold text-white backdrop-blur"
+                                className="absolute right-6 top-6 z-20 rounded-full border px-4 py-2 text-sm font-semibold text-slate-900 backdrop-blur dark:text-white"
                                 style={{
                                     backgroundColor: accentStyles.badgeBg,
                                     borderColor: accentStyles.badgeBorder,
@@ -579,8 +579,8 @@ const EventDetails = () => {
                                         center={mapCenter}
                                         zoom={13}
                                         scrollWheelZoom
-                                        className="h-full w-full"
-                                        style={{ background: '#0b1220' }}
+                                        className="h-full w-full border border-slate-200 dark:border-slate-800"
+                                        style={{ background: '#e2e8f0' }}
                                     >
                                         <TileLayer
                                             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -637,29 +637,28 @@ const EventDetails = () => {
                                         )}
                                     </MapContainer>
                                 ) : (
-                                    <div className="flex h-full items-center justify-center bg-[#060b18] text-white/50">
+                                    <div className="flex h-full items-center justify-center bg-slate-100 text-slate-500 dark:bg-[#060b18] dark:text-white/50">
                                         Location details coming soon
                                     </div>
                                 )}
                             </div>
                             {geoMessage && (
-                                <div className="border-t border-white/10 bg-black/40 px-6 py-3 text-xs text-white/60">
+                                <div className="border-t border-slate-200 bg-slate-50/90 px-6 py-3 text-xs text-slate-500 dark:border-slate-800 dark:bg-black/40 dark:text-white/60">
                                     {geoMessage}
                                 </div>
                             )}
                         </div>
 
                         <div
-                            className="rounded-3xl border border-white/10 p-6"
+                            className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg dark:border-slate-800 dark:bg-slate-900"
                             style={{
-                                background: accentStyles.cardGradient,
                                 boxShadow: accentStyles.cardShadow,
                             }}
                         >
                             <div className="flex items-center justify-between gap-4">
                                 <div>
-                                    <p className="text-sm uppercase tracking-[0.3em] text-white/60">Ticket</p>
-                                    <p className="mt-1 text-3xl font-semibold text-white">{registrationLabel}</p>
+                                    <p className="text-sm uppercase tracking-[0.3em] text-slate-500 dark:text-white/60">Ticket</p>
+                                    <p className="mt-1 text-3xl font-semibold text-slate-900 dark:text-white">{registrationLabel}</p>
                                 </div>
                                 <button
                                     type="button"
@@ -670,17 +669,17 @@ const EventDetails = () => {
                                         '--brand-soft': brandStyles.soft,
                                         boxShadow: brandStyles.shadow,
                                     }}
-                                    className="inline-flex items-center justify-center rounded-full bg-[var(--brand-color)] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 disabled:cursor-not-allowed disabled:opacity-70"
+                                    className="inline-flex items-center justify-center rounded-full bg-[var(--brand-color)] px-6 py-2 text-sm font-semibold text-white transition hover:bg-[var(--brand-soft)] focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/40 disabled:cursor-not-allowed disabled:opacity-70"
                                 >
                                     {ticketButtonLabel}
                                 </button>
                             </div>
                             {hasTicket ? (
-                                <p className="mt-4 text-sm text-white/85">
+                                <p className="mt-4 text-sm text-slate-700 dark:text-white/85">
                                     You’re all set! Your ticket is saved under My Tickets—see you there.
                                 </p>
                             ) : (
-                                <p className="mt-4 text-xs text-white/70">
+                                <p className="mt-4 text-xs text-slate-600 dark:text-white/70">
                                     Secure your spot now. You can cancel anytime up to 24 hours before the event.
                                 </p>
                             )}

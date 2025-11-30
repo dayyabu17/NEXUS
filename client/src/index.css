@@ -59,13 +59,13 @@
   --color-primary-700: #1d4ed8;
 }
 
-
 html {
-  color-scheme: dark;
-  background-color: #050811;
+  color-scheme: light;
+  background-color: #f8fafc;
 }
 
-body {
+html.dark {
+  color-scheme: dark;
   background-color: #050811;
 }
 
@@ -74,13 +74,22 @@ body {
 }
 
 *::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+
+.dark *::-webkit-scrollbar-track {
   background: #020617;
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #1e293b;
+  background-color: #94a3b8;
   border-radius: 6px;
-  border: 3px solid #020617;
+  border: 3px solid #e2e8f0;
+}
+
+.dark *::-webkit-scrollbar-thumb {
+  background-color: #1e293b;
+  border-color: #020617;
 }
 
 @supports (scrollbar-gutter: stable) {
@@ -91,15 +100,28 @@ body {
 
 @supports (scrollbar-color: #000 #000) {
   html {
+    scrollbar-color: #94a3b8 #e2e8f0;
+  }
+
+  .dark html {
     scrollbar-color: #1e293b #020617;
   }
 }
 
+
 .map-tiles {
+  filter: none;
+}
+
+.dark .map-tiles {
   filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
 .leaflet-control-attribution {
   filter: none;
+  color: #475569;
+}
+
+.dark .leaflet-control-attribution {
   color: #e2e8f0;
 }

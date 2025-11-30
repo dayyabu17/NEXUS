@@ -4,7 +4,7 @@ import nexusLogo from '../assets/nexus-logo.svg'; // Uncomment when ready
 const AuthLayout = ({ children }) => {
   return (
     // changed bg-nexus-light to bg-slate-950 to match your app theme
-    <div className="flex min-h-screen bg-slate-950 text-white">
+    <div className="flex min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
       {/* Left Panel - Form Area */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 lg:p-12 relative">
         <div className="max-w-md w-full">

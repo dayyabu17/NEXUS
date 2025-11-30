@@ -572,83 +572,83 @@ const GuestNavbar = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -12, scale: 0.95 }}
                     transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
-                    className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-white/10 bg-[#101725]/95 p-4 text-sm text-white/80 shadow-[0_20px_60px_rgba(6,10,20,0.75)]"
+                    className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-700 shadow-lg dark:border-white/10 dark:bg-[#101725]/95 dark:text-white/80 dark:shadow-[0_20px_60px_rgba(6,10,20,0.75)]"
                   >
-                  <div className="mb-3 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.32em] text-white/50">
-                    <span>Notifications</span>
-                    <span>{guestUnreadCount} unread</span>
-                  </div>
+                    <div className="mb-3 flex items-center justify-between text-[10px] font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-white/50">
+                      <span>Notifications</span>
+                      <span>{guestUnreadCount} unread</span>
+                    </div>
 
-                  {notificationsLoading ? (
-                    <div className="space-y-3">
-                      {Array.from({ length: 3 }).map((_, index) => (
-                        <div
-                          key={`notif-skeleton-${index}`}
-                          className="animate-pulse rounded-xl border border-white/10 bg-[#151c2b] p-3"
-                        >
-                          <div className="h-3 w-1/3 rounded bg-white/10" />
-                          <div className="mt-2 h-4 w-3/4 rounded bg-white/12" />
-                        </div>
-                      ))}
-                    </div>
-                  ) : notificationsError ? (
-                    <div className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-4 text-xs text-red-200">
-                      {notificationsError}
-                    </div>
-                  ) : notificationItems.length === 0 ? (
-                    <div className="rounded-xl border border-white/10 bg-[#131c2a] px-3 py-6 text-center text-xs text-white/55">
-                      No notifications yet. We will keep you posted.
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      {notificationItems.map((notification) => (
-                        <button
-                          key={notification.id}
-                          type="button"
-                          onClick={() => {
-                            setIsNotificationsOpen(false);
-                            navigate(`/events/${notification.eventId}`);
-                          }}
-                          className={`w-full rounded-xl border border-white/10 bg-[#131c2a] px-3 py-3 text-left transition hover:border-white/25 ${
-                            notification.isRead ? 'opacity-70' : 'opacity-100'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.32em] text-white/55">
-                            <span>{notification.headline || 'Update'}</span>
-                            {notification.createdAt && (
-                              <span>{formatRelativeTime(notification.createdAt)}</span>
-                            )}
+                    {notificationsLoading ? (
+                      <div className="space-y-3">
+                        {Array.from({ length: 3 }).map((_, index) => (
+                          <div
+                            key={`notif-skeleton-${index}`}
+                            className="animate-pulse rounded-xl border border-slate-200 bg-slate-100 p-3 dark:border-white/10 dark:bg-[#151c2b]"
+                          >
+                            <div className="h-3 w-1/3 rounded bg-slate-200 dark:bg-white/10" />
+                            <div className="mt-2 h-4 w-3/4 rounded bg-slate-200 dark:bg-white/12" />
                           </div>
-                          <p className="mt-2 text-sm font-semibold text-white">
-                            {notification.eventTitle || 'Event update'}
-                          </p>
-                          {notification.message && (
-                            <p className="mt-1 max-h-10 overflow-hidden text-xs text-white/60">{notification.message}</p>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  )}
+                        ))}
+                      </div>
+                    ) : notificationsError ? (
+                      <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-4 text-xs text-red-700 dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-200">
+                        {notificationsError}
+                      </div>
+                    ) : notificationItems.length === 0 ? (
+                      <div className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-6 text-center text-xs text-slate-500 dark:border-white/10 dark:bg-[#131c2a] dark:text-white/55">
+                        No notifications yet. We will keep you posted.
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {notificationItems.map((notification) => (
+                          <button
+                            key={notification.id}
+                            type="button"
+                            onClick={() => {
+                              setIsNotificationsOpen(false);
+                              navigate(`/events/${notification.eventId}`);
+                            }}
+                            className={`w-full rounded-xl border border-slate-200 bg-white px-3 py-3 text-left text-slate-700 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/10 dark:bg-[#131c2a] dark:text-white/80 dark:hover:border-white/25 ${
+                              notification.isRead ? 'opacity-70' : 'opacity-100'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between text-[9px] uppercase tracking-[0.32em] text-slate-500 dark:text-white/55">
+                              <span>{notification.headline || 'Update'}</span>
+                              {notification.createdAt && (
+                                <span>{formatRelativeTime(notification.createdAt)}</span>
+                              )}
+                            </div>
+                            <p className="mt-2 text-sm font-semibold text-slate-900 dark:text-white">
+                              {notification.eventTitle || 'Event update'}
+                            </p>
+                            {notification.message && (
+                              <p className="mt-1 max-h-10 overflow-hidden text-xs text-slate-600 dark:text-white/60">{notification.message}</p>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
 
-                  <div className="mt-4 flex items-center justify-between">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsNotificationsOpen(false);
-                        navigate('/guest/notifications');
-                      }}
-                      className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-white/80 transition hover:border-white/35 hover:text-white"
-                    >
-                      View all
-                    </button>
-                    <button
-                      type="button"
-                      onClick={fetchGuestNotifications}
-                      className="text-xs font-semibold text-white/50 transition hover:text-white"
-                    >
-                      Refresh
-                    </button>
-                  </div>
+                    <div className="mt-4 flex items-center justify-between">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsNotificationsOpen(false);
+                          navigate('/guest/notifications');
+                        }}
+                        className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.26em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/20 dark:text-white/80 dark:hover:border-white/35 dark:hover:text-white"
+                      >
+                        View all
+                      </button>
+                      <button
+                        type="button"
+                        onClick={fetchGuestNotifications}
+                        className="text-xs font-semibold text-slate-500 transition hover:text-slate-900 dark:text-white/50 dark:hover:text-white"
+                      >
+                        Refresh
+                      </button>
+                    </div>
                   </Motion.div>
                 )}
               </AnimatePresence>
@@ -665,36 +665,36 @@ const GuestNavbar = () => {
                 <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" />
               </button>
               {isDropdownOpen && (
-                <div className="absolute right-0 top-12 w-48 rounded-2xl border border-white/10 bg-[#101725]/95 py-2 text-sm text-white/80 shadow-[0_20px_50px_rgba(5,10,20,0.65)]">
+                <div className="absolute right-0 top-12 w-48 rounded-2xl border border-slate-200 bg-white py-2 text-sm text-slate-700 shadow-lg dark:border-white/10 dark:bg-[#101725]/95 dark:text-white/80 dark:shadow-[0_20px_50px_rgba(5,10,20,0.65)]">
                   <button
                     type="button"
-                    className="block w-full px-4 py-2 text-left transition hover:bg-white/10"
+                    className="block w-full px-4 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-white/10"
                     onClick={() => handleNavigate('/guest/profile')}
                   >
                     Profile
                   </button>
                   <button
                     type="button"
-                    className="flex w-full items-center justify-between px-4 py-2 text-left transition hover:bg-white/10"
+                    className="flex w-full items-center justify-between px-4 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-white/10"
                     onClick={() => handleNavigate('/guest/notifications')}
                   >
                     <span>Notifications</span>
                     {guestUnreadCount > 0 && (
-                      <span className="ml-3 rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-red-200">
+                      <span className="ml-3 rounded-full bg-red-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-red-600 dark:bg-red-500/20 dark:text-red-200">
                         {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
                       </span>
                     )}
                   </button>
                   <button
                     type="button"
-                    className="block w-full px-4 py-2 text-left transition hover:bg-white/10"
+                    className="block w-full px-4 py-2 text-left transition hover:bg-slate-100 dark:hover:bg-white/10"
                     onClick={() => handleNavigate('/guest/tickets')}
                   >
                     My Tickets
                   </button>
                   <button
                     type="button"
-                    className="block w-full px-4 py-2 text-left text-red-300 transition hover:bg-white/10"
+                    className="block w-full px-4 py-2 text-left text-red-600 transition hover:bg-slate-100 dark:text-red-300 dark:hover:bg-white/10"
                     onClick={handleSignOut}
                   >
                     Sign Out
@@ -730,18 +730,18 @@ const GuestNavbar = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[80] flex flex-col bg-[rgba(8,12,20,0.88)] backdrop-blur-md md:hidden"
+            className="fixed inset-0 z-[80] flex flex-col bg-white/95 text-slate-900 backdrop-blur-md md:hidden dark:bg-[rgba(8,12,20,0.88)] dark:text-white"
           >
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(false)}
-              className="absolute right-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg text-white transition hover:border-white/40 hover:bg-white/20"
+              className="absolute right-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-slate-100 text-lg text-slate-700 transition hover:border-slate-300 hover:bg-slate-200 dark:border-white/20 dark:bg-white/10 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/20"
               aria-label="Close menu"
             >
               ✕
             </button>
 
-            <div className="flex h-full flex-col px-6 pb-10 pt-20 text-white">
+            <div className="flex h-full flex-col px-6 pb-10 pt-20 text-slate-900 dark:text-white">
               <Motion.div
                 initial={{ opacity: 0, y: -16 }}
                 animate={{ opacity: 1, y: 0 }}

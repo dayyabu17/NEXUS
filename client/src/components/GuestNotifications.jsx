@@ -6,20 +6,20 @@ import api from '../api/axios';
 
 const toneStyles = {
   success: {
-    badge: 'bg-emerald-500/20 text-emerald-100',
-    card: 'border-emerald-500/20 hover:border-emerald-500/35',
+    badge: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/20 dark:text-emerald-100',
+    card: 'border-emerald-200 bg-emerald-50 hover:border-emerald-300 dark:border-emerald-500/20 dark:bg-[rgba(16,21,32,0.85)] dark:hover:border-emerald-500/35',
   },
   highlight: {
-    badge: 'bg-amber-500/25 text-amber-100',
-    card: 'border-amber-500/25 hover:border-amber-500/40',
+    badge: 'bg-amber-100 text-amber-700 dark:bg-amber-500/25 dark:text-amber-100',
+    card: 'border-amber-200 bg-amber-50 hover:border-amber-300 dark:border-amber-500/25 dark:bg-[rgba(16,21,32,0.85)] dark:hover:border-amber-500/40',
   },
   info: {
-    badge: 'bg-accent-500/20 text-white/80',
-    card: 'border-accent-500/25 hover:border-accent-500/40',
+    badge: 'bg-blue-100 text-blue-700 dark:bg-accent-500/20 dark:text-white/80',
+    card: 'border-blue-200 bg-blue-50 hover:border-blue-300 dark:border-accent-500/25 dark:bg-[rgba(16,21,32,0.85)] dark:hover:border-accent-500/40',
   },
   default: {
-    badge: 'bg-white/12 text-white/70',
-    card: 'border-white/12 hover:border-white/20',
+    badge: 'bg-slate-200 text-slate-600 dark:bg-white/12 dark:text-white/70',
+    card: 'border-slate-200 bg-white hover:border-slate-300 dark:border-white/12 dark:bg-[rgba(16,21,32,0.85)] dark:hover:border-white/20',
   },
 };
 
@@ -246,32 +246,34 @@ const GuestNotifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
       <GuestNavbar />
 
       <main className="mx-auto max-w-5xl px-6 pb-16 pt-24">
         <section className="space-y-12">
           <header className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
             <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-white/50">
+              <p className="text-xs font-semibold uppercase tracking-[0.32em] text-slate-500 dark:text-white/50">
                 Notifications
               </p>
-              <h1 className="text-3xl font-semibold text-white">Stay updated</h1>
-              <p className="text-sm text-white/60">
+              <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">Stay updated</h1>
+              <p className="text-sm text-slate-600 dark:text-white/60">
                 All alerts about your tickets, upcoming events, and follow-ups live here.
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:items-end">
-              <span className="inline-flex items-center justify-center rounded-full border border-white/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-white/65">
+              <span className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.28em] text-slate-600 dark:border-white/10 dark:bg-white/5 dark:text-white/65">
                 {unreadCount} unread
               </span>
-              <div className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 p-1 text-xs font-semibold uppercase tracking-[0.2em]">
+              <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white p-1 text-xs font-semibold uppercase tracking-[0.2em] dark:border-white/15 dark:bg-white/5">
                 <button
                   type="button"
                   onClick={() => setViewMode('unread')}
                   className={`rounded-full px-4 py-1 transition ${
-                    viewMode === 'unread' ? 'bg-white/15 text-white' : 'text-white/60'
+                    viewMode === 'unread'
+                      ? 'bg-blue-600 text-white shadow-sm dark:bg-white/15'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white'
                   }`}
                   aria-pressed={viewMode === 'unread'}
                 >
@@ -281,7 +283,9 @@ const GuestNotifications = () => {
                   type="button"
                   onClick={() => setViewMode('all')}
                   className={`rounded-full px-4 py-1 transition ${
-                    viewMode === 'all' ? 'bg-white/15 text-white' : 'text-white/60'
+                    viewMode === 'all'
+                      ? 'bg-blue-600 text-white shadow-sm dark:bg-white/15'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white'
                   }`}
                   aria-pressed={viewMode === 'all'}
                 >
@@ -291,7 +295,9 @@ const GuestNotifications = () => {
                   type="button"
                   onClick={() => setViewMode('read')}
                   className={`rounded-full px-4 py-1 transition ${
-                    viewMode === 'read' ? 'bg-white/15 text-white' : 'text-white/60'
+                    viewMode === 'read'
+                      ? 'bg-blue-600 text-white shadow-sm dark:bg-white/15'
+                      : 'text-slate-500 hover:text-slate-700 dark:text-white/60 dark:hover:text-white'
                   }`}
                   aria-pressed={viewMode === 'read'}
                 >
@@ -303,7 +309,7 @@ const GuestNotifications = () => {
                   type="button"
                   onClick={handleMarkAllAsRead}
                   disabled={markingAll || unreadCount === 0}
-                  className="inline-flex items-center justify-center rounded-full border border-white/20 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-white/70 transition hover:border-white/35 hover:text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  className="inline-flex items-center justify-center rounded-full border border-slate-200 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-40 dark:border-white/20 dark:text-white/70 dark:hover:border-white/35 dark:hover:text-white"
                 >
                   Mark all as read
                 </button>
@@ -312,7 +318,7 @@ const GuestNotifications = () => {
           </header>
 
           {errorMessage && !isLoading && (
-            <div className="rounded-3xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+            <div className="rounded-3xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
               {errorMessage}
             </div>
           )}
@@ -322,20 +328,20 @@ const GuestNotifications = () => {
               {Array.from({ length: 4 }).map((_, index) => (
                 <div
                   key={`notification-skeleton-${index}`}
-                  className="animate-pulse rounded-3xl border border-white/10 bg-[#141b2a] p-6"
+                  className="animate-pulse rounded-3xl border border-slate-200 bg-slate-100 p-6 dark:border-white/10 dark:bg-[#141b2a]"
                 >
-                  <div className="h-4 w-24 rounded bg-white/10" />
-                  <div className="mt-4 h-5 w-3/4 rounded bg-white/12" />
-                  <div className="mt-3 h-4 w-1/2 rounded bg-white/8" />
+                  <div className="h-4 w-24 rounded bg-slate-200 dark:bg-white/10" />
+                  <div className="mt-4 h-5 w-3/4 rounded bg-slate-200 dark:bg-white/12" />
+                  <div className="mt-3 h-4 w-1/2 rounded bg-slate-200 dark:bg-white/8" />
                 </div>
               ))}
             </div>
           ) : notifications.length === 0 ? (
-            <div className="rounded-3xl border border-white/10 bg-[rgba(14,18,28,0.85)] px-6 py-14 text-center text-sm text-white/55">
+            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center text-sm text-slate-600 dark:border-white/10 dark:bg-[rgba(14,18,28,0.85)] dark:text-white/55">
               No notifications yet. We will let you know when something needs your attention.
             </div>
           ) : filteredNotifications.length === 0 ? (
-            <div className="rounded-3xl border border-white/10 bg-[rgba(14,18,28,0.85)] px-6 py-14 text-center text-sm text-white/55">
+            <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center text-sm text-slate-600 dark:border-white/10 dark:bg-[rgba(14,18,28,0.85)] dark:text-white/55">
               {viewMode === 'unread'
                 ? 'You have read every notification. Nice!'
                 : 'No notifications in this view right now.'}
@@ -348,51 +354,51 @@ const GuestNotifications = () => {
                   <Motion.article
                     key={notification.id}
                     layout
-                    className={`flex flex-col gap-5 rounded-3xl border bg-[rgba(16,21,32,0.85)] px-6 py-5 transition ${tone.card} ${
+                    className={`flex flex-col gap-5 rounded-3xl border px-6 py-5 transition ${tone.card} ${
                       notification.isRead ? 'opacity-70' : 'opacity-100'
                     }`}
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
-                      <div className="flex items-center gap-3 text-xs text-white/60">
+                      <div className="flex items-center gap-3 text-xs text-slate-600 dark:text-white/60">
                         <span
                           className={`inline-flex items-center rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] ${tone.badge}`}
                         >
                           {notification.headline || 'Update'}
                         </span>
                         {notification.createdAt && (
-                          <span className="text-white/50">{formatRelativeTime(notification.createdAt)}</span>
+                          <span className="text-slate-500 dark:text-white/50">{formatRelativeTime(notification.createdAt)}</span>
                         )}
                       </div>
                       {!notification.isRead && (
                         <button
                           type="button"
                           onClick={() => handleMarkAsRead(notification.id)}
-                          className="text-xs font-semibold text-accent-400 transition hover:text-accent-300"
+                          className="text-xs font-semibold text-blue-600 transition hover:text-blue-500 dark:text-accent-400 dark:hover:text-accent-300"
                         >
                           Mark as read
                         </button>
                       )}
                     </div>
 
-                    <div className="space-y-3 text-sm text-white/75">
+                    <div className="space-y-3 text-sm text-slate-700 dark:text-white/75">
                       <div>
-                        <p className="text-base font-semibold text-white">
+                        <p className="text-base font-semibold text-slate-900 dark:text-white">
                           {notification.eventTitle || 'Event update'}
                         </p>
                         {notification.message && (
-                          <p className="mt-1 text-white/70">{notification.message}</p>
+                          <p className="mt-1 text-slate-600 dark:text-white/70">{notification.message}</p>
                         )}
                       </div>
 
-                      <div className="flex flex-wrap gap-4 text-xs text-white/60">
+                      <div className="flex flex-wrap gap-4 text-xs text-slate-600 dark:text-white/60">
                         {notification.eventDate && (
-                          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 dark:border-white/10 dark:bg-white/5">
                             <span aria-hidden>📅</span>
                             <span>{formatDateTime(notification.eventDate)}</span>
                           </span>
                         )}
                         {notification.location && (
-                          <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
+                          <span className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-100 px-3 py-1 dark:border-white/10 dark:bg-white/5">
                             <span aria-hidden>📍</span>
                             <span className="max-w-[12rem] truncate" title={notification.location}>
                               {notification.location}
@@ -402,7 +408,7 @@ const GuestNotifications = () => {
                       </div>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-white/60">
+                    <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600 dark:text-white/60">
                       {notification.createdAt && (
                         <span>
                           Logged {formatDateTime(notification.createdAt)}
@@ -412,7 +418,7 @@ const GuestNotifications = () => {
                         <button
                           type="button"
                           onClick={() => handleViewEvent(notification.eventId)}
-                          className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-white transition hover:border-white/30"
+                          className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/15 dark:bg-white/10 dark:text-white dark:hover:border-white/30"
                         >
                           View event
                         </button>

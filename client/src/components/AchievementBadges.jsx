@@ -10,11 +10,11 @@ const GlowingIcon = ({ unlocked, children }) => (
     animate={{ opacity: 1, scale: 1 }}
     className={`${hexagonClass} ${
       unlocked
-        ? 'border-emerald-400/60 bg-emerald-500/10 shadow-[0_0_25px_rgba(45,255,196,0.35)]'
-        : 'border-white/10 bg-white/5 text-white/30'
+        ? 'border-emerald-200 bg-emerald-50 shadow-[0_0_25px_rgba(45,255,196,0.25)] dark:border-emerald-400/60 dark:bg-emerald-500/10 dark:shadow-[0_0_25px_rgba(45,255,196,0.35)]'
+        : 'border-slate-200 bg-slate-100 text-slate-400 dark:border-white/10 dark:bg-white/5 dark:text-white/30'
     }`}
   >
-    <div className={`h-10 w-10 ${unlocked ? 'text-emerald-200' : 'text-white/25'}`}>{children}</div>
+    <div className={`h-10 w-10 ${unlocked ? 'text-emerald-500 dark:text-emerald-200' : 'text-slate-400 dark:text-white/25'}`}>{children}</div>
   </Motion.div>
 );
 
@@ -23,7 +23,7 @@ const FirstStepsIcon = ({ unlocked }) => (
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    className={`h-full w-full ${unlocked ? 'stroke-emerald-200' : 'stroke-current'}`}
+    className={`h-full w-full ${unlocked ? 'stroke-emerald-500 dark:stroke-emerald-200' : 'stroke-current'}`}
     strokeWidth="1.6"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -38,7 +38,7 @@ const ExplorerIcon = ({ unlocked }) => (
     viewBox="0 0 24 24"
     fill="none"
     xmlns="http://www.w3.org/2000/svg"
-    className={`h-full w-full ${unlocked ? 'stroke-amber-200' : 'stroke-current'}`}
+    className={`h-full w-full ${unlocked ? 'stroke-amber-500 dark:stroke-amber-200' : 'stroke-current'}`}
     strokeWidth="1.6"
     strokeLinecap="round"
     strokeLinejoin="round"
@@ -68,9 +68,9 @@ const badgesConfig = [
 const AchievementBadges = ({ stats, loading }) => (
   <div className="space-y-6">
     <header className="flex flex-col gap-1">
-      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/55">Achievements</p>
-      <h3 className="text-2xl font-semibold text-white">Badge cabinet</h3>
-      <p className="text-sm text-white/45">Collect badges as you explore campus experiences.</p>
+      <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-white/55">Achievements</p>
+      <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">Badge cabinet</h3>
+      <p className="text-sm text-slate-600 dark:text-white/45">Collect badges as you explore campus experiences.</p>
     </header>
 
     {loading ? (
@@ -78,9 +78,9 @@ const AchievementBadges = ({ stats, loading }) => (
         {Array.from({ length: badgesConfig.length }).map((_, index) => (
           <div
             key={`badge-skeleton-${index}`}
-            className="h-32 rounded-[26px] border border-white/10 bg-white/5"
+            className="h-32 rounded-[26px] border border-slate-200 bg-slate-100 dark:border-white/10 dark:bg-white/5"
           >
-            <div className="h-full animate-pulse rounded-[24px] border border-white/10 bg-[#121c30]/80" />
+            <div className="h-full animate-pulse rounded-[24px] border border-slate-200 bg-slate-200 dark:border-white/10 dark:bg-[#121c30]/80" />
           </div>
         ))}
       </div>
@@ -94,21 +94,23 @@ const AchievementBadges = ({ stats, loading }) => (
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.45, ease: [0.25, 0.8, 0.5, 1] }}
-              className={`relative overflow-hidden rounded-[26px] border ${
-                unlocked ? 'border-white/20 bg-white/8' : 'border-white/5 bg-white/3'
-              } p-4`}
+              className={`relative overflow-hidden rounded-[26px] border p-4 transition-colors ${
+                unlocked
+                  ? 'border-emerald-200 bg-emerald-50 dark:border-white/20 dark:bg-white/8'
+                  : 'border-slate-200 bg-white dark:border-white/5 dark:bg-white/3'
+              }`}
             >
               <div className="flex items-center gap-4">
                 <GlowingIcon unlocked={unlocked}>{badge.icon(unlocked)}</GlowingIcon>
                 <div className="space-y-1">
-                  <p className={`text-sm font-semibold ${unlocked ? 'text-white' : 'text-white/55'}`}>
+                  <p className={`text-sm font-semibold ${unlocked ? 'text-emerald-600 dark:text-white' : 'text-slate-700 dark:text-white/55'}`}>
                     {badge.title}
                   </p>
-                  <p className="text-xs text-white/45">{badge.description}</p>
+                  <p className="text-xs text-slate-500 dark:text-white/45">{badge.description}</p>
                 </div>
               </div>
               {!unlocked && (
-                <div className="absolute inset-0 rounded-[26px] border border-white/5 bg-black/30" aria-hidden />
+                <div className="absolute inset-0 rounded-[26px] border border-slate-200/70 bg-slate-100/80 dark:border-white/5 dark:bg-black/30" aria-hidden />
               )}
             </Motion.div>
           );

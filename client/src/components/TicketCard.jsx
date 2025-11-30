@@ -98,8 +98,8 @@ const TicketCard = ({ ticket }) => {
           </div>
         </div>
 
-        <div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-4 rounded-[26px] bg-white px-6 text-center text-slate-900 [backface-visibility:hidden] [transform:rotateY(180deg)]">
-          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-[0_18px_45px_rgba(8,15,32,0.15)]">
+        <div className="absolute inset-0 flex h-full w-full flex-col items-center justify-center gap-4 rounded-[26px] bg-slate-50 px-6 text-center text-slate-900 [backface-visibility:hidden] [transform:rotateY(180deg)] dark:bg-white">
+          <div className="rounded-3xl border border-slate-200 bg-slate-50 p-5 shadow-[0_18px_45px_rgba(8,15,32,0.15)] dark:border-slate-800 dark:bg-white">
             <QRCode value={ticket?._id || 'invalid-ticket'} size={150} />
           </div>
           <div className="space-y-2">
