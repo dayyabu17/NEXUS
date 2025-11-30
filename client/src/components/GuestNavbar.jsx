@@ -29,6 +29,14 @@ const NAV_LINKS = [
   { label: 'My Tickets', to: '/guest/tickets' },
 ];
 
+const MOBILE_MENU_LINKS = [
+  { label: 'Dashboard', to: '/guest/dashboard' },
+  { label: 'Events', to: '/guest/events' },
+  { label: 'Earnings', to: '/organizer/earnings' },
+];
+
+const MOBILE_MENU_PRIMARY_ACTION = { label: 'Create Event', to: '/organizer/events/create' };
+
 const STORAGE_KEY = 'userLocation';
 
 const relativeTimeFormatter =
@@ -72,6 +80,7 @@ const GuestNavbar = () => {
   const hasRequestedRef = useRef(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isBrandInfoOpen, setIsBrandInfoOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [locationName, setLocationName] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -108,6 +117,7 @@ const GuestNavbar = () => {
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [notificationsError, setNotificationsError] = useState('');
   const notificationsRef = useRef(null);
+  const brandInfoRef = useRef(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') {
@@ -195,6 +205,32 @@ const GuestNavbar = () => {
     };
   }, [isNotificationsOpen]);
 
+  useEffect(() => {
+    if (!isBrandInfoOpen) {
+      return undefined;
+    }
+
+    const handleClickAway = (event) => {
+      if (brandInfoRef.current && !brandInfoRef.current.contains(event.target)) {
+        setIsBrandInfoOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setIsBrandInfoOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickAway);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickAway);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isBrandInfoOpen]);
+
   const guestQuickLinks = useMemo(
     () => [
       {
@@ -219,6 +255,27 @@ const GuestNavbar = () => {
       },
     ],
     [navigate],
+  );
+
+  const brandHighlights = useMemo(
+    () => [
+      {
+        title: 'All-in-One Campus Hub',
+        description:
+          'Discover events, secure tickets, and stay connected with everything happening on campus.',
+      },
+      {
+        title: 'Smart Personalization',
+        description:
+          'Recommendations adapt in real time to your interests, location, and participation history.',
+      },
+      {
+        title: 'Secure & Reliable',
+        description:
+          'Powered by trusted payments, resilient infrastructure, and a modern design system.',
+      },
+    ],
+    [],
   );
 
   const fetchGuestNotifications = useCallback(async () => {
@@ -366,12 +423,16 @@ const GuestNavbar = () => {
     setIsSearchOpen(true);
     setIsDropdownOpen(false);
     setIsNotificationsOpen(false);
+    setIsBrandInfoOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   const toggleDropdown = () => {
     setIsDropdownOpen((prev) => !prev);
     setIsSearchOpen(false);
     setIsNotificationsOpen(false);
+    setIsBrandInfoOpen(false);
+    setIsMobileMenuOpen(false);
   };
 
   const closeAll = () => {
@@ -379,6 +440,7 @@ const GuestNavbar = () => {
     setIsMobileMenuOpen(false);
     setIsSearchOpen(false);
     setIsNotificationsOpen(false);
+    setIsBrandInfoOpen(false);
   };
 
   const handleNavigate = (path) => {
@@ -407,6 +469,7 @@ const GuestNavbar = () => {
       requestLocation();
     }
     setIsModalOpen(true);
+    setIsBrandInfoOpen(false);
   };
 
   const handleUseGps = () => {
@@ -424,6 +487,14 @@ const GuestNavbar = () => {
     setIsModalOpen(false);
   };
 
+  const handleBrandInfoToggle = () => {
+    setIsBrandInfoOpen((prev) => !prev);
+    setIsDropdownOpen(false);
+    setIsNotificationsOpen(false);
+    setIsSearchOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
       <header className="sticky top-0 z-50 border-b border-white/10 bg-[rgba(10,15,25,0.75)] backdrop-blur-xl">
@@ -437,13 +508,26 @@ const GuestNavbar = () => {
               setIsMobileMenuOpen((prev) => !prev);
               setIsDropdownOpen(false);
               setIsNotificationsOpen(false);
+              setIsSearchOpen(false);
+              setIsBrandInfoOpen(false);
             }}
           >
             <span className="text-lg">☰</span>
           </button>
 
           <div className="flex items-center gap-3">
-            <img src={NexusIcon} alt="Nexus" className="h-10 w-10" />
+            <button
+              type="button"
+              onClick={handleBrandInfoToggle}
+              className={`flex h-10 w-10 items-center justify-center rounded-2xl border bg-[#141c2c]/90 p-2 transition-all duration-300 ${
+                isBrandInfoOpen
+                  ? 'border-white/30 shadow-[0_8px_30px_rgba(132,94,247,0.45)]'
+                  : 'border-white/10 hover:border-white/20 hover:shadow-[0_6px_22px_rgba(132,94,247,0.35)]'
+              }`}
+              aria-label="About Nexus"
+            >
+              <img src={NexusIcon} alt="Nexus" className="h-full w-full" />
+            </button>
             <button
               type="button"
               onClick={handleLocationClick}
@@ -488,6 +572,7 @@ const GuestNavbar = () => {
                 setIsNotificationsOpen((prev) => !prev);
                 setIsDropdownOpen(false);
                 setIsSearchOpen(false);
+                setIsBrandInfoOpen(false);
               }}
               className={`relative flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-[#121824] text-white/70 transition hover:text-white ${
                 isNotificationsOpen ? 'border-white/25 text-white' : ''
@@ -644,49 +729,139 @@ const GuestNavbar = () => {
         </div>
       </div>
 
-      {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/10 bg-[rgba(10,15,25,0.95)] px-4 py-4 text-sm text-white/70">
-          <nav className="space-y-2">
-            {NAV_LINKS.map(({ label, to }) => (
-              <Link
-                key={`mobile-${label}`}
-                to={to}
-                className="block rounded-xl border border-white/10 bg-[#121824] px-3 py-2 transition hover:border-white/25 hover:text-white"
-                onClick={closeAll}
-              >
-                {label}
-              </Link>
-            ))}
-            <button
-              type="button"
-              className="flex w-full items-center justify-between rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left transition hover:border-white/25 hover:text-white"
-              onClick={() => handleNavigate('/guest/notifications')}
-            >
-              <span>Notifications</span>
-              {guestUnreadCount > 0 && (
-                <span className="ml-3 rounded-full bg-red-500/20 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-red-200">
-                  {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
-                </span>
-              )}
-            </button>
-            <button
-              type="button"
-              className="block w-full rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left transition hover:border-white/25 hover:text-white"
-              onClick={() => handleNavigate('/guest/profile')}
-            >
-              Profile
-            </button>
-            <button
-              type="button"
-              className="block w-full rounded-xl border border-white/10 bg-[#121824] px-3 py-2 text-left text-red-300 transition hover:border-white/25 hover:text-red-200"
-              onClick={handleSignOut}
-            >
-              Sign Out
-            </button>
-          </nav>
-        </div>
-      )}
     </header>
+
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[80] bg-[rgba(8,12,20,0.85)] backdrop-blur-md md:hidden"
+          >
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="absolute right-6 top-6 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/10 text-lg text-white transition hover:border-white/40 hover:bg-white/20"
+              aria-label="Close menu"
+            >
+              ✕
+            </button>
+
+            <Motion.nav
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ duration: 0.28, ease: [0.22, 0.61, 0.36, 1] }}
+              className="flex h-full flex-col items-center justify-center gap-8 px-6 text-white"
+            >
+              {MOBILE_MENU_LINKS.map(({ label, to }) => (
+                <button
+                  key={label}
+                  type="button"
+                  onClick={() => handleNavigate(to)}
+                  className="text-2xl font-semibold tracking-[0.18em] text-white/85 transition hover:text-white"
+                >
+                  {label}
+                </button>
+              ))}
+
+              <button
+                type="button"
+                onClick={() => handleNavigate(MOBILE_MENU_PRIMARY_ACTION.to)}
+                className="mt-6 inline-flex w-full max-w-[220px] items-center justify-center rounded-full border border-white/35 bg-white/15 px-6 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition hover:border-white/60 hover:bg-white/25"
+              >
+                {MOBILE_MENU_PRIMARY_ACTION.label}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="mt-3 text-xs font-semibold uppercase tracking-[0.3em] text-white/60 transition hover:text-white"
+              >
+                Sign Out
+              </button>
+            </Motion.nav>
+          </Motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {isBrandInfoOpen && (
+          <Motion.div
+            ref={brandInfoRef}
+            initial={{ opacity: 0, y: 28, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 28, scale: 0.92 }}
+            transition={{ type: 'spring', stiffness: 260, damping: 24, mass: 0.9 }}
+            className="fixed inset-x-4 bottom-6 z-[70] w-[calc(100vw-32px)] overflow-hidden rounded-3xl border border-white/20 bg-gradient-to-br from-[#4263eb]/90 via-[#845ef7]/90 to-[#f06595]/90 p-6 text-white shadow-[0_24px_70px_rgba(10,20,60,0.55)] backdrop-blur-xl sm:inset-auto sm:bottom-auto sm:right-6 sm:top-24 sm:w-[min(320px,calc(100vw-32px))]"
+            aria-live="polite"
+          >
+            <div className="pointer-events-none absolute -top-20 right-[-40px] h-48 w-48 rounded-full bg-white/35 blur-3xl" aria-hidden="true" />
+            <div className="pointer-events-none absolute bottom-[-50px] left-[-60px] h-40 w-40 rounded-full bg-[#3bc9db]/30 blur-3xl" aria-hidden="true" />
+
+            <div className="relative z-10">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.48em] text-white/70">
+                    Inside Nexus
+                  </p>
+                  <h3 className="mt-2 text-xl font-bold leading-tight">Nexus Experience</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsBrandInfoOpen(false)}
+                  className="rounded-full border border-white/30 bg-white/10 px-2 py-1 text-sm font-semibold text-white/80 transition hover:border-white/60 hover:bg-white/20 hover:text-white"
+                  aria-label="Close Nexus information"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <p className="mt-3 text-sm text-white/85">
+                Nexus blends live events, ticketing, and campus discovery into a single colorful journey tailored
+                for students and organizers.
+              </p>
+
+              <div className="mt-5 space-y-3">
+                {brandHighlights.map(({ title, description }) => (
+                  <div
+                    key={title}
+                    className="rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-lg transition hover:border-white/25 hover:bg-white/15"
+                  >
+                    <p className="text-sm font-semibold text-white">{title}</p>
+                    <p className="mt-1 text-xs text-white/80">{description}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBrandInfoOpen(false);
+                    navigate('/guest/dashboard');
+                  }}
+                  className="inline-flex items-center justify-center rounded-full bg-white/85 px-4 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-[#1f1b2e] transition hover:bg-white"
+                >
+                  Explore Events
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBrandInfoOpen(false);
+                    openSearch();
+                  }}
+                  className="inline-flex items-center justify-center rounded-full border border-white/40 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.26em] text-white/85 transition hover:border-white/60 hover:text-white"
+                >
+                  Search Campus
+                </button>
+              </div>
+            </div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
 
       {isModalOpen && typeof document !== 'undefined' &&
         createPortal(

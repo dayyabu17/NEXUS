@@ -66,15 +66,15 @@ const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
   const showSearch = typeof onSearchChange === 'function';
 
   return (
-    <div className="flex min-h-screen bg-gray-100 font-sans">
+    <div className="flex min-h-screen bg-gray-100 font-sans transition-colors duration-500 ease-in-out">
       {/* Sidebar - FIXED: Now White background with border */}
-      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm">
+      <aside className="w-64 bg-white border-r border-gray-200 flex flex-col p-6 shadow-sm transition-colors duration-500 ease-in-out">
         <div className="flex items-center gap-3 mb-10 pl-2">
           {/* Only the Logo Image, Text Removed */}
           <img src={nexusLogo} alt="Nexus Logo" className="h-8" />
         </div>
         
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-2 transition-colors duration-500 ease-in-out">
           {navItems.map((item) => (
             <NavLink
               key={item.name}
@@ -102,8 +102,8 @@ const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 p-8">
-        <header className="flex justify-between items-center pb-6 mb-8 border-b border-gray-200">
+      <main className="flex-1 p-8 transition-colors duration-500 ease-in-out">
+        <header className="flex justify-between items-center pb-6 mb-8 border-b border-gray-200 transition-colors duration-500 ease-in-out">
           <div>
              <h1 className="text-3xl font-bold text-nexus-dark">Hello {userName} 👋</h1>
              <p className="text-gray-500">Nexus Admin Dashboard</p>
