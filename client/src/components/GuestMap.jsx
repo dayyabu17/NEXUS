@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import GuestNavbar from './GuestNavbar';
 import api from '../api/axios';
+import 'leaflet/dist/leaflet.css';
 
 const OSM_TILE_URL = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
 const TILE_ATTRIBUTION =
@@ -24,6 +25,7 @@ const userMarkerIcon = new L.Icon({
 const DEFAULT_CENTER = [9.05785, 7.49508];
 const DEFAULT_ZOOM = 13;
 const LOCATION_STORAGE_KEY = 'userLocation';
+const MAP_HEIGHT = 'calc(100vh - 8rem)';
 
 const fitBoundsToMarkers = (mapInstance, markers) => {
   if (!mapInstance || markers.length === 0) {
@@ -61,7 +63,7 @@ const GuestMap = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [activeView, setActiveView] = useState('explore');
   const [userLocation, setUserLocation] = useState(null);
-  const mapRef = useRef(null);
+  const [map, setMap] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -130,14 +132,15 @@ const GuestMap = () => {
   }, []);
 
   useEffect(() => {
-    if (!mapRef.current || !userLocation) {
+    if (!map || !userLocation) {
       return;
     }
 
-    mapRef.current.flyTo([userLocation.lat, userLocation.lng], DEFAULT_ZOOM, {
+    map.flyTo([userLocation.lat, userLocation.lng], DEFAULT_ZOOM, {
       duration: 1,
     });
-  }, [userLocation]);
+    map.invalidateSize();
+  }, [userLocation, map]);
 
   useEffect(() => {
     let isMounted = true;
@@ -197,6 +200,42 @@ const GuestMap = () => {
 
   const activeMarkers = activeView === 'explore' ? exploreMarkers : scheduleMarkers;
 
+  useEffect(() => {
+    if (!map) {
+      return undefined;
+    }
+
+    const handleResize = () => {
+      window.requestAnimationFrame(() => {
+        map.invalidateSize();
+      });
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+    map.invalidateSize();
+  }, [activeView, map]);
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+    const timeout = window.setTimeout(() => {
+      map.invalidateSize();
+    }, 100);
+    return () => {
+      window.clearTimeout(timeout);
+    };
+  }, [map]);
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <GuestNavbar />
@@ -229,19 +268,14 @@ const GuestMap = () => {
         </div>
 
         <div className="pt-16 px-4">
-          <div className="overflow-hidden rounded-xl border-4 border-slate-800">
+          <div className="relative z-0 overflow-hidden rounded-xl border-4 border-slate-800">
             <MapContainer
               center={userLocation ? [userLocation.lat, userLocation.lng] : DEFAULT_CENTER}
               zoom={DEFAULT_ZOOM}
               scrollWheelZoom
-              className="min-h-[calc(100vh-64px)] w-full"
-              style={{ background: '#0b1220' }}
-              whenCreated={(mapInstance) => {
-                mapRef.current = mapInstance;
-                if (userLocation) {
-                  mapInstance.setView([userLocation.lat, userLocation.lng], DEFAULT_ZOOM);
-                }
-              }}
+              className="w-full"
+              style={{ background: '#0b1220', height: MAP_HEIGHT }}
+              ref={setMap}
             >
               <TileLayer
                 url={OSM_TILE_URL}
