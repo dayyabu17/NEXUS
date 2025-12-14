@@ -28,7 +28,13 @@ const TicketCard = ({ ticket }) => {
   const [isFlipped, setIsFlipped] = useState(false);
 
   const event = ticket?.event ?? {};
-  const ticketStatus = ticket?.status === 'confirmed' ? 'Confirmed' : ticket?.status || 'Pending';
+  const rawStatus = ticket?.status;
+  const ticketStatus =
+    rawStatus === 'checked-in'
+      ? 'Checked-In'
+      : rawStatus === 'confirmed'
+        ? 'Confirmed'
+        : rawStatus || 'Pending';
   const displayDate = useMemo(() => formatDateTime(event?.date), [event?.date]);
 
   const handleToggle = () => {

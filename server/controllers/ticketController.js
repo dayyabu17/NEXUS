@@ -28,7 +28,11 @@ const getTicketStatus = asyncHandler(async (req, res) => {
     return res.status(400).json({ success: false, message: 'Event id is required.' });
   }
 
-  const ticket = await Ticket.findOne({ user: userId, event: eventId, status: 'confirmed' })
+  const ticket = await Ticket.findOne({
+    user: userId,
+    event: eventId,
+    status: { $in: ['confirmed', 'checked-in'] },
+  })
     .select('_id status createdAt')
     .lean();
 

@@ -72,6 +72,25 @@ const OrganizerEventView = () => {
   const [checkIns, setCheckIns] = useState([]);
   const [guestLoading, setGuestLoading] = useState(false);
   const [guestError, setGuestError] = useState('');
+  const [checkInMutations, setCheckInMutations] = useState({});
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const [feedbackList, setFeedbackList] = useState([]);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackError, setFeedbackError] = useState('');
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 15000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -157,11 +176,52 @@ const OrganizerEventView = () => {
     }
   }, [id, navigate]);
 
+  const fetchFeedback = useCallback(async () => {
+    setFeedbackLoading(true);
+    setFeedbackError('');
+
+    if (!id) {
+      setFeedbackLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/sign-in');
+      setFeedbackLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/organizer/events/${id}/feedback`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const payload = Array.isArray(response.data?.feedback)
+        ? response.data.feedback
+        : [];
+
+      setFeedbackList(payload);
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/sign-in');
+      } else {
+        setFeedbackError(err?.response?.data?.message || 'Unable to load feedback right now.');
+      }
+    } finally {
+      setFeedbackLoading(false);
+    }
+  }, [id, navigate]);
+
   const tabs = useMemo(() => {
     const base = [
       { id: 'overview', label: 'Overview' },
       { id: 'guests', label: 'Guests' },
       { id: 'check-ins', label: 'Check-ins' },
+      { id: 'feedbacks', label: 'Feedback' },
     ];
 
     if (event && Number(event.registrationFee) > 0) {
@@ -186,9 +246,74 @@ const OrganizerEventView = () => {
   }, [activeTab, fetchGuests]);
 
   useEffect(() => {
+    if (activeTab !== 'feedbacks') {
+      return;
+    }
+
+    fetchFeedback();
+  }, [activeTab, fetchFeedback]);
+
+  useEffect(() => {
     const checkedInGuests = guestList.filter((guest) => guest.status === 'checked-in');
     setCheckIns(checkedInGuests);
   }, [guestList]);
+
+  const eventHasStarted = useMemo(() => {
+    if (!event?.date) {
+      return false;
+    }
+
+    const startTimestamp = new Date(event.date).getTime();
+    if (Number.isNaN(startTimestamp)) {
+      return false;
+    }
+
+    return currentTime >= startTimestamp;
+  }, [event?.date, currentTime]);
+
+  const mergeGuestFromPayload = useCallback(
+    (guestId, payload) => {
+      if (!payload) {
+        return;
+      }
+
+      const normalized = {
+        id: payload.ticketId || payload.id || guestId,
+        name: payload.name || 'Unknown Guest',
+        email: payload.email || 'unknown@nexus.app',
+        status: payload.status || 'confirmed',
+        ticketId: payload.ticketId || payload.id || guestId,
+        avatar: payload.avatar || null,
+        checkedInAt:
+          payload.status === 'checked-in'
+            ? payload.checkedInAt || new Date().toISOString()
+            : null,
+      };
+
+      setGuestList((prevGuests) => {
+        const nextGuests = prevGuests.map((guest) => {
+          if (
+            guest.id === guestId ||
+            (normalized.ticketId && guest.ticketId === normalized.ticketId)
+          ) {
+            return { ...guest, ...normalized };
+          }
+          return guest;
+        });
+
+        const exists = nextGuests.some(
+          (guest) => guest.id === normalized.id || guest.ticketId === normalized.ticketId,
+        );
+
+        if (!exists) {
+          nextGuests.push(normalized);
+        }
+
+        return nextGuests;
+      });
+    },
+    [],
+  );
 
   const handleGuestInputChange = (field) => (evt) => {
     const { value } = evt.target;
@@ -208,32 +333,141 @@ const OrganizerEventView = () => {
     setGuestForm({ name: '', email: '' });
   };
 
-  const handleCheckIn = (guestId) => {
-    setGuestList((prevGuests) => {
-      return prevGuests.map((guest) =>
-        guest.id === guestId
-          ? {
-              ...guest,
-              status: 'checked-in',
-              checkedInAt: guest.checkedInAt || new Date().toISOString(),
-            }
-          : guest,
+  const handleCheckIn = async (guestId) => {
+    const guest = guestList.find((item) => item.id === guestId);
+
+    if (!guest) {
+      return;
+    }
+
+    if (!eventHasStarted) {
+      setGuestError('Check-in becomes available once the event has started.');
+      return;
+    }
+
+    if (!guest.ticketId) {
+      setGuestError('');
+      setGuestList((prevGuests) =>
+        prevGuests.map((item) =>
+          item.id === guestId
+            ? {
+                ...item,
+                status: 'checked-in',
+                checkedInAt: item.checkedInAt || new Date().toISOString(),
+              }
+            : item,
+        ),
       );
-    });
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/sign-in');
+      return;
+    }
+
+    setCheckInMutations((prev) => ({ ...prev, [guestId]: true }));
+    setGuestError('');
+
+    try {
+      const response = await api.patch(
+        `/organizer/events/${id}/guests/${guest.ticketId}/check-in`,
+        { checkedIn: true },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (response.data?.guest) {
+        mergeGuestFromPayload(guestId, response.data.guest);
+      } else {
+        await fetchGuests();
+      }
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/sign-in');
+      } else {
+        const message =
+          err?.response?.data?.message || 'Unable to update check-in status right now.';
+        setGuestError(message);
+      }
+    } finally {
+      setCheckInMutations((prev) => {
+        const next = { ...prev };
+        delete next[guestId];
+        return next;
+      });
+    }
   };
 
-  const handleUndoCheckIn = (guestId) => {
-    setGuestList((prevGuests) =>
-      prevGuests.map((guest) =>
-        guest.id === guestId
-          ? {
-              ...guest,
-              status: 'confirmed',
-              checkedInAt: null,
-            }
-          : guest,
-      ),
-    );
+  const handleUndoCheckIn = async (guestId) => {
+    const guest = guestList.find((item) => item.id === guestId);
+
+    if (!guest) {
+      return;
+    }
+
+    if (!guest.ticketId) {
+      setGuestError('');
+      setGuestList((prevGuests) =>
+        prevGuests.map((item) =>
+          item.id === guestId
+            ? {
+                ...item,
+                status: 'confirmed',
+                checkedInAt: null,
+              }
+            : item,
+        ),
+      );
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/sign-in');
+      return;
+    }
+
+    setCheckInMutations((prev) => ({ ...prev, [guestId]: true }));
+    setGuestError('');
+
+    try {
+      const response = await api.patch(
+        `/organizer/events/${id}/guests/${guest.ticketId}/check-in`,
+        { checkedIn: false },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+
+      if (response.data?.guest) {
+        mergeGuestFromPayload(guestId, response.data.guest);
+      } else {
+        await fetchGuests();
+      }
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/sign-in');
+      } else {
+        const message =
+          err?.response?.data?.message || 'Unable to update check-in status right now.';
+        setGuestError(message);
+      }
+    } finally {
+      setCheckInMutations((prev) => {
+        const next = { ...prev };
+        delete next[guestId];
+        return next;
+      });
+    }
   };
 
   const formatGuestStatus = (status) => {
@@ -390,56 +624,87 @@ const OrganizerEventView = () => {
             No RSVPs yet.
           </p>
         ) : (
-          <ul className="mt-6 space-y-3">
-            {guestList.map((guest) => (
-              <li
-                key={guest.id}
-                className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 overflow-hidden rounded-full border border-white/15 bg-white/10">
-                    <img
-                      src={resolveProfileImage(guest.avatar)}
-                      alt={guest.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-white">{guest.name}</p>
-                    <p className="text-xs text-white/60">{guest.email}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span
-                    className={`inline-flex items-center rounded-full px-3 py-1 text-xs ${
-                      guest.status === 'checked-in'
-                        ? 'bg-emerald-500/15 text-emerald-300'
-                        : 'bg-white/10 text-white/70'
-                    }`}
+          <div className="mt-6 space-y-4">
+            {!eventHasStarted && (
+              <p className="rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-xs text-amber-200">
+                Check-in becomes available once the scheduled start time has passed.
+              </p>
+            )}
+            <ul className="space-y-3">
+              {guestList.map((guest) => {
+                const isMutating = Boolean(checkInMutations[guest.id]);
+                const manualEntry = !guest.ticketId;
+                const checkInTitle = !eventHasStarted
+                  ? 'Check-in opens once the event starts.'
+                  : manualEntry
+                    ? 'Manual guest - check-in is tracked locally.'
+                    : undefined;
+
+                return (
+                  <li
+                    key={guest.id}
+                    className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white sm:flex-row sm:items-center sm:justify-between"
                   >
-                    {formatGuestStatus(guest.status)}
-                  </span>
-                  {guest.status === 'checked-in' ? (
-                    <button
-                      type="button"
-                      onClick={() => handleUndoCheckIn(guest.id)}
-                      className="rounded-full border border-white/15 px-4 py-2 text-xs text-white/70 transition hover:border-white/40 hover:text-white"
-                    >
-                      Undo
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => handleCheckIn(guest.id)}
-                      className="rounded-full border border-emerald-400/40 px-4 py-2 text-xs text-emerald-200 transition hover:border-emerald-300 hover:text-emerald-100"
-                    >
-                      Mark checked in
-                    </button>
-                  )}
-                </div>
-              </li>
-            ))}
-          </ul>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 overflow-hidden rounded-full border border-white/15 bg-white/10">
+                        <img
+                          src={resolveProfileImage(guest.avatar)}
+                          alt={guest.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <p className="font-semibold text-white">{guest.name}</p>
+                        <p className="text-xs text-white/60">{guest.email}</p>
+                        {manualEntry && (
+                          <p className="text-[11px] text-white/40">Manual entry</p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span
+                        className={`inline-flex items-center rounded-full px-3 py-1 text-xs ${
+                          guest.status === 'checked-in'
+                            ? 'bg-emerald-500/15 text-emerald-300'
+                            : 'bg-white/10 text-white/70'
+                        }`}
+                      >
+                        {formatGuestStatus(guest.status)}
+                      </span>
+                      {guest.status === 'checked-in' ? (
+                        <button
+                          type="button"
+                          onClick={() => handleUndoCheckIn(guest.id)}
+                          disabled={isMutating}
+                          className={`rounded-full border border-white/15 px-4 py-2 text-xs text-white/70 transition ${
+                            isMutating
+                              ? 'cursor-not-allowed opacity-60'
+                              : 'hover:border-white/40 hover:text-white'
+                          }`}
+                        >
+                          {isMutating ? 'Updating...' : 'Undo'}
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleCheckIn(guest.id)}
+                          disabled={isMutating || !eventHasStarted}
+                          title={checkInTitle}
+                          className={`rounded-full border border-emerald-400/40 px-4 py-2 text-xs text-emerald-200 transition ${
+                            isMutating || !eventHasStarted
+                              ? 'cursor-not-allowed opacity-60'
+                              : 'hover:border-emerald-300 hover:text-emerald-100'
+                          }`}
+                        >
+                          {isMutating ? 'Updating...' : 'Mark checked in'}
+                        </button>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
       </section>
     </div>
@@ -460,33 +725,108 @@ const OrganizerEventView = () => {
         </p>
       ) : (
         <ul className="mt-6 space-y-3">
-          {checkIns.map((guest) => (
-            <li
-              key={guest.id}
-              className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white sm:flex-row sm:items-center sm:justify-between"
-            >
-              <div>
-                <p className="font-semibold text-white">{guest.name}</p>
-                <p className="text-xs text-white/60">{guest.email}</p>
-              </div>
-              <div className="flex items-center gap-3 text-xs text-white/60">
-                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-emerald-300">
-                  <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden />
-                  Checked in
-                </span>
-                <span>
-                  {guest.checkedInAt ? formatDateTime(guest.checkedInAt) : 'Time unknown'}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleUndoCheckIn(guest.id)}
-                  className="rounded-full border border-white/15 px-4 py-2 text-white/70 transition hover:border-white/35 hover:text-white"
-                >
-                  Remove
-                </button>
-              </div>
-            </li>
-          ))}
+          {checkIns.map((guest) => {
+            const isMutating = Boolean(checkInMutations[guest.id]);
+
+            return (
+              <li
+                key={guest.id}
+                className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-white">{guest.name}</p>
+                  <p className="text-xs text-white/60">{guest.email}</p>
+                </div>
+                <div className="flex items-center gap-3 text-xs text-white/60">
+                  <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 px-3 py-1 text-emerald-300">
+                    <span className="h-2 w-2 rounded-full bg-emerald-300" aria-hidden />
+                    Checked in
+                  </span>
+                  <span>
+                    {guest.checkedInAt ? formatDateTime(guest.checkedInAt) : 'Time unknown'}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleUndoCheckIn(guest.id)}
+                    disabled={isMutating}
+                    className={`rounded-full border border-white/15 px-4 py-2 text-white/70 transition ${
+                      isMutating
+                        ? 'cursor-not-allowed opacity-60'
+                        : 'hover:border-white/35 hover:text-white'
+                    }`}
+                  >
+                    {isMutating ? 'Updating...' : 'Undo'}
+                  </button>
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </section>
+  );
+
+  const renderFeedbacks = () => (
+    <section className="rounded-3xl border border-white/10 bg-[rgba(21,26,36,0.72)] p-6 shadow-lg shadow-black/30">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-semibold uppercase tracking-[0.25em] text-white/60">
+          Attendee feedback
+        </h3>
+        <span className="text-xs text-white/50">{feedbackList.length} entries</span>
+      </div>
+
+      {feedbackLoading ? (
+        <p className="mt-6 text-sm text-white/60">Loading feedback...</p>
+      ) : feedbackError ? (
+        <p className="mt-6 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-4 text-sm text-red-200">
+          {feedbackError}
+        </p>
+      ) : feedbackList.length === 0 ? (
+        <p className="mt-6 rounded-2xl border border-dashed border-white/15 bg-white/5 px-4 py-6 text-sm text-white/60">
+          No feedback has been submitted yet. Encourage attendees to share their thoughts after the event.
+        </p>
+      ) : (
+        <ul className="mt-6 space-y-4">
+          {feedbackList.map((entry) => {
+            const avatarSrc = resolveProfileImage(entry.user?.avatar);
+            const ratingLabel = entry.rating ? `${entry.rating}/5` : null;
+            return (
+              <li
+                key={entry.id}
+                className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white"
+              >
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 overflow-hidden rounded-full border border-white/15 bg-white/10">
+                      <img src={avatarSrc} alt={entry.user?.name || 'Attendee'} className="h-full w-full object-cover" />
+                    </div>
+                    <div>
+                      <p className="font-semibold text-white">{entry.user?.name || 'Attendee'}</p>
+                      <p className="text-xs text-white/60">{entry.user?.email || 'unknown@nexus.app'}</p>
+                    </div>
+                  </div>
+                  <div className="text-xs text-white/50">
+                    {entry.createdAt ? formatDateTime(entry.createdAt) : 'Time unknown'}
+                  </div>
+                </div>
+                <p className="mt-4 text-sm text-white/80">{entry.message}</p>
+                <div className="mt-3 flex items-center justify-between text-xs text-white/60">
+                  {ratingLabel ? (
+                    <span className="inline-flex items-center rounded-full border border-amber-400/40 bg-amber-500/10 px-3 py-1 text-amber-200">
+                      Rating: {ratingLabel}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full border border-white/15 bg-white/5 px-3 py-1">
+                      No rating provided
+                    </span>
+                  )}
+                  <span className="text-[11px] uppercase tracking-[0.25em] text-white/35">
+                    Feedback #{entry.id?.toString().slice(-6) || '—'}
+                  </span>
+                </div>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>
@@ -597,6 +937,7 @@ const OrganizerEventView = () => {
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'guests' && renderGuests()}
           {activeTab === 'check-ins' && renderCheckIns()}
+          {activeTab === 'feedbacks' && renderFeedbacks()}
           {activeTab === 'earnings' && renderEarnings()}
         </div>
       )}

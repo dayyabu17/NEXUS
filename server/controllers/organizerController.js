@@ -19,6 +19,8 @@ const calculatePercentageChange = (current, previous) => {
 
 const pluralize = (count, singular, plural) => (count === 1 ? singular : plural);
 
+const isTicketCleared = (status) => status === 'confirmed' || status === 'checked-in';
+
 const buildNotifications = (events, readSet = new Set()) => {
   const notifications = [];
 
@@ -285,8 +287,9 @@ const getOrganizerEarnings = asyncHandler(async (req, res) => {
     const amount = Number(ticket.amountPaid) || 0;
     const quantity = Number(ticket.quantity) || 1;
     const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date();
+    const cleared = isTicketCleared(ticket.status);
 
-    if (ticket.status === 'confirmed') {
+    if (cleared) {
       totalRevenue += amount;
       totalTickets += quantity;
 
@@ -298,7 +301,7 @@ const getOrganizerEarnings = asyncHandler(async (req, res) => {
       settlementDelays.push(delayMs);
     }
 
-    if (ticket.status !== 'confirmed' || createdAt >= settlementThreshold) {
+    if (!cleared || createdAt >= settlementThreshold) {
       pendingPayout += amount;
     }
   });
@@ -330,7 +333,8 @@ const getOrganizerEarnings = asyncHandler(async (req, res) => {
     const amount = Number(ticket.amountPaid) || 0;
     const createdAt = ticket.createdAt ? new Date(ticket.createdAt) : new Date();
     const buyerName = ticket.user?.name || ticket.email || 'Attendee';
-    const isSettled = ticket.status === 'confirmed' && createdAt < settlementThreshold;
+    const cleared = isTicketCleared(ticket.status);
+    const isSettled = cleared && createdAt < settlementThreshold;
 
     return {
       id: ticket._id,
@@ -530,6 +534,68 @@ const getEventGuests = asyncHandler(async (req, res) => {
   res.json(guests);
 });
 
+const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
+  const { eventId, ticketId } = req.params;
+  const { checkedIn } = req.body || {};
+
+  if (typeof checkedIn !== 'boolean') {
+    return res.status(400).json({ message: 'checkedIn flag must be provided as a boolean.' });
+  }
+
+  const event = await Event.findOne({ _id: eventId, organizer: req.user._id }).select('date _id');
+
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found.' });
+  }
+
+  const eventStart = event.date ? new Date(event.date) : null;
+  if (!eventStart || Number.isNaN(eventStart.getTime())) {
+    return res.status(400).json({ message: 'Event start time is invalid.' });
+  }
+
+  if (checkedIn && eventStart.getTime() > Date.now()) {
+    return res.status(400).json({ message: 'Check-in is available once the event has started.' });
+  }
+
+  const ticket = await Ticket.findOne({ _id: ticketId, event: event._id })
+    .populate('user', 'name email profilePicture');
+
+  if (!ticket) {
+    return res.status(404).json({ message: 'Guest ticket not found for this event.' });
+  }
+
+  if (checkedIn) {
+    if (ticket.status === 'pending') {
+      return res.status(400).json({ message: 'Only confirmed tickets can be checked in.' });
+    }
+
+    ticket.status = 'checked-in';
+    ticket.checkedInAt = new Date();
+  } else {
+    if (ticket.status !== 'checked-in') {
+      return res.status(400).json({ message: 'Guest has not been checked in yet.' });
+    }
+
+    ticket.status = 'confirmed';
+    ticket.checkedInAt = null;
+  }
+
+  await ticket.save();
+
+  res.json({
+    success: true,
+    guest: {
+      id: ticket._id,
+      ticketId: ticket._id,
+      name: ticket.user?.name || 'Unknown Guest',
+      email: ticket.user?.email || ticket.email || 'unknown@nexus.app',
+      status: ticket.status,
+      avatar: ticket.user?.profilePicture || null,
+      checkedInAt: ticket.checkedInAt,
+    },
+  });
+});
+
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
     title,
@@ -647,6 +713,7 @@ module.exports = {
   getOrganizerEvents,
   getOrganizerEventDetails,
   getEventGuests,
+  updateEventGuestCheckIn,
   createOrganizerEvent,
   getOrganizerNotifications,
   markOrganizerNotificationRead,

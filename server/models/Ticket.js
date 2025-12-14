@@ -19,7 +19,7 @@ const ticketSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed'],
+      enum: ['pending', 'confirmed', 'checked-in'],
       default: 'confirmed',
     },
     paymentReference: {
@@ -28,6 +28,9 @@ const ticketSchema = new mongoose.Schema(
     amountPaid: {
       type: Number,
       default: 0,
+    },
+    checkedInAt: {
+      type: Date,
     },
     email: {
       type: String,

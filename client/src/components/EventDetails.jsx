@@ -6,6 +6,7 @@ import GuestNavbar from './GuestNavbar';
 import api from '../api/axios';
 import { getTravelTime } from '../services/locationService';
 import EventCheckoutModal from './EventCheckoutModal';
+import TicketFeedbackPanel from './TicketFeedbackPanel';
 import { resolveAccentPalette, DEFAULT_ACCENT, DEFAULT_BRAND_COLOR } from '../constants/accentTheme';
 import { hexToRgba } from '../utils/color';
 
@@ -684,6 +685,15 @@ const EventDetails = () => {
                                 </p>
                             )}
                         </div>
+
+                        {hasTicket && (
+                            <TicketFeedbackPanel
+                                ticket={{
+                                    _id: ticketStatus.ticketId,
+                                    event: eventData,
+                                }}
+                            />
+                        )}
                     </aside>
                 </section>
             </main>

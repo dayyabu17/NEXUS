@@ -6,6 +6,7 @@ const {
 	getOrganizerEvents,
 	getOrganizerEventDetails,
 	getEventGuests,
+	updateEventGuestCheckIn,
 	createOrganizerEvent,
 	getOrganizerNotifications,
 	markOrganizerNotificationRead,
@@ -14,6 +15,7 @@ const {
 	updateOrganizerPreferences,
 	getOrganizerEarnings,
 } = require('../controllers/organizerController');
+const { getOrganizerEventFeedback } = require('../controllers/feedbackController');
 const { protect, organizer } = require('../middleware/authMiddleware');
 
 router.get('/dashboard', protect, organizer, getOrganizerDashboard);
@@ -33,6 +35,8 @@ router
 	.post(protect, organizer, createOrganizerEvent);
 
 router.get('/events/:id/guests', protect, organizer, getEventGuests);
+router.get('/events/:id/feedback', protect, organizer, getOrganizerEventFeedback);
+router.patch('/events/:eventId/guests/:ticketId/check-in', protect, organizer, updateEventGuestCheckIn);
 router.get('/events/:id', protect, organizer, getOrganizerEventDetails);
 
 module.exports = router;

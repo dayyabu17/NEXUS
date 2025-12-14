@@ -397,7 +397,7 @@ const OrganizerEarnings = () => {
             </div>
             <button
               type="button"
-              className="text-xs font-semibold uppercase tracking-[0.28em] text-white/45 transition hover:text-white/80"
+              className="text-xs font-semibold uppercase tracking-[0.28em] text-white/0 transition hover:text-white/80"
             >
               Export CSV
             </button>
