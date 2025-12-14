@@ -41,6 +41,7 @@ const QUICK_PRICE_OPTIONS = ['500', '1000', '2000', '5000', '10000', '20000'];
 const FALLBACK_DATE = 'Select date';
 const FALLBACK_TIME = 'Set time';
 
+
 const capacityLabel = (value) => {
   if (!value) {
     return 'Unlimited';
@@ -261,7 +262,7 @@ const OrganizerCreateEvent = () => {
       locationLongitude: formData.locationLongitude,
       category: formData.category.trim() || undefined,
       capacity: formData.capacity,
-      price: normalizedPrice,
+      registrationFee: normalizedPrice,
       imageUrl: formData.imageUrl,
       tags: formData.tags,
       timezone: formData.timezone,

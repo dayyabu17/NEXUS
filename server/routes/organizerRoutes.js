@@ -5,6 +5,7 @@ const {
 	getOrganizerDashboard,
 	getOrganizerEvents,
 	getOrganizerEventDetails,
+	getEventGuests,
 	createOrganizerEvent,
 	getOrganizerNotifications,
 	markOrganizerNotificationRead,
@@ -31,6 +32,7 @@ router
 	.get(protect, organizer, getOrganizerEvents)
 	.post(protect, organizer, createOrganizerEvent);
 
+router.get('/events/:id/guests', protect, organizer, getEventGuests);
 router.get('/events/:id', protect, organizer, getOrganizerEventDetails);
 
 module.exports = router;

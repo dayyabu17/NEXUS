@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import api from '../api/axios';
@@ -33,12 +33,31 @@ const formatCurrency = (value) => {
   }).format(amount);
 };
 
+const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
+
+const resolveProfileImage = (value) => {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    return DEFAULT_AVATAR;
+  }
+
+  const trimmed = value.trim();
+
+  if (trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
+    return trimmed;
+  }
+
+  return `http://localhost:5000/public${trimmed}`;
+};
+
 const createGuestRecord = (name, email) => ({
   id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
   name,
   email,
-  status: 'Registered',
+  status: 'confirmed',
   addedAt: new Date().toISOString(),
+  ticketId: null,
+  avatar: null,
+  checkedInAt: null,
 });
 
 const OrganizerEventView = () => {
@@ -51,6 +70,8 @@ const OrganizerEventView = () => {
   const [guestForm, setGuestForm] = useState({ name: '', email: '' });
   const [guestList, setGuestList] = useState([]);
   const [checkIns, setCheckIns] = useState([]);
+  const [guestLoading, setGuestLoading] = useState(false);
+  const [guestError, setGuestError] = useState('');
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -85,6 +106,57 @@ const OrganizerEventView = () => {
     fetchEvent();
   }, [id, navigate]);
 
+  const fetchGuests = useCallback(async () => {
+    setGuestLoading(true);
+    setGuestError('');
+
+    if (!id) {
+      setGuestLoading(false);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      navigate('/sign-in');
+      setGuestLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/organizer/events/${id}/guests`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const tickets = Array.isArray(response.data) ? response.data : [];
+
+      const normalizedGuests = tickets.map((ticket) => ({
+        id: ticket._id,
+        name: ticket.user?.name || 'Unknown Guest',
+        email: ticket.user?.email || ticket.email || 'unknown@nexus.app',
+        status: ticket.status || 'confirmed',
+        ticketId: ticket._id,
+        avatar: ticket.user?.profilePicture || null,
+        checkedInAt:
+          ticket.status === 'checked-in'
+            ? ticket.checkedInAt || ticket.updatedAt || ticket.createdAt || null
+            : null,
+      }));
+
+      setGuestList(normalizedGuests);
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        navigate('/sign-in');
+      } else {
+        setGuestError(err?.response?.data?.message || 'Unable to load guests right now.');
+      }
+    } finally {
+      setGuestLoading(false);
+    }
+  }, [id, navigate]);
+
   const tabs = useMemo(() => {
     const base = [
       { id: 'overview', label: 'Overview' },
@@ -104,6 +176,19 @@ const OrganizerEventView = () => {
       setActiveTab(tabs[0].id);
     }
   }, [tabs, activeTab]);
+
+  useEffect(() => {
+    if (activeTab !== 'guests') {
+      return;
+    }
+
+    fetchGuests();
+  }, [activeTab, fetchGuests]);
+
+  useEffect(() => {
+    const checkedInGuests = guestList.filter((guest) => guest.status === 'checked-in');
+    setCheckIns(checkedInGuests);
+  }, [guestList]);
 
   const handleGuestInputChange = (field) => (evt) => {
     const { value } = evt.target;
@@ -125,38 +210,48 @@ const OrganizerEventView = () => {
 
   const handleCheckIn = (guestId) => {
     setGuestList((prevGuests) => {
-      let checkedGuest;
-      const updatedGuests = prevGuests.map((guest) => {
-        if (guest.id === guestId) {
-          checkedGuest = { ...guest, status: 'Checked-in' };
-          return checkedGuest;
-        }
-        return guest;
-      });
-
-      if (checkedGuest) {
-        setCheckIns((prevCheckIns) => {
-          if (prevCheckIns.some((entry) => entry.id === guestId)) {
-            return prevCheckIns;
-          }
-          return [
-            ...prevCheckIns,
-            { ...checkedGuest, checkedInAt: new Date().toISOString() },
-          ];
-        });
-      }
-
-      return updatedGuests;
+      return prevGuests.map((guest) =>
+        guest.id === guestId
+          ? {
+              ...guest,
+              status: 'checked-in',
+              checkedInAt: guest.checkedInAt || new Date().toISOString(),
+            }
+          : guest,
+      );
     });
   };
 
   const handleUndoCheckIn = (guestId) => {
     setGuestList((prevGuests) =>
       prevGuests.map((guest) =>
-        guest.id === guestId ? { ...guest, status: 'Registered' } : guest,
+        guest.id === guestId
+          ? {
+              ...guest,
+              status: 'confirmed',
+              checkedInAt: null,
+            }
+          : guest,
       ),
     );
-    setCheckIns((prevCheckIns) => prevCheckIns.filter((guest) => guest.id !== guestId));
+  };
+
+  const formatGuestStatus = (status) => {
+    if (!status) {
+      return 'Pending';
+    }
+
+    const normalized = status.toLowerCase();
+
+    if (normalized === 'checked-in') {
+      return 'Checked-in';
+    }
+
+    if (normalized === 'confirmed') {
+      return 'Confirmed';
+    }
+
+    return status;
   };
 
   const renderOverview = () => {
@@ -284,9 +379,15 @@ const OrganizerEventView = () => {
           <span className="text-xs text-white/50">{guestList.length} total</span>
         </div>
 
-        {guestList.length === 0 ? (
+        {guestLoading ? (
+          <p className="mt-6 text-sm text-white/60">Loading RSVPs...</p>
+        ) : guestError ? (
+          <p className="mt-6 rounded-2xl border border-red-500/40 bg-red-500/10 px-4 py-4 text-sm text-red-200">
+            {guestError}
+          </p>
+        ) : guestList.length === 0 ? (
           <p className="mt-6 rounded-2xl border border-dashed border-white/15 bg-white/5 px-4 py-6 text-sm text-white/60">
-            No guests added yet. Use the form above to build your list.
+            No RSVPs yet.
           </p>
         ) : (
           <ul className="mt-6 space-y-3">
@@ -295,21 +396,30 @@ const OrganizerEventView = () => {
                 key={guest.id}
                 className="flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-white sm:flex-row sm:items-center sm:justify-between"
               >
-                <div>
-                  <p className="font-semibold text-white">{guest.name}</p>
-                  <p className="text-xs text-white/60">{guest.email}</p>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 overflow-hidden rounded-full border border-white/15 bg-white/10">
+                    <img
+                      src={resolveProfileImage(guest.avatar)}
+                      alt={guest.name}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-white">{guest.name}</p>
+                    <p className="text-xs text-white/60">{guest.email}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-3">
                   <span
                     className={`inline-flex items-center rounded-full px-3 py-1 text-xs ${
-                      guest.status === 'Checked-in'
+                      guest.status === 'checked-in'
                         ? 'bg-emerald-500/15 text-emerald-300'
                         : 'bg-white/10 text-white/70'
                     }`}
                   >
-                    {guest.status}
+                    {formatGuestStatus(guest.status)}
                   </span>
-                  {guest.status === 'Checked-in' ? (
+                  {guest.status === 'checked-in' ? (
                     <button
                       type="button"
                       onClick={() => handleUndoCheckIn(guest.id)}
@@ -365,7 +475,7 @@ const OrganizerEventView = () => {
                   Checked in
                 </span>
                 <span>
-                  {formatDateTime(guest.checkedInAt)}
+                  {guest.checkedInAt ? formatDateTime(guest.checkedInAt) : 'Time unknown'}
                 </span>
                 <button
                   type="button"

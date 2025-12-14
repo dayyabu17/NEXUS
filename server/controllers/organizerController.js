@@ -514,6 +514,22 @@ const getOrganizerEventDetails = asyncHandler(async (req, res) => {
   });
 });
 
+const getEventGuests = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const event = await Event.findOne({ _id: id, organizer: req.user._id }).select('_id');
+
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found.' });
+  }
+
+  const guests = await Ticket.find({ event: id })
+    .populate('user', 'name email profilePicture')
+    .sort({ createdAt: -1 });
+
+  res.json(guests);
+});
+
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
     title,
@@ -630,6 +646,7 @@ module.exports = {
   getOrganizerDashboard,
   getOrganizerEvents,
   getOrganizerEventDetails,
+  getEventGuests,
   createOrganizerEvent,
   getOrganizerNotifications,
   markOrganizerNotificationRead,
