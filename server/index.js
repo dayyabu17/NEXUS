@@ -16,7 +16,10 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: 'http://localhost:5173', // Allow your Vite frontend during dev
+  origin: [
+    "http://localhost:5173", // Keep this for your laptop
+    "https://nexus-6753-usman-dayyabus-projects.vercel.app" // Add your specific Vercel link
+  ],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' })); // Allows us to parse JSON bodies from requests
