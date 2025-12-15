@@ -11,9 +11,7 @@ const OptionCard = ({ label, icon, displayValue, onClick }) => (
   >
     <div className="flex items-center justify-between text-sm font-semibold uppercase tracking-wide text-white/45">
       <span>{label}</span>
-      <span aria-hidden className="text-base">
-        ✏️
-      </span>
+      <span aria-hidden className="text-base">✏️</span>
     </div>
     <div className="flex items-center justify-between text-white">
       <span className="text-lg font-medium">{displayValue}</span>

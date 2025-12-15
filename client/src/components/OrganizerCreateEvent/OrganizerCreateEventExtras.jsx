@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { EVENT_CATEGORIES } from '../constants/categories';
+import { EVENT_CATEGORIES } from '../../constants/categories';
 
 const MotionDiv = motion.div;
 

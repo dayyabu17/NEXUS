@@ -19,14 +19,14 @@ const Settings = lazy(() => import('./components/Settings'));
 const OrganizerDashboard = lazy(() => import('./components/OrganizerDashboard'));
 const OrganizerEvents = lazy(() => import('./components/OrganizerEvents'));
 const OrganizerEarnings = lazy(() => import('./components/OrganizerEarnings'));
-const OrganizerCreateEvent = lazy(() => import('./components/OrganizerCreateEvent'));
+const OrganizerCreateEvent = lazy(() => import('./components/OrganizerCreateEvent/index.js'));
 const OrganizerEventView = lazy(() => import('./components/OrganizerEventView'));
-const OrganizerAccount = lazy(() => import('./components/OrganizerAccount'));
+const OrganizerAccount = lazy(() => import('./pages/OrganizerAccount'));
 const OrganizerPreferences = lazy(() => import('./components/OrganizerPreferences'));
 const OrganizerNotifications = lazy(() => import('./components/OrganizerNotifications'));
 
 // Guest Components
-const GuestDashboard = lazy(() => import('./components/GuestDashboard'));
+const GuestDashboard = lazy(() => import('./pages/GuestDashboard'));
 const GuestMap = lazy(() => import('./components/GuestMap'));
 const GuestNotifications = lazy(() => import('./components/GuestNotifications'));
 const PaymentCallback = lazy(() => import('./components/PaymentCallback'));
