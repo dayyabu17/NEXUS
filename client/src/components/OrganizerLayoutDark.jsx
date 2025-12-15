@@ -7,7 +7,7 @@ import EventActiveIcon from '../assets/icons/event_active.svg';
 import EventInactiveIcon from '../assets/icons/event_notactive.svg';
 import EarningActiveIcon from '../assets/icons/earning_active.svg';
 import EarningInactiveIcon from '../assets/icons/earning_notactive.svg';
-import searchIcon from '../assets/icons/search.svg';
+import searchIcon from '../assets/icons/Search.svg';
 import bellIcon from '../assets/icons/Bell.svg';
 import api from '../api/axios';
 import GlobalSearch from './GlobalSearch';
