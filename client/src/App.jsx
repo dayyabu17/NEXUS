@@ -31,7 +31,7 @@ const GuestMap = lazy(() => import('./components/GuestMap'));
 const GuestNotifications = lazy(() => import('./components/GuestNotifications'));
 const PaymentCallback = lazy(() => import('./components/PaymentCallback'));
 const MyTickets = lazy(() => import('./pages/MyTickets')); // Note: This was in /pages
-const GuestProfile = lazy(() => import('./components/GuestProfile'));
+const GuestProfile = lazy(() => import('./pages/GuestProfile'));
 const GuestEvents = lazy(() => import('./pages/GuestEvents')); // Note: This was in /pages
 
 // --- 2. Loading Fallback Component ---
