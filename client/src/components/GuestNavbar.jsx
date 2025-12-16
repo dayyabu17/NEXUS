@@ -5,6 +5,7 @@ import SearchIcon from '../assets/icons/Search.svg';
 import GlobalSearch from './GlobalSearch';
 import useGuestLocation from '../hooks/useGuestLocation';
 import useGuestNotifications from '../hooks/useGuestNotifications';
+import { resolveProfileImage } from '../utils/profileUtils';
 import LocationModal from './GuestNavbar/LocationModal';
 import NotificationsDropdown from './GuestNavbar/NotificationsDropdown';
 import ProfileDropdown from './GuestNavbar/ProfileDropdown';
@@ -12,18 +13,6 @@ import BrandInfoPanel from './GuestNavbar/BrandInfoPanel';
 import MobileMenu from './GuestNavbar/MobileMenu';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
-
-const resolveProfileImage = (value) => {
-  if (!value) {
-    return DEFAULT_AVATAR;
-  }
-
-  if (value.startsWith('http://') || value.startsWith('https://')) {
-    return value;
-  }
-
-  return `http://localhost:5000/public${value}`;
-};
 
 const NAV_LINKS = [
   { label: 'Explore', to: '/guest/dashboard' },

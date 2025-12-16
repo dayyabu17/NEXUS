@@ -10,7 +10,7 @@ const SignUp = lazy(() => import('./components/SignUp'));
 // Admin Components
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const AdminEventDetails = lazy(() => import('./components/AdminEventDetails'));
-const EventDetails = lazy(() => import('./components/EventDetails'));
+const EventDetails = lazy(() => import('./pages/EventDetails'));
 const UserManagement = lazy(() => import('./components/UserManagement'));
 const EventManagement = lazy(() => import('./components/EventManagement'));
 const Settings = lazy(() => import('./components/Settings'));
