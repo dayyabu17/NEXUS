@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { X } from 'lucide-react';
 import GlobalSearch from './GlobalSearch';
 import OrganizerLayoutHeader from './OrganizerLayout/OrganizerLayoutHeader';
 import OrganizerBrandSpotlight from './OrganizerLayout/OrganizerBrandSpotlight';
@@ -42,6 +44,28 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
     showInitialLoader,
   } = useOrganizerLayoutDark(suppressInitialLoader);
 
+  const routerLocation = useLocation();
+
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const handleOpenMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(true);
+  }, []);
+
+  const handleCloseMobileMenu = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  const handleMobileNavClick = useCallback(() => {
+    setIsMobileMenuOpen(false);
+  }, []);
+
+  useEffect(() => {
+    if (isMobileMenuOpen) {
+      setIsMobileMenuOpen(false);
+    }
+  }, [routerLocation.pathname, isMobileMenuOpen]);
+
   const profileMenuProps = {
     showProfileMenu,
     profileMenuRef,
@@ -59,11 +83,54 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
       data-name="Organizer_Layout_Dark"
       data-node-id="138:24"
     >
+      {isMobileMenuOpen && (
+        <div
+          id="organizer-mobile-menu"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md"
+          onClick={handleCloseMobileMenu}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div
+            className="relative flex h-full w-full flex-col items-center justify-center px-8"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={handleCloseMobileMenu}
+              className="absolute right-6 top-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              aria-label="Close navigation menu"
+            >
+              <X className="h-6 w-6" />
+            </button>
+
+            <nav className="flex flex-col items-center gap-7 text-center" aria-label="Organizer mobile navigation">
+              {navItems.map(({ label, path }) => (
+                <NavLink
+                  key={label}
+                  to={path}
+                  onClick={handleMobileNavClick}
+                  className={({ isActive }) =>
+                    `text-2xl font-semibold tracking-wide transition-colors duration-200 ${
+                      isActive ? 'text-white' : 'text-white/70 hover:text-white'
+                    }`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+        </div>
+      )}
+
       <OrganizerLayoutHeader
         currentTime={currentTime}
         navItems={navItems}
         pathname={location.pathname}
         onBrandSpotlight={handleBrandSpotlight}
+        onOpenMobileMenu={handleOpenMobileMenu}
+        isMobileMenuOpen={isMobileMenuOpen}
         onOpenSearch={openSearch}
         unreadBadge={unreadBadge}
         showNotifications={showNotifications}
@@ -82,8 +149,8 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
         profileMenuProps={profileMenuProps}
       />
 
-      <main className="pt-[132px]">
-        <div className="mx-auto flex w-full max-w-[1455px] gap-8 px-10 pb-16">
+      <main className="pt-6 md:pt-10">
+        <div className="mx-auto flex w-full max-w-[1455px] gap-8 px-4 pb-16 md:gap-10 md:px-10">
           <section className="relative flex-1">
             {children}
           </section>

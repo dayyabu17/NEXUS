@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import { Menu } from 'lucide-react';
 import nexusIcon from '../../assets/icons/nexus-icon.svg';
 import searchIcon from '../../assets/icons/Search.svg';
 import bellIcon from '../../assets/icons/Bell.svg';
@@ -11,6 +12,8 @@ const OrganizerLayoutHeader = ({
   navItems,
   pathname,
   onBrandSpotlight,
+  onOpenMobileMenu,
+  isMobileMenuOpen = false,
   onOpenSearch,
   unreadBadge,
   showNotifications,
@@ -28,25 +31,23 @@ const OrganizerLayoutHeader = ({
   notificationsMenuRef,
   profileMenuProps,
 }) => (
-  <header className="fixed inset-x-0 top-0 z-50 border-b border-white/10 bg-[#0A0F16]/70 backdrop-blur-md">
-    <div className="mx-auto flex w-full max-w-[1455px] items-center justify-between px-10 py-6" data-node-id="173:25">
-      <div className="flex flex-1 items-center gap-16" data-node-id="158:95">
+  <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0A0F16]/70 px-4 pt-12 pb-3 backdrop-blur-md md:px-10 md:py-4">
+    <div className="mx-auto flex w-full max-w-[1455px] items-center justify-between gap-4">
+      <div className="flex items-center gap-4 md:gap-10">
         <button
           type="button"
           onClick={onBrandSpotlight}
           className="rounded-full transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
           aria-label="About Nexus"
-          data-node-id="143:48"
         >
           <img src={nexusIcon} alt="Nexus" className="h-8 w-8" />
         </button>
 
-        <nav className="flex items-center gap-6" data-node-id="156:81">
+        <nav className="hidden items-center gap-6 md:flex">
           {navItems.map(({ label, path, iconActive, iconInactive }) => {
             const isActive = pathname.startsWith(path);
             const iconSrc = isActive ? iconActive ?? iconInactive : iconInactive ?? iconActive;
-            const dataNodeId = label === 'Dashboard' ? '156:69' : label === 'Events' ? '156:74' : '156:80';
-            const iconNodeId = label === 'Dashboard' ? '156:65' : label === 'Events' ? '156:57' : '156:67';
+
             return (
               <NavLink
                 key={label}
@@ -54,16 +55,8 @@ const OrganizerLayoutHeader = ({
                 className={`flex items-center gap-2 text-sm font-medium transition-colors ${
                   isActive ? 'text-white' : 'text-[#7d7d7d] hover:text-white'
                 }`}
-                data-node-id={dataNodeId}
               >
-                {iconSrc && (
-                  <img
-                    src={iconSrc}
-                    alt={`${label} icon`}
-                    className="h-6 w-6"
-                    data-node-id={iconNodeId}
-                  />
-                )}
+                {iconSrc && <img src={iconSrc} alt={`${label} icon`} className="h-6 w-6" />}
                 <span>{label}</span>
                 {isActive && <span className="sr-only">(current)</span>}
               </NavLink>
@@ -72,27 +65,26 @@ const OrganizerLayoutHeader = ({
         </nav>
       </div>
 
-      <div className="flex items-center gap-4 text-sm" data-node-id="158:93">
-        <span className="text-[#acacac]" data-node-id="156:85">
-          {currentTime}
-        </span>
+      <div className="flex items-center gap-3 md:gap-5 text-sm">
+        <span className="hidden text-[#acacac] md:block">{currentTime}</span>
+
         <Link
           to="/organizer/events/create"
-          className="font-medium text-white transition-colors hover:text-accent-500"
-          data-node-id="156:84"
+          className="hidden items-center justify-center gap-2 rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-white transition hover:border-white/40 md:flex"
         >
           Create Event
         </Link>
+
         <button
           type="button"
           onClick={onOpenSearch}
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-transparent text-white transition hover:border-white/30"
+          className="hidden h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-transparent text-white transition hover:border-white/30 md:flex"
           aria-label="Search events"
-          data-node-id="156:82"
         >
           <img src={searchIcon} alt="Search" className="h-4 w-4 opacity-80" />
         </button>
-        <div className="relative" ref={notificationsMenuRef}>
+
+        <div className="relative hidden md:block" ref={notificationsMenuRef}>
           <button
             type="button"
             onClick={onToggleNotifications}
@@ -124,6 +116,7 @@ const OrganizerLayoutHeader = ({
             getNotificationInitial={getNotificationInitial}
           />
         </div>
+
         <OrganizerProfileMenu
           showProfileMenu={profileMenuProps.showProfileMenu}
           profileMenuRef={profileMenuProps.profileMenuRef}
@@ -134,6 +127,17 @@ const OrganizerLayoutHeader = ({
           onAppPreferences={profileMenuProps.onAppPreferences}
           onLogout={profileMenuProps.onLogout}
         />
+
+        <button
+          type="button"
+          onClick={() => onOpenMobileMenu?.()}
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white transition hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60 md:hidden"
+          aria-label="Open navigation menu"
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="organizer-mobile-menu"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
       </div>
     </div>
   </header>
