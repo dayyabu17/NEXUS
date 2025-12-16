@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import GuestNavbar from './GuestNavbar';
+import GuestNavbar from '../components/GuestNavbar';
 import EventHero from '../components/EventDetails/EventHero';
 import EventMapSection from '../components/EventDetails/EventMapSection';
 import TicketSidebar from '../components/EventDetails/TicketSidebar';
