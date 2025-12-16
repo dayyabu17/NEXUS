@@ -18,7 +18,7 @@ const navItems = [
   { name: 'Settings', path: '/admin/settings', iconOutlined: SettingsOutlinedSvg, iconFilled: SettingsFilledSvg },
 ];
 
-const AdminSidebar = () => {
+const AdminSidebar = ({ isOpen = false, onClose }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -26,12 +26,29 @@ const AdminSidebar = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     navigate('/sign-in');
-  }, [navigate]);
+    onClose?.();
+  }, [navigate, onClose]);
+
+  const handleNavClick = useCallback(() => {
+    onClose?.();
+  }, [onClose]);
+
+  const sidebarClasses = `fixed inset-y-0 left-0 z-40 flex w-64 transform flex-col border-r border-gray-200 bg-white p-6 shadow-lg transition-transform duration-300 dark:border-gray-800 dark:bg-slate-900 md:relative md:z-auto md:translate-x-0 md:shadow-sm md:transition-none ${
+    isOpen ? 'translate-x-0' : '-translate-x-full'
+  }`;
 
   return (
-    <aside className="flex w-64 flex-col border-r border-gray-200 bg-white p-6 shadow-sm transition-colors duration-300 dark:border-gray-800 dark:bg-slate-900">
-      <div className="mb-10 flex items-center gap-3 pl-2">
+    <aside className={sidebarClasses} aria-label="Admin navigation sidebar">
+      <div className="mb-8 flex items-center justify-between gap-3 pl-1 pr-1 md:pl-2 md:pr-0">
         <img src={nexusLogo} alt="Nexus Logo" className="h-8" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:bg-gray-100 dark:border-gray-700 dark:bg-slate-900 dark:text-gray-300 dark:hover:bg-slate-800 md:hidden"
+          aria-label="Close sidebar"
+        >
+          <span className="text-xl">×</span>
+        </button>
       </div>
 
       <nav className="flex-1 space-y-2">
@@ -42,6 +59,7 @@ const AdminSidebar = () => {
             <NavLink
               key={item.name}
               to={item.path}
+              onClick={handleNavClick}
               className={`flex items-center gap-3 rounded-lg p-3 text-sm font-medium transition duration-200 ${
                 isActive
                   ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400'
