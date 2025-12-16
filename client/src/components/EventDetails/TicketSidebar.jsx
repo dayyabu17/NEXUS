@@ -4,12 +4,14 @@ const TicketSidebar = ({ eventData, ticketStatus, theme, brandStyles, onOpenChec
   const accentStyles = theme?.accentStyles || theme;
   const hasTicket = Boolean(ticketStatus?.hasTicket);
 
+  const registrationFee = eventData?.registrationFee;
+
   const registrationLabel = useMemo(() => {
-    if (typeof eventData?.registrationFee === 'number' && eventData.registrationFee > 0) {
-      return `$${eventData.registrationFee.toFixed(2)}`;
+    if (typeof registrationFee === 'number' && registrationFee > 0) {
+      return `$${registrationFee.toFixed(2)}`;
     }
     return 'Free';
-  }, [eventData?.registrationFee]);
+  }, [registrationFee]);
 
   return (
     <aside className="space-y-6">

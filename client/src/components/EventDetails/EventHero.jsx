@@ -3,8 +3,10 @@ import { useMemo } from 'react';
 const EventHero = ({ eventData, theme, travelTimeLabel, hasTicket }) => {
   const accentStyles = theme?.accentStyles || theme;
 
+  const eventDate = eventData?.date;
+
   const formattedDate = useMemo(() => {
-    if (!eventData?.date) {
+    if (!eventDate) {
       return 'Date TBA';
     }
 
@@ -16,22 +18,24 @@ const EventHero = ({ eventData, theme, travelTimeLabel, hasTicket }) => {
         year: 'numeric',
         hour: 'numeric',
         minute: '2-digit',
-      }).format(new Date(eventData.date));
+      }).format(new Date(eventDate));
     } catch (err) {
       console.warn('Unable to format event date', err);
-      return new Date(eventData.date).toLocaleString();
+      return new Date(eventDate).toLocaleString();
     }
-  }, [eventData?.date]);
+  }, [eventDate]);
+
+  const eventImage = eventData?.imageUrl;
 
   const heroStyles = useMemo(
     () => ({
-      backgroundImage: eventData?.imageUrl
-        ? `linear-gradient(180deg, rgba(2,6,23,0.2) 0%, rgba(2,6,23,0.75) 60%, rgba(2,6,23,0.95) 100%), url(${eventData.imageUrl})`
+      backgroundImage: eventImage
+        ? `linear-gradient(180deg, rgba(2,6,23,0.2) 0%, rgba(2,6,23,0.75) 60%, rgba(2,6,23,0.95) 100%), url(${eventImage})`
         : 'linear-gradient(180deg, rgba(6,11,25,0.95), rgba(2,6,23,1))',
       backgroundSize: 'cover',
       backgroundPosition: 'center',
     }),
-    [eventData?.imageUrl]
+    [eventImage]
   );
 
   return (

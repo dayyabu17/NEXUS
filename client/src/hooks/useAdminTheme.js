@@ -34,6 +34,24 @@ const useAdminTheme = () => {
   const [theme, setThemeState] = useState(getInitialTheme);
 
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const root = window.document?.documentElement;
+    if (!root) {
+      return;
+    }
+
+    if (theme === 'dark') {
+      root.classList.add('dark');
+      return;
+    }
+
+    root.classList.remove('dark');
+  }, [theme]);
+
+  useEffect(() => {
     const handleStorage = () => {
       setThemeState(getInitialTheme());
     };

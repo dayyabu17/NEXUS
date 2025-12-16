@@ -117,7 +117,7 @@ const GuestNavbar = () => {
     return () => {
       document.removeEventListener('mousedown', handleClickAway);
     };
-  }, [isNotificationsOpen]);
+  }, [isNotificationsOpen, setIsNotificationsOpen]);
 
   useEffect(() => {
     if (!isBrandInfoOpen) {

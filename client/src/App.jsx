@@ -13,7 +13,7 @@ const AdminEventDetails = lazy(() => import('./components/AdminEventDetails'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const UserManagement = lazy(() => import('./components/UserManagement'));
 const EventManagement = lazy(() => import('./components/EventManagement'));
-const Settings = lazy(() => import('./components/Settings'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 // Organizer Components
 const OrganizerDashboard = lazy(() => import('./components/OrganizerDashboard'));
