@@ -72,6 +72,42 @@ const loginUser = async (req, res) => {
   }
 };
 
+const registerUser = asyncHandler(async (req, res) => {
+  const { name, email, password, role, organization } = req.body || {};
+
+  if (!name || !email || !password || !role) {
+    return res.status(400).json({ message: 'Missing required registration fields.' });
+  }
+
+  if (!['student', 'organizer'].includes(role)) {
+    return res.status(400).json({ message: 'Invalid role selection.' });
+  }
+
+  const normalizedEmail = email.trim().toLowerCase();
+
+  const userExists = await User.findOne({ email: normalizedEmail });
+  if (userExists) {
+    return res.status(400).json({ message: 'User already exists.' });
+  }
+
+  const salt = await bcrypt.genSalt(10);
+  const hashedPassword = await bcrypt.hash(password, salt);
+
+  const userPayload = {
+    name: name.trim(),
+    email: normalizedEmail,
+    password: hashedPassword,
+    role,
+  };
+
+  if (role === 'organizer' && organization) {
+    userPayload.organizationName = organization.trim();
+  }
+
+  await User.create(userPayload);
+
+  res.status(201).json({ message: 'Registration successful. Please log in.' });
+});
 // @desc    Update user profile (name, email, password)
 // @route   PUT /api/auth/profile
 // @access  Private
@@ -158,7 +194,8 @@ const updateProfilePicture = asyncHandler(async (req, res) => {
 });
 
 module.exports = { 
-  loginUser, 
+  loginUser,
+  registerUser, 
   getUserProfile,
   updateUserProfile,
   updateProfilePicture 

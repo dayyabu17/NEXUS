@@ -2,9 +2,38 @@ const asyncHandler = require('express-async-handler');
 const Event = require('../models/Event');
 const Ticket = require('../models/Ticket');
 const User = require('../models/User');
+const { sendNotificationEmail } = require('../utils/emailService');
 
 const DEFAULT_ACCENT = 'blue';
 const DEFAULT_BRAND_COLOR = '#2563EB';
+const STATUS_BADGE_COLORS = {
+  approved: '#16a34a',
+  rejected: '#dc2626',
+};
+
+const buildStatusChangeEmailHtml = ({
+  organizerName,
+  eventTitle,
+  status,
+  remarks,
+}) => {
+  const badgeColor = STATUS_BADGE_COLORS[status] || '#334155';
+  const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+
+  return `
+    <div style="font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #e2e8f0; border-radius: 16px;">
+      <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #f8fafc;">Event Status Update</h1>
+      <p style="margin: 0 0 12px;">Hello ${organizerName || 'Organizer'},</p>
+      <p style="margin: 0 0 20px;">Your event <strong>${eventTitle}</strong> has been updated.</p>
+      <div style="margin-bottom: 20px;">
+        <span style="display: inline-block; padding: 6px 14px; border-radius: 9999px; background-color: ${badgeColor}; color: #fff; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">${statusLabel}</span>
+      </div>
+      ${remarks ? `<p style="margin: 0 0 20px;">${remarks}</p>` : ''}
+      <p style="margin: 0 0 16px;">Need assistance or have questions? Reply directly to this email and our team will help you out.</p>
+      <p style="margin: 0; color: #94a3b8;">— The Nexus Events Team</p>
+    </div>
+  `;
+};
 
 // @desc    Get publicly visible events (approved)
 // @route   GET /api/events
@@ -315,6 +344,62 @@ const markAllGuestNotificationsRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount: 0 });
 });
 
+const updateEventStatus = asyncHandler(async (req, res) => {
+  const { status, remarks } = req.body || {};
+
+  if (!['approved', 'rejected'].includes(status)) {
+    return res.status(400).json({ message: 'Invalid status value' });
+  }
+
+  const event = await Event.findById(req.params.id);
+
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found' });
+  }
+
+  const previousStatus = event.status;
+  event.status = status;
+  await event.save();
+
+  if (['approved', 'rejected'].includes(status) && status !== previousStatus) {
+    const organizerId = event.organizer?._id || event.organizer;
+    if (organizerId) {
+      try {
+        const organizer = await User.findById(organizerId).select('email name organizationName');
+        const organizerEmail = organizer?.email;
+
+        if (organizerEmail) {
+          const organizerName = organizer?.name || organizer?.organizationName || 'Organizer';
+          const statusLabel = status === 'approved' ? 'Approved' : 'Rejected';
+          const subject = `Event ${statusLabel}: ${event.title}`;
+          const htmlContent = buildStatusChangeEmailHtml({
+            organizerName,
+            eventTitle: event.title,
+            status,
+            remarks: remarks && remarks.trim() ? remarks.trim() : undefined,
+          });
+
+          sendNotificationEmail(organizerEmail, subject, htmlContent).catch((error) => {
+            console.error('Failed to queue event status notification email:', error);
+          });
+        } else {
+          console.error('Organizer email not found; notification email skipped.', { eventId: event._id });
+        }
+      } catch (error) {
+        console.error('Failed to fetch organizer for notification email:', error);
+      }
+    } else {
+      console.error('Organizer reference missing on event; notification email skipped.', { eventId: event._id });
+    }
+  }
+
+  res.json({
+    message: `Event status updated to ${status}.`,
+    eventId: event._id,
+    newStatus: status,
+  });
+});
+
 module.exports = {
   getPublicEvents,
   getPublicEventById,
@@ -322,4 +407,5 @@ module.exports = {
   getGuestNotifications,
   markGuestNotificationRead,
   markAllGuestNotificationsRead,
+  updateEventStatus,
 };

@@ -1,6 +1,8 @@
 const axios = require('axios');
 const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
+const User = require('../models/User');
+const { sendNotificationEmail } = require('../utils/emailService');
 
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 const FRONTEND_FALLBACK = 'http://localhost:5173';
@@ -10,6 +12,45 @@ const debugPayment = (...args) => {
     console.log(...args);
   }
 };
+
+const buildFreeTicketEmail = ({
+  attendeeName,
+  eventTitle,
+  ticketId,
+}) => `
+  <div style="font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #e2e8f0; border-radius: 16px;">
+    <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #60a5fa;">Ticket Confirmed</h1>
+    <p style="margin: 0 0 12px;">Hi ${attendeeName || 'there'},</p>
+    <p style="margin: 0 0 16px;">You're all set for <strong>${eventTitle}</strong>.</p>
+    <div style="margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background-color: #1e293b;">
+      <p style="margin: 0; color: #93c5fd;">Ticket ID</p>
+      <p style="margin: 4px 0 0; font-size: 18px; font-weight: 600; color: #f8fafc;">${ticketId}</p>
+    </div>
+    <p style="margin: 0 0 16px;">We'll send reminders as the event approaches. Keep this email handy for check-in.</p>
+    <p style="margin: 0; color: #94a3b8;">— Nexus Events</p>
+  </div>
+`;
+
+const buildPaidTicketEmail = ({
+  attendeeName,
+  eventTitle,
+  ticketId,
+  amountPaid,
+}) => `
+  <div style="font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #e2e8f0; border-radius: 16px;">
+    <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #34d399;">Payment Receipt</h1>
+    <p style="margin: 0 0 12px;">Hello ${attendeeName || 'there'},</p>
+    <p style="margin: 0 0 16px;">Thanks for securing your spot at <strong>${eventTitle}</strong>.</p>
+    <div style="margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background-color: #064e3b;">
+      <p style="margin: 0; color: #6ee7b7;">Amount Paid</p>
+      <p style="margin: 4px 0 12px; font-size: 18px; font-weight: 600; color: #f0fdf4;">₦${amountPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+      <p style="margin: 0; color: #6ee7b7;">Ticket ID</p>
+      <p style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #f0fdf4;">${ticketId}</p>
+    </div>
+    <p style="margin: 0 0 16px;">We look forward to seeing you. Save this email for event day.</p>
+    <p style="margin: 0; color: #94a3b8;">— Nexus Events</p>
+  </div>
+`;
 
 const getSafeNumber = (value, fallback = 0) => {
   const parsed = Number(value);
@@ -80,6 +121,28 @@ const initializeRSVP = async (req, res) => {
       });
 
       await updateEventSales(event, qty);
+
+      try {
+        const user = await User.findById(userId).select('name email');
+        const attendeeName = user?.name;
+        const recipientEmail = user?.email || email;
+
+        if (recipientEmail) {
+          const htmlContent = buildFreeTicketEmail({
+            attendeeName,
+            eventTitle: event.title,
+            ticketId: ticket._id,
+          });
+
+          sendNotificationEmail(
+            recipientEmail,
+            `Ticket Confirmed: ${event.title}`,
+            htmlContent,
+          ).catch((error) => console.error('Free ticket email failed:', error));
+        }
+      } catch (notificationError) {
+        console.error('Unable to send free ticket confirmation email:', notificationError);
+      }
 
       return res.json({ success: true, isFree: true, ticketId: ticket._id });
     }
@@ -211,6 +274,34 @@ const verifyPayment = async (req, res) => {
 
       if (!updateResult) {
         debugPayment('Event not found while updating counters for eventId:', eventId);
+      }
+
+      try {
+        const [user, event] = await Promise.all([
+          User.findById(userId).select('name email'),
+          Event.findById(eventId).select('title'),
+        ]);
+
+        const attendeeName = user?.name;
+        const recipientEmail = user?.email;
+
+        if (recipientEmail) {
+          const amountPaid = getSafeNumber(data.amount, 0) / 100;
+          const htmlContent = buildPaidTicketEmail({
+            attendeeName,
+            eventTitle: event?.title || 'Your Event',
+            ticketId: newTicket._id,
+            amountPaid,
+          });
+
+          sendNotificationEmail(
+            recipientEmail,
+            `Payment Receipt: ${event?.title || 'Event Ticket'}`,
+            htmlContent,
+          ).catch((error) => console.error('Paid ticket email failed:', error));
+        }
+      } catch (notificationError) {
+        console.error('Unable to send paid ticket receipt email:', notificationError);
       }
 
       return res.status(200).json({ success: true, ticketId: newTicket._id });

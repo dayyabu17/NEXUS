@@ -4,6 +4,7 @@ const router = express.Router();
 // --- CRITICAL: Import all controller functions here and ONLY here ---
 const { 
     loginUser, 
+    registerUser,
     getUserProfile,
     updateUserProfile, 
     updateProfilePicture 
@@ -13,6 +14,7 @@ const { protect } = require('../middleware/authMiddleware');
 
 // @route   /api/auth
 router.post('/login', loginUser);
+router.post('/register', registerUser);
 
 // Protected routes for profile management
 router.route('/profile')
