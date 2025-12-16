@@ -1,5 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import { CreditCard } from 'lucide-react';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import OrganizerEarningsSummaryCards from './OrganizerEarningsSummaryCards';
 import OrganizerRevenueTrendChart from './OrganizerRevenueTrendChart';
