@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { MapContainer, Marker, Polyline, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
 
 const EVENT_MARKER_ICON = new L.Icon({
   iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
@@ -33,6 +34,20 @@ const FitBounds = ({ points }) => {
     const bounds = L.latLngBounds(points);
     map.fitBounds(bounds, { padding: [60, 60] });
   }, [map, points]);
+
+  return null;
+};
+
+const MapUpdater = () => {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [map]);
 
   return null;
 };
@@ -70,6 +85,7 @@ const EventMapSection = ({
             className="h-full w-full border border-slate-200 dark:border-slate-800"
             style={{ background: '#e2e8f0' }}
           >
+            <MapUpdater />
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution="&copy; <a href=\"https://www.openstreetmap.org/copyright\">OpenStreetMap</a> contributors"
