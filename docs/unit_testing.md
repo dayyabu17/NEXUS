@@ -1,0 +1,22 @@
+### 4.3.1 Unit Testing
+
+The following table presents the unit test cases executed to verify the functionality of individual modules within the Nexus Campus Event Management System.
+
+| Test ID | Module | Test Description | Test Data / Input | Expected Result | Actual Result | Status |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **UTC-01** | Authentication | Login with valid Student credentials. | `email: "student@nexus.ac.za"`<br>`password: "Password123!"` | System authenticates the user, generates a JWT token, and redirects to the Student Dashboard. | As Expected | Pass |
+| **UTC-02** | Authentication | Login with an incorrect password. | `email: "student@nexus.ac.za"`<br>`password: "WrongPassword"` | System rejects the login request and displays an "Invalid credentials" error message. | As Expected | Pass |
+| **UTC-03** | Authentication | Login with an unregistered email address. | `email: "unknown@nexus.ac.za"`<br>`password: "Password123!"` | System rejects the login request and displays a "User not found" error message. | As Expected | Pass |
+| **UTC-04** | Event Management | Organizer creates an event with valid data. | `title: "Campus Hackathon"`<br>`date: "2025-06-15"`<br>`location: "Engineering Hall"` | Event is successfully created in the database and a success message is displayed to the Organizer. | As Expected | Pass |
+| **UTC-05** | Event Management | Organizer tries to create an event with a past date. | `title: "Past Gala"`<br>`date: "2020-01-01"`<br>`location: "Main Hall"` | System validation prevents creation and displays a "Date must be in the future" error message. | As Expected | Pass |
+| **UTC-06** | Event Management | Organizer tries to create an event leaving the Location field empty. | `title: "No Location Event"`<br>`location: ""` | System validation prevents creation and highlights the Location field as required. | As Expected | Pass |
+| **UTC-07** | Event Management | Organizer updates an existing event's time (Emergency Update). | `eventId: "EVT-001"`<br>`updateTime: "14:00"` (Original: "10:00") | Event time is updated in the database, and registered guests receive an email notification. | As Expected | Pass |
+| **UTC-08** | Search & Discovery | Student searches for events using a keyword. | `keyword: "Tech"` | System retrieves and displays a list of events containing "Tech" in the title or description. | As Expected | Pass |
+| **UTC-09** | Search & Discovery | Student filters events by Category. | `category: "Social"` | System filters the event list to display only events categorized as "Social". | As Expected | Pass |
+| **UTC-10** | Booking & RSVP | Student RSVPs for a Free event (Instant confirmation). | `eventId: "EVT-100"` (Type: Free)<br>`userId: "USR-001"` | System registers the user, decrements available seats, and sends a confirmation email. | As Expected | Pass |
+| **UTC-11** | Booking & RSVP | Student attempts to RSVP for a Sold Out event (Capacity check). | `eventId: "EVT-FULL"`<br>(Capacity: 50, RSVP: 50) | System prevents the RSVP action and displays an "Event Sold Out" message. | As Expected | Pass |
+| **UTC-12** | Booking & RSVP | Student attempts to RSVP twice for the same event (Duplicate check). | `eventId: "EVT-100"`<br>`userId: "USR-001"` (Already RSVP'd) | System detects the duplicate request and displays an "Already registered" message. | As Expected | Pass |
+| **UTC-13** | Payment & Verification | System verifies a valid Paystack reference (Paid Ticket generation). | `paystackRef: "T123456789"`<br>`amount: 50.00` | System verifies payment with Paystack API, generates a ticket, and records the transaction. | As Expected | Pass |
+| **UTC-14** | Payment & Verification | System handles a failed/invalid payment reference. | `paystackRef: "INVALID_REF_000"` | System fails verification, declines ticket generation, and displays a "Payment failed" error. | As Expected | Pass |
+| **UTC-15** | Post-Event Actions | Organizer performs a digital Check-in for a guest. | `guestId: "GST-001"`<br>`eventId: "EVT-001"` | System updates the guest's status to "Checked-in" and records the timestamp. | As Expected | Pass |
+| **UTC-16** | Post-Event Actions | Student submits Feedback for an attended event. | `eventId: "EVT-001"`<br>`rating: 5`<br>`comment: "Excellent event!"` | Feedback is successfully stored in the database and the event's average rating is updated. | As Expected | Pass |
