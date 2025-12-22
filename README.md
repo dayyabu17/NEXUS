@@ -1,113 +1,193 @@
-# Nexus Campus Event Management System
+<div align="center">
 
-## Project Purpose
+  <h1>
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&pause=1000&color=2E86C1&center=true&vCenter=true&width=600&lines=Campus+Event+Management+and+Notification+System;Full+Stack+Application;Built+with+MERN+Stack" alt="Typing SVG" />
+  </h1>
 
-Nexus is a comprehensive campus event management system designed to bridge the gap between students, event organizers, and university administration. It provides a centralized platform for discovering, organizing, and managing events within a university ecosystem.
+  <p>
+    <b>A comprehensive platform designed to streamline the management of campus events.</b>
+  </p>
 
-The system aims to:
-- **Simplify Event Discovery:** Enable students to easily find events that match their interests.
-- **Streamline Organization:** Provide organizers with tools to create, manage, and track event performance.
-- **Ensure Quality Control:** Empower administrators to oversee event approval and user management.
-- **Facilitate Ticketing:** Offer a secure and integrated payment solution for paid events and simple RSVP for free ones.
+  <p>
+    <a href="https://nexus-6753.vercel.app/" target="_blank">
+      <img src="https://img.shields.io/badge/LIVE_DEMO-Visit_Site-2ea44f?style=for-the-badge&logo=vercel" alt="Live Demo" />
+    </a>
+  </p>
 
-## Server Setup
+  <p>
+    <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React" />
+    <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
+    <img src="https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" alt="Express.js" />
+    <img src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
+    <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/license-ISC-blue?style=for-the-badge" alt="License" />
+  </p>
 
-Follow these steps to set up and run the backend server.
+  <br />
 
-### 1. Prerequisites
-- **Node.js** (v14 or higher)
-- **MongoDB** (Local instance or Atlas URI)
+  <!-- Placeholder for App Demo/Screenshot -->
+  <img src="https://via.placeholder.com/800x400?text=Application+Dashboard+Preview" alt="App Screenshot" width="800" />
 
-### 2. Installation
-Navigate to the `server` directory and install the required dependencies:
+  <br />
+</div>
 
+<br />
+
+## 📖 Project Overview
+
+**Campus Event Management and Notification System** (Nexus) is a robust full-stack solution tailored for university environments. It bridges the gap between students, event organizers, and administrators by providing a seamless interface for event discovery, ticketing, and management.
+
+Whether you're a student looking for the next big hackathon or an organizer managing a seminar, this system handles everything from **RSVPs** to **QR Code Check-ins**.
+
+---
+
+## ✨ Key Features
+
+| Feature | Description |
+| :--- | :--- |
+| **🔐 Role-Based Access** | Secure authentication for Students, Organizers, and Admins using JWT. |
+| **🎫 Smart Ticketing** | Integrated **Paystack** payments for paid events and instant RSVP for free ones. |
+| **📱 QR Check-in** | Organizers can scan attendee QR codes for real-time validation and attendance tracking. |
+| **🗺️ Interactive Maps** | Location visualization using **Leaflet** to help attendees find venues easily. |
+| **📊 Admin Dashboard** | Comprehensive oversight tools for approving events and managing user roles. |
+| **📧 Notifications** | Automated email alerts for registration confirmations and event reminders. |
+| **🎨 Modern UI/UX** | Built with **Tailwind CSS** and **Framer Motion** for a fluid, responsive experience. |
+
+---
+
+## 🛠️ Tech Stack
+
+<div align="center">
+
+### Frontend
+![React](https://img.shields.io/badge/React-20232A?style=flat&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat&logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=flat&logo=tailwind-css&logoColor=white)
+![Framer Motion](https://img.shields.io/badge/Framer_Motion-0055FF?style=flat&logo=framer&logoColor=white)
+![Leaflet](https://img.shields.io/badge/Leaflet-199900?style=flat&logo=leaflet&logoColor=white)
+
+### Backend
+![NodeJS](https://img.shields.io/badge/Node.js-6DA55F?style=flat&logo=node.js&logoColor=white)
+![ExpressJS](https://img.shields.io/badge/Express.js-404D59?style=flat&logo=express&logoColor=white)
+![Nodemailer](https://img.shields.io/badge/Nodemailer-007ACC?style=flat&logo=mail.ru&logoColor=white)
+![Multer](https://img.shields.io/badge/Multer-F28D1A?style=flat&logo=files&logoColor=white)
+
+### Database & Payments
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=flat&logo=mongodb&logoColor=white)
+![Paystack](https://img.shields.io/badge/Paystack-0BA4DB?style=flat&logo=visa&logoColor=white)
+
+</div>
+
+---
+
+## 🚀 Getting Started
+
+Follow these instructions to set up the project locally.
+
+### Prerequisites
+
+*   **Node.js** (v18 or higher)
+*   **npm** or **yarn**
+*   **MongoDB** (Local instance or Atlas URI)
+
+### Installation
+
+#### 1. Clone the Repository
+```bash
+git clone https://github.com/your-username/campus-event-management.git
+cd campus-event-management
+```
+
+#### 2. Backend Setup
+Navigate to the server directory and install dependencies.
 ```bash
 cd server
 npm install
 ```
 
-### 3. Environment Variables
-Create a `.env` file in the `server` directory. This file must contain the following configuration variables:
-
+Create a `.env` file in the `server/` root and configure the following:
 ```env
-# Server Configuration
 PORT=5000
-NODE_ENV=development
-
-# Database Connection
 MONGO_URI=mongodb://localhost:27017/nexus_db
+JWT_SECRET=your_super_secure_jwt_secret
+PAYSTACK_SECRET_KEY=your_paystack_secret_key
 
-# Security
-JWT_SECRET=your_jwt_secret_key_here
-
-# Payment Gateway (Paystack)
-PAYSTACK_SECRET_KEY=your_paystack_secret_key_here
-FRONTEND_BASE_URL=http://localhost:5173
-
-# Email Service (Nodemailer - Gmail Example)
+# Email Configuration
 EMAIL_USER=your_email@gmail.com
 EMAIL_PASS=your_email_app_password
-EMAIL_FROM=noreply@nexus.com
-EMAIL_FROM_NAME=Nexus Events
+EMAIL_FROM=no-reply@nexus.com
+EMAIL_FROM_NAME=Nexus_Events
+
+# Optional
+PAYMENT_DEBUG=true
 ```
 
-### 4. Database Seeding (Optional)
-To populate the database with initial dummy data (including a default Admin, Organizer, and Events), run:
-
+Start the server (with seeding optional):
 ```bash
-node seed.js
+# Seed the database (Optional: clears data and adds defaults)
+npm run seed
+
+# Start development server
+npm run dev
 ```
 
-### 5. Start the Server
-To run the server in development mode (with auto-reload):
+#### 3. Frontend Setup
+Open a new terminal tab and navigate to the client directory.
+```bash
+cd client
+npm install
+```
 
+Start the React development server:
 ```bash
 npm run dev
 ```
 
-To run the server in production mode:
+🚀 **The app should now be running at** `http://localhost:5173`
+
+---
+
+## 📂 Project Structure
 
 ```bash
-npm start
+/
+├── 📂 client/              # React Frontend
+│   ├── 📂 src/
+│   │   ├── 📂 api/         # Axios API configurations
+│   │   ├── 📂 components/  # Reusable UI Components
+│   │   ├── 📂 context/     # Global State (Auth, Theme)
+│   │   ├── 📂 pages/       # Application Routes/Views
+│   │   └── ...
+├── 📂 server/              # Node.js Backend
+│   ├── 📂 controllers/     # Route Logic
+│   ├── 📂 models/          # Mongoose Schemas
+│   ├── 📂 routes/          # API Endpoints
+│   ├── 📂 utils/           # Helpers (Email, Uploads)
+│   └── ...
+├── 📂 docs/                # Documentation & UMLs
+└── 📄 README.md            # You are here!
 ```
 
-The server will typically run on `http://localhost:5173` if configured as such, or port `5000` by default.
+---
 
-## API Usage
+## 🔮 Future Roadmap
 
-The Nexus backend provides a RESTful API organized into several resource groups. Below is a high-level overview of the main routes.
+We are constantly improving! Here is what's coming next:
 
-### Auth (`/api/auth`)
-- `POST /login`: Authenticate a user and receive a JWT.
-- `POST /register`: Register a new Student or Organizer account.
-- `GET /profile`: Retrieve the authenticated user's profile.
+- [ ] 📱 **Mobile Application** (React Native) for easier access on the go.
+- [ ] 🤖 **AI Recommendations** based on user interests and past event history.
+- [ ] 📅 **Calendar Sync** (Google/Outlook/iCal) for event reminders.
+- [ ] 💬 **Real-time Chat** functionality for event Q&A sessions.
 
-### Events (`/api/events`)
-- `GET /`: Retrieve a list of approved public events.
-- `GET /:id`: Get details for a specific public event.
-- `GET /dashboard`: Get personalized dashboard data (Hero, Recommended, Recent events).
-- `POST /:id/feedback`: Submit feedback for an attended event.
+---
 
-### Organizer (`/api/organizer`)
-- `GET /dashboard`: Get organizer-specific stats and upcoming events.
-- `POST /events`: Create a new event (starts as 'pending').
-- `GET /events/:id/guests`: View the guest list for an event.
-- `PATCH /events/:eventId/guests/:ticketId/check-in`: Check in a guest.
+<div align="center">
 
-### Admin (`/api/admin`)
-- `GET /stats`: Get system-wide statistics.
-- `GET /events/pending`: View events waiting for approval.
-- `PUT /events/:id/status`: Approve or Reject an event.
-- `PUT /users/:id/role`: Update a user's role.
+  ### 👤 Author
 
-### Tickets (`/api/tickets`)
-- `GET /my-tickets`: List all tickets owned by the current user.
-- `GET /status/:eventId`: Check if the user has a ticket for a specific event.
+  **Built with ❤️ by [Your Name]**
 
-### Payment (`/api/payment`)
-- `POST /rsvp/initialize`: Initialize a payment (Paystack) or confirm a free RSVP.
-- `GET /rsvp/verify`: Verify a successful payment callback.
+  ![GitHub Stats](https://github-readme-stats.vercel.app/api?username=yourusername&show_icons=true&theme=radical&hide_border=true)
+  ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=yourusername&layout=compact&theme=radical&hide_border=true)
 
-## Documentation
-
-For more detailed information about the system architecture and requirements, please refer to the `docs/` directory.
+</div>
