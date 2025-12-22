@@ -94,8 +94,8 @@ Follow these instructions to set up the project locally.
 
 #### 1. Clone the Repository
 ```bash
-git clone https://github.com/your-username/campus-event-management.git
-cd campus-event-management
+git clone https://github.com/your-username/NEXUS.git
+cd NEXUS
 ```
 
 #### 2. Backend Setup
@@ -185,9 +185,10 @@ We are constantly improving! Here is what's coming next:
 
   ### 👤 Author
 
-  **Built with ❤️ by [Your Name]**
+  **Built with ❤️ by Usman Dayyabu**
 
-  ![GitHub Stats](https://github-readme-stats.vercel.app/api?username=yourusername&show_icons=true&theme=radical&hide_border=true)
-  ![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=yourusername&layout=compact&theme=radical&hide_border=true)
+  <a href="https://github.com/dayyabu17/NEXUS">
+    <img src="https://github-readme-stats.vercel.app/api/pin/?username=dayyabu17&repo=NEXUS&theme=radical&hide_border=true" alt="NEXUS Repo Stats" />
+  </a>
 
 </div>
