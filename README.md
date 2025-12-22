@@ -1,127 +1,113 @@
 # Nexus Campus Event Management System
 
-## Project Overview
+## Project Purpose
 
-Nexus is a comprehensive web-based platform designed to streamline the management of campus events. It connects students, event organizers, and administrators, facilitating event discovery, registration, and management.
+Nexus is a comprehensive campus event management system designed to bridge the gap between students, event organizers, and university administration. It provides a centralized platform for discovering, organizing, and managing events within a university ecosystem.
 
-**Key Features:**
-- **Role-Based Access:** Distinct features for Students (Guests), Organizers, and Admins.
-- **Event Discovery:** Students can browse, search, and view details of approved events.
-- **Event Management:** Organizers can create, edit, and manage events.
-- **Ticketing & RSVP:** Seamless ticket purchase (via Paystack) and RSVP system.
-- **Check-in:** Digital QR code check-in for attendees.
-- **Admin Oversight:** Administrators approve events and manage user roles.
-- **Interactive Maps:** Integration with Leaflet for event location visualization.
+The system aims to:
+- **Simplify Event Discovery:** Enable students to easily find events that match their interests.
+- **Streamline Organization:** Provide organizers with tools to create, manage, and track event performance.
+- **Ensure Quality Control:** Empower administrators to oversee event approval and user management.
+- **Facilitate Ticketing:** Offer a secure and integrated payment solution for paid events and simple RSVP for free ones.
 
-## Tech Stack
+## Server Setup
 
-- **Frontend:** React (Vite), Tailwind CSS, Framer Motion, Leaflet
-- **Backend:** Node.js, Express.js
-- **Database:** MongoDB (Mongoose ODM)
-- **Authentication:** JWT, bcryptjs
-- **Payments:** Paystack API
+Follow these steps to set up and run the backend server.
 
-## Project Structure
+### 1. Prerequisites
+- **Node.js** (v14 or higher)
+- **MongoDB** (Local instance or Atlas URI)
 
-```
-/
-├── client/                 # Frontend application (React + Vite)
-│   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   ├── pages/          # Page views
-│   │   ├── context/        # React Context (Auth, Theme)
-│   │   ├── api/            # Axios setup
-│   │   └── ...
-├── server/                 # Backend application (Express)
-│   ├── models/             # Mongoose schemas (User, Event, Ticket)
-│   ├── controllers/        # Business logic
-│   ├── routes/             # API endpoints
-│   ├── middleware/         # Auth and error handling
-│   └── ...
-├── docs/                   # System documentation
-│   ├── user_requirements.md
-│   ├── use_case_diagram.md
-│   ├── database_design.md
-│   └── ...
-└── ...
-```
+### 2. Installation
+Navigate to the `server` directory and install the required dependencies:
 
-## Setup & Installation
-
-### Prerequisites
-- Node.js (v18+ recommended)
-- MongoDB (Local or Atlas connection string)
-
-### 1. Clone the Repository
-```bash
-git clone <repository-url>
-cd <project-folder>
-```
-
-### 2. Backend Setup
-Navigate to the server directory and install dependencies:
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file in the `server/` directory with the following variables:
+### 3. Environment Variables
+Create a `.env` file in the `server` directory. This file must contain the following configuration variables:
+
 ```env
+# Server Configuration
 PORT=5000
+NODE_ENV=development
+
+# Database Connection
 MONGO_URI=mongodb://localhost:27017/nexus_db
-JWT_SECRET=your_super_secret_key
-PAYSTACK_SECRET_KEY=your_paystack_secret_key
-# Add other necessary keys as required (e.g., EMAIL_USER, EMAIL_PASS)
+
+# Security
+JWT_SECRET=your_jwt_secret_key_here
+
+# Payment Gateway (Paystack)
+PAYSTACK_SECRET_KEY=your_paystack_secret_key_here
+FRONTEND_BASE_URL=http://localhost:5173
+
+# Email Service (Nodemailer - Gmail Example)
+EMAIL_USER=your_email@gmail.com
+EMAIL_PASS=your_email_app_password
+EMAIL_FROM=noreply@nexus.com
+EMAIL_FROM_NAME=Nexus Events
 ```
 
-(Optional) Seed the database with initial data:
+### 4. Database Seeding (Optional)
+To populate the database with initial dummy data (including a default Admin, Organizer, and Events), run:
+
 ```bash
-npm run seed
+node seed.js
 ```
 
-Start the server:
+### 5. Start the Server
+To run the server in development mode (with auto-reload):
+
 ```bash
 npm run dev
 ```
 
-### 3. Frontend Setup
-Open a new terminal, navigate to the client directory, and install dependencies:
+To run the server in production mode:
+
 ```bash
-cd client
-npm install
+npm start
 ```
 
-Start the development server:
-```bash
-npm run dev
-```
+The server will typically run on `http://localhost:5173` if configured as such, or port `5000` by default.
 
-The application should now be running at `http://localhost:5173` (or the port specified by Vite).
+## API Usage
 
-## Usage Guide
+The Nexus backend provides a RESTful API organized into several resource groups. Below is a high-level overview of the main routes.
 
-### Admin
-- **Login:** Use admin credentials (created via seed or manually).
-- **Dashboard:** Approve pending events, view site statistics.
-- **Users:** Manage user roles.
+### Auth (`/api/auth`)
+- `POST /login`: Authenticate a user and receive a JWT.
+- `POST /register`: Register a new Student or Organizer account.
+- `GET /profile`: Retrieve the authenticated user's profile.
 
-### Organizer
-- **Login:** Sign up as an organizer or request a role change.
-- **Create Event:** Submit new events for approval.
-- **Manage:** Track RSVPs, check in guests via QR code scanner.
+### Events (`/api/events`)
+- `GET /`: Retrieve a list of approved public events.
+- `GET /:id`: Get details for a specific public event.
+- `GET /dashboard`: Get personalized dashboard data (Hero, Recommended, Recent events).
+- `POST /:id/feedback`: Submit feedback for an attended event.
 
-### Student/Guest
-- **Browse:** Explore the "Discover" page for events.
-- **RSVP/Buy:** Secure your spot.
-- **Tickets:** View your tickets in "My Tickets" and present QR code at the venue.
+### Organizer (`/api/organizer`)
+- `GET /dashboard`: Get organizer-specific stats and upcoming events.
+- `POST /events`: Create a new event (starts as 'pending').
+- `GET /events/:id/guests`: View the guest list for an event.
+- `PATCH /events/:eventId/guests/:ticketId/check-in`: Check in a guest.
+
+### Admin (`/api/admin`)
+- `GET /stats`: Get system-wide statistics.
+- `GET /events/pending`: View events waiting for approval.
+- `PUT /events/:id/status`: Approve or Reject an event.
+- `PUT /users/:id/role`: Update a user's role.
+
+### Tickets (`/api/tickets`)
+- `GET /my-tickets`: List all tickets owned by the current user.
+- `GET /status/:eventId`: Check if the user has a ticket for a specific event.
+
+### Payment (`/api/payment`)
+- `POST /rsvp/initialize`: Initialize a payment (Paystack) or confirm a free RSVP.
+- `GET /rsvp/verify`: Verify a successful payment callback.
 
 ## Documentation
 
-Detailed system documentation can be found in the `docs/` folder:
-- [User Requirements](docs/user_requirements.md)
-- [Use Case Diagram](docs/use_case_diagram.md)
-- [Database Design](docs/database_design.md)
-- [Class Diagram](docs/structural_diagrams.md)
-
-## License
-[License Name]
+For more detailed information about the system architecture and requirements, please refer to the `docs/` directory.

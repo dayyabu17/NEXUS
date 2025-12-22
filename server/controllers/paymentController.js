@@ -65,6 +65,17 @@ const updateEventSales = async (event, quantity) => {
   await event.save();
 };
 
+/**
+ * Initialize event RSVP/Payment.
+ *
+ * @description Handles the ticket reservation process. If the event is free, it confirms the ticket directly.
+ * If paid, it initializes a Paystack transaction.
+ * @route POST /api/payment/initialize
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const initializeRSVP = async (req, res) => {
   try {
     const { userId, eventId, email } = req.body;
@@ -197,6 +208,17 @@ const initializeRSVP = async (req, res) => {
   }
 };
 
+/**
+ * Verify Paystack payment.
+ *
+ * @description Verifies a payment transaction with Paystack using the reference.
+ * If successful, creates a confirmed ticket and sends a receipt email.
+ * @route GET /api/payment/verify
+ * @access Public (called by frontend after payment redirect)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const verifyPayment = async (req, res) => {
   const { reference } = req.query;
 

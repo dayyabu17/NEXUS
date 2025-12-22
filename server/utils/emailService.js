@@ -13,6 +13,11 @@ const transporter = EMAIL_USER && EMAIL_PASS
     })
   : null;
 
+/**
+ * Resolves the "From" address for the email.
+ *
+ * @returns {string|undefined} The formatted "From" address or undefined if not configured.
+ */
 const resolveFromAddress = () => {
   if (EMAIL_FROM_NAME && (EMAIL_FROM || EMAIL_USER)) {
     return `${EMAIL_FROM_NAME} <${EMAIL_FROM || EMAIL_USER}>`;
@@ -21,6 +26,14 @@ const resolveFromAddress = () => {
   return EMAIL_FROM || EMAIL_USER || undefined;
 };
 
+/**
+ * Sends a notification email to a specified recipient.
+ *
+ * @param {string} to - The recipient's email address.
+ * @param {string} subject - The subject of the email.
+ * @param {string} htmlContent - The HTML content of the email body.
+ * @returns {Promise<void>} Resolves when the email is sent (or skipped/failed silently with logging).
+ */
 const sendNotificationEmail = async (to, subject, htmlContent) => {
   if (!transporter) {
     console.error('sendNotificationEmail skipped: transporter not configured.');
