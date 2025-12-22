@@ -58,6 +58,13 @@ if (process.env.NODE_ENV === 'production') {
 // -----------------------------------------
 
 // Connect to MongoDB
+/**
+ * Connect to MongoDB using Mongoose.
+ *
+ * @description Establishes a connection to the MongoDB database configured in environment variables.
+ * Exits the process on failure.
+ * @returns {Promise<void>}
+ */
 const connectDB = async () => {
   try {
     await mongoose.connect(process.env.MONGO_URI);

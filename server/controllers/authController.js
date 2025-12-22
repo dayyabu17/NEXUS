@@ -7,9 +7,16 @@ const asyncHandler = require('express-async-handler');
 const DEFAULT_ACCENT = 'blue';
 const DEFAULT_BRAND_COLOR = '#2563EB';
 
-// @desc    Auth user & get token
-// @route   POST /api/auth/login
-// @access  Public
+/**
+ * Authenticate user and get token.
+ *
+ * @description Authenticates a user by email and password. Returns user data and a JWT token upon success.
+ * @route POST /api/auth/login
+ * @access Public
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
@@ -72,6 +79,16 @@ const loginUser = async (req, res) => {
   }
 };
 
+/**
+ * Register a new user.
+ *
+ * @description Registers a new user with the provided details. Hashes the password and creates a user record.
+ * @route POST /api/auth/register
+ * @access Public
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password, role, organization } = req.body || {};
 
@@ -108,9 +125,16 @@ const registerUser = asyncHandler(async (req, res) => {
 
   res.status(201).json({ message: 'Registration successful. Please log in.' });
 });
-// @desc    Update user profile (name, email, password)
-// @route   PUT /api/auth/profile
-// @access  Private
+/**
+ * Get user profile.
+ *
+ * @description Retrieves the profile information of the currently authenticated user.
+ * @route GET /api/auth/profile
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id)
     .select('name email role organizationName profilePicture accentPreference brandColor avatarRingEnabled');
@@ -133,6 +157,16 @@ const getUserProfile = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Update user profile.
+ *
+ * @description Updates the profile information (name, email, password) of the currently authenticated user.
+ * @route PUT /api/auth/profile
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandler
   const user = await User.findById(req.user._id);
 
@@ -163,9 +197,16 @@ const updateUserProfile = asyncHandler(async (req, res) => { // Added asyncHandl
   }
 });
 
-// @desc    Upload user profile picture
-// @route   PUT /api/auth/profile/picture
-// @access  Private
+/**
+ * Update user profile picture.
+ *
+ * @description Uploads and updates the user's profile picture.
+ * @route PUT /api/auth/profile/picture
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const updateProfilePicture = asyncHandler(async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {

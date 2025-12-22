@@ -12,14 +12,39 @@ const {
 
 const { protect } = require('../middleware/authMiddleware'); 
 
-// @route   /api/auth
+/**
+ * @route POST /api/auth/login
+ * @desc Authenticate user and get token.
+ * @access Public
+ */
 router.post('/login', loginUser);
+
+/**
+ * @route POST /api/auth/register
+ * @desc Register a new user.
+ * @access Public
+ */
 router.post('/register', registerUser);
 
-// Protected routes for profile management
+/**
+ * @route GET /api/auth/profile
+ * @desc Get user profile.
+ * @access Private
+ */
+/**
+ * @route PUT /api/auth/profile
+ * @desc Update user profile.
+ * @access Private
+ */
 router.route('/profile')
     .get(protect, getUserProfile)
     .put(protect, updateUserProfile);
+
+/**
+ * @route PUT /api/auth/profile/picture
+ * @desc Upload/Update user profile picture.
+ * @access Private
+ */
 router.put('/profile/picture', protect, updateProfilePicture);
 
 module.exports = router;

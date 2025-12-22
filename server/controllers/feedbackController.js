@@ -34,9 +34,16 @@ const serializeFeedback = (feedback) => {
   };
 };
 
-// @desc    Submit or update feedback for an event the user attended
-// @route   POST /api/events/:eventId/feedback
-// @access  Private (Guest/Organizer/Admin with ticket)
+/**
+ * Submit or update event feedback.
+ *
+ * @description Allows a user to submit or update feedback (message and/or rating) for an event they attended (must have a valid ticket).
+ * @route POST /api/events/:eventId/feedback
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const createEventFeedback = asyncHandler(async (req, res) => {
   const eventId = req.params.eventId || req.params.id;
   if (!eventId) {
@@ -109,9 +116,16 @@ const createEventFeedback = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, feedback: serializeFeedback(feedback) });
 });
 
-// @desc    Get feedback submitted by the current user for an event
-// @route   GET /api/events/:eventId/feedback/me
-// @access  Private
+/**
+ * Get current user's feedback for an event.
+ *
+ * @description Retrieves the feedback submitted by the authenticated user for a specific event.
+ * @route GET /api/events/:eventId/feedback/me
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getMyEventFeedback = asyncHandler(async (req, res) => {
   const eventId = req.params.eventId || req.params.id;
   if (!eventId) {
@@ -128,9 +142,16 @@ const getMyEventFeedback = asyncHandler(async (req, res) => {
   res.status(200).json({ success: true, feedback: serializeFeedback(feedback) });
 });
 
-// @desc    Get feedback for an organizer's event
-// @route   GET /api/organizer/events/:eventId/feedback
-// @access  Private (Organizer)
+/**
+ * Get all feedback for an organizer's event.
+ *
+ * @description Retrieves all feedback submitted for a specific event created by the authenticated organizer.
+ * @route GET /api/organizer/events/:eventId/feedback
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerEventFeedback = asyncHandler(async (req, res) => {
   const eventId = req.params.eventId || req.params.id;
   if (!eventId) {

@@ -35,9 +35,16 @@ const buildStatusChangeEmailHtml = ({
   `;
 };
 
-// @desc    Get publicly visible events (approved)
-// @route   GET /api/events
-// @access  Public
+/**
+ * Get publicly visible events (approved).
+ *
+ * @description Retrieves a list of all approved events, sorted by date.
+ * @route GET /api/events
+ * @access Public
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getPublicEvents = asyncHandler(async (req, res) => {
   const events = await Event.find({ status: 'approved' })
     .sort({ date: 1 })
@@ -46,9 +53,16 @@ const getPublicEvents = asyncHandler(async (req, res) => {
   res.json(events);
 });
 
-// @desc    Get a single public event
-// @route   GET /api/events/:id
-// @access  Public
+/**
+ * Get a single public event by ID.
+ *
+ * @description Retrieves detailed information for a specific approved event, including limited organizer details.
+ * @route GET /api/events/:id
+ * @access Public
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getPublicEventById = asyncHandler(async (req, res) => {
   const event = await Event.findOne({ _id: req.params.id, status: 'approved' })
     .populate(
@@ -185,6 +199,16 @@ const buildGuestNotifications = (tickets, readSet = new Set()) => {
   return notifications.sort((a, b) => b.createdAt - a.createdAt);
 };
 
+/**
+ * Get dashboard data (Hero, Recommended, Recent).
+ *
+ * @description Aggregates data for the user dashboard, including a hero event, recommended events based on interest, and recent events.
+ * @route GET /api/events/dashboard
+ * @access Public (Personalized if user ID is provided)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getDashboardData = asyncHandler(async (req, res) => {
   const now = new Date();
   const weekAhead = new Date(now);
@@ -279,6 +303,16 @@ const getDashboardData = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get guest notifications.
+ *
+ * @description Generates notifications for a guest based on their tickets and event statuses.
+ * @route GET /api/events/notifications
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getGuestNotifications = asyncHandler(async (req, res) => {
   const tickets = await Ticket.find({ user: req.user._id })
     .populate('event', 'title date location imageUrl status')
@@ -294,6 +328,16 @@ const getGuestNotifications = asyncHandler(async (req, res) => {
   res.json({ notifications, unreadCount });
 });
 
+/**
+ * Mark a single guest notification as read.
+ *
+ * @description Adds the notification ID to the user's read list.
+ * @route PUT /api/events/notifications/read
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const markGuestNotificationRead = asyncHandler(async (req, res) => {
   const { id } = req.body || {};
 
@@ -323,6 +367,16 @@ const markGuestNotificationRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount });
 });
 
+/**
+ * Mark all guest notifications as read.
+ *
+ * @description Marks all currently pending notifications for the user as read.
+ * @route PUT /api/events/notifications/read-all
+ * @access Private
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const markAllGuestNotificationsRead = asyncHandler(async (req, res) => {
   const tickets = await Ticket.find({ user: req.user._id })
     .populate('event', 'title date location imageUrl status')
@@ -344,6 +398,16 @@ const markAllGuestNotificationsRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount: 0 });
 });
 
+/**
+ * Update event status (alternative endpoint/logic).
+ *
+ * @description Updates event status and sends email notifications to the organizer.
+ * @route PUT /api/events/:id/status
+ * @access Private (Admin)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const updateEventStatus = asyncHandler(async (req, res) => {
   const { status, remarks } = req.body || {};
 

@@ -133,6 +133,16 @@ const getNextPayoutDate = (reference = new Date()) => {
   return date;
 };
 
+/**
+ * Get organizer dashboard stats and data.
+ *
+ * @description Retrieves aggregated statistics, upcoming events, activities, notifications, and trends for the organizer dashboard.
+ * @route GET /api/organizer/dashboard
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerDashboard = asyncHandler(async (req, res) => {
   const now = new Date();
   const startOfToday = new Date(now);
@@ -243,6 +253,16 @@ const getOrganizerDashboard = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get organizer earnings and payout info.
+ *
+ * @description Calculates and retrieves revenue, net income, pending payouts, and transaction history for the organizer.
+ * @route GET /api/organizer/earnings
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerEarnings = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizer: req.user._id }).select('_id title date');
 
@@ -363,6 +383,16 @@ const getOrganizerEarnings = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get organizer preferences.
+ *
+ * @description Retrieves the organizer's UI preferences (accent color, brand color, etc.).
+ * @route GET /api/organizer/preferences
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerPreferences = asyncHandler(async (req, res) => {
   res.json({
     accentPreference: req.user?.accentPreference || DEFAULT_ACCENT,
@@ -371,6 +401,16 @@ const getOrganizerPreferences = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Update organizer preferences.
+ *
+ * @description Updates the organizer's UI preferences.
+ * @route PUT /api/organizer/preferences
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const updateOrganizerPreferences = asyncHandler(async (req, res) => {
   const { accentPreference, brandColor, avatarRingEnabled } = req.body || {};
 
@@ -413,6 +453,16 @@ const updateOrganizerPreferences = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get organizer notifications.
+ *
+ * @description Generates notifications for an organizer based on event activity.
+ * @route GET /api/organizer/notifications
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerNotifications = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
   const readSet = new Set(req.user.notificationReads || []);
@@ -425,6 +475,16 @@ const getOrganizerNotifications = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Mark a single organizer notification as read.
+ *
+ * @description Adds the notification ID to the user's read list.
+ * @route PUT /api/organizer/notifications/read
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const markOrganizerNotificationRead = asyncHandler(async (req, res) => {
   const { id } = req.body;
 
@@ -448,6 +508,16 @@ const markOrganizerNotificationRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount });
 });
 
+/**
+ * Mark all organizer notifications as read.
+ *
+ * @description Marks all pending organizer notifications as read.
+ * @route PUT /api/organizer/notifications/read-all
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const markAllOrganizerNotificationsRead = asyncHandler(async (req, res) => {
   const events = await Event.find({ organizer: req.user._id }).sort({ date: 1 });
   const notifications = buildNotifications(events);
@@ -462,6 +532,16 @@ const markAllOrganizerNotificationsRead = asyncHandler(async (req, res) => {
   res.json({ success: true, unreadCount: 0 });
 });
 
+/**
+ * Get organizer events.
+ *
+ * @description Retrieves a list of events created by the organizer, with optional filtering.
+ * @route GET /api/organizer/events
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerEvents = asyncHandler(async (req, res) => {
   const { status, search } = req.query;
 
@@ -491,6 +571,16 @@ const getOrganizerEvents = asyncHandler(async (req, res) => {
   })));
 });
 
+/**
+ * Get detailed information about an organizer's event.
+ *
+ * @description Retrieves details for a specific event if it belongs to the organizer.
+ * @route GET /api/organizer/events/:id
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getOrganizerEventDetails = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -518,6 +608,16 @@ const getOrganizerEventDetails = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Get guest list for an event.
+ *
+ * @description Retrieves a list of all tickets/guests for a specific event.
+ * @route GET /api/organizer/events/:id/guests
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const getEventGuests = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
@@ -534,6 +634,16 @@ const getEventGuests = asyncHandler(async (req, res) => {
   res.json(guests);
 });
 
+/**
+ * Update guest check-in status.
+ *
+ * @description Checks a guest in or out of an event.
+ * @route PUT /api/organizer/events/:eventId/guests/:ticketId/check-in
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
   const { eventId, ticketId } = req.params;
   const { checkedIn } = req.body || {};
@@ -596,6 +706,16 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
   });
 });
 
+/**
+ * Create a new event.
+ *
+ * @description Creates a new event with status 'pending'.
+ * @route POST /api/organizer/events
+ * @access Private (Organizer)
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @returns {void}
+ */
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
     title,

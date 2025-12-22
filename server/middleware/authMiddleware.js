@@ -3,7 +3,19 @@ const jwt = require('jsonwebtoken');
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 
-// Middleware to verify JWT and attach user to request (req.user)
+/**
+ * Middleware to verify JWT and attach the user to the request.
+ *
+ * @description Checks for a Bearer token in the 'Authorization' header.
+ * Verifies the token and retrieves the user details (excluding password).
+ * If valid, attaches the user to `req.user`.
+ *
+ * @function protect
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ * @throws {Error} Throws an error if the token is missing, invalid, or the user is not found.
+ */
 const protect = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -38,7 +50,18 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-// Middleware to check if the user is an Admin
+/**
+ * Middleware to restrict access to Admin users only.
+ *
+ * @description Requires the `protect` middleware to run first to populate `req.user`.
+ * Checks if `req.user.role` is 'admin'.
+ *
+ * @function admin
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ * @throws {Error} Throws an error if the user is not an admin.
+ */
 const admin = (req, res, next) => {
   // We rely on the protect middleware having already attached req.user
   if (req.user && req.user.role === 'admin') {
@@ -49,6 +72,18 @@ const admin = (req, res, next) => {
   }
 };
 
+/**
+ * Middleware to restrict access to Organizer users only.
+ *
+ * @description Requires the `protect` middleware to run first to populate `req.user`.
+ * Checks if `req.user.role` is 'organizer'.
+ *
+ * @function organizer
+ * @param {import('express').Request} req - The Express request object.
+ * @param {import('express').Response} res - The Express response object.
+ * @param {import('express').NextFunction} next - The next middleware function.
+ * @throws {Error} Throws an error if the user is not an organizer.
+ */
 const organizer = (req, res, next) => {
   if (req.user && req.user.role === 'organizer') {
     next();

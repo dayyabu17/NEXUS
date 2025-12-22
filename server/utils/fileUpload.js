@@ -10,7 +10,13 @@ const storage = multer.diskStorage({
   }
 });
 
-// Check File Type
+/**
+ * Checks if the uploaded file has a valid extension and MIME type.
+ *
+ * @param {Object} file - The file object from Multer.
+ * @param {Function} cb - The callback function to signal success or failure.
+ * @returns {void}
+ */
 function checkFileType(file, cb){
   // Allowed ext (extensions)
   const filetypes = /jpeg|jpg|png|gif|webp/;
@@ -26,7 +32,13 @@ function checkFileType(file, cb){
   cb(new Error('Images must be jpeg, jpg, png, gif, or webp.'));
 }
 
-// Initialize upload
+/**
+ * Multer upload middleware configured for profile pictures.
+ *
+ * @description Configures storage, file size limits (2MB), and file filtering (images only).
+ * Expects a single file field named 'profilePicture'.
+ * @type {Function}
+ */
 const upload = multer({
   storage: storage,
   limits: { fileSize: 2 * 1024 * 1024 }, // Max file size 2MB
