@@ -3,6 +3,8 @@ const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
 const User = require('../models/User');
 const { sendNotificationEmail } = require('../utils/emailService');
+const { buildEventUrl } = require('../utils/eventHelpers');
+const { buildPaymentReceiptEmailHtml } = require('../utils/emailTemplates');
 
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 const FRONTEND_FALLBACK = 'http://localhost:5173';
@@ -27,27 +29,6 @@ const buildFreeTicketEmail = ({
       <p style="margin: 4px 0 0; font-size: 18px; font-weight: 600; color: #f8fafc;">${ticketId}</p>
     </div>
     <p style="margin: 0 0 16px;">We'll send reminders as the event approaches. Keep this email handy for check-in.</p>
-    <p style="margin: 0; color: #94a3b8;">— Nexus Events</p>
-  </div>
-`;
-
-const buildPaidTicketEmail = ({
-  attendeeName,
-  eventTitle,
-  ticketId,
-  amountPaid,
-}) => `
-  <div style="font-family: 'Segoe UI', Tahoma, sans-serif; max-width: 560px; margin: 0 auto; padding: 24px; background-color: #0f172a; color: #e2e8f0; border-radius: 16px;">
-    <h1 style="margin: 0 0 16px; font-size: 22px; font-weight: 600; color: #34d399;">Payment Receipt</h1>
-    <p style="margin: 0 0 12px;">Hello ${attendeeName || 'there'},</p>
-    <p style="margin: 0 0 16px;">Thanks for securing your spot at <strong>${eventTitle}</strong>.</p>
-    <div style="margin: 0 0 20px; padding: 12px 16px; border-radius: 12px; background-color: #064e3b;">
-      <p style="margin: 0; color: #6ee7b7;">Amount Paid</p>
-      <p style="margin: 4px 0 12px; font-size: 18px; font-weight: 600; color: #f0fdf4;">₦${amountPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
-      <p style="margin: 0; color: #6ee7b7;">Ticket ID</p>
-      <p style="margin: 4px 0 0; font-size: 16px; font-weight: 600; color: #f0fdf4;">${ticketId}</p>
-    </div>
-    <p style="margin: 0 0 16px;">We look forward to seeing you. Save this email for event day.</p>
     <p style="margin: 0; color: #94a3b8;">— Nexus Events</p>
   </div>
 `;
@@ -300,8 +281,8 @@ const verifyPayment = async (req, res) => {
 
       try {
         const [user, event] = await Promise.all([
-          User.findById(userId).select('name email'),
-          Event.findById(eventId).select('title'),
+          User.findById(userId).select('name email').lean(),
+          Event.findById(eventId).lean(),
         ]);
 
         const attendeeName = user?.name;
@@ -309,11 +290,14 @@ const verifyPayment = async (req, res) => {
 
         if (recipientEmail) {
           const amountPaid = getSafeNumber(data.amount, 0) / 100;
-          const htmlContent = buildPaidTicketEmail({
-            attendeeName,
-            eventTitle: event?.title || 'Your Event',
+          const currency = (data.currency || 'NGN').toUpperCase();
+          const htmlContent = buildPaymentReceiptEmailHtml({
+            recipientName: attendeeName,
+            event: event || {},
             ticketId: newTicket._id,
-            amountPaid,
+            amount: amountPaid,
+            currency,
+            eventUrl: buildEventUrl(eventId),
           });
 
           sendNotificationEmail(

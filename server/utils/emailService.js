@@ -1,17 +1,51 @@
 const nodemailer = require('nodemailer');
 
 // Reusable transporter configured with environment credentials.
-const { EMAIL_USER, EMAIL_PASS, EMAIL_FROM, EMAIL_FROM_NAME } = process.env;
+const {
+  EMAIL_USER,
+  EMAIL_PASS,
+  EMAIL_FROM,
+  EMAIL_FROM_NAME,
+  EMAIL_HOST,
+  EMAIL_PORT,
+  EMAIL_SECURE,
+  EMAIL_CONNECTION_TIMEOUT,
+  EMAIL_SOCKET_TIMEOUT,
+} = process.env;
+
+const resolvedPort = Number(EMAIL_PORT) || 587;
+const resolvedSecure = resolveSecureFlag(EMAIL_SECURE, resolvedPort);
 
 const transporter = EMAIL_USER && EMAIL_PASS
   ? nodemailer.createTransport({
-      service: 'gmail',
+      host: EMAIL_HOST || 'smtp.gmail.com',
+      port: resolvedPort,
+      secure: resolvedSecure,
+      requireTLS: !resolvedSecure,
+      connectionTimeout: Number(EMAIL_CONNECTION_TIMEOUT) || 10000,
+      socketTimeout: Number(EMAIL_SOCKET_TIMEOUT) || 20000,
+      logger: true,
+      debug: true,
       auth: {
         user: EMAIL_USER,
         pass: EMAIL_PASS,
       },
     })
   : null;
+
+/**
+ * Resolve secure flag from env string or default behaviour.
+ * @param {string|undefined} flag
+ * @param {number} port
+ * @returns {boolean}
+ */
+function resolveSecureFlag(flag, port) {
+  if (typeof flag === 'string') {
+    return ['1', 'true', 'yes'].includes(flag.toLowerCase());
+  }
+
+  return port === 465;
+}
 
 /**
  * Resolves the "From" address for the email.
