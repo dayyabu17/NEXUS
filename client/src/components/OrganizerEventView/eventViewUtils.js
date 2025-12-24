@@ -53,9 +53,15 @@ export const createGuestRecord = (name, email) => ({
   ticketId: null,
   avatar: null,
   checkedInAt: null,
+  isCheckedIn: false,
+  userId: null,
 });
 
-export const formatGuestStatus = (status) => {
+export const formatGuestStatus = (status, isCheckedIn = false) => {
+  if (isCheckedIn) {
+    return 'Checked-in';
+  }
+
   if (!status) {
     return 'Pending';
   }

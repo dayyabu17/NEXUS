@@ -1,6 +1,6 @@
 const express = require('express');
-const { getMyTickets, getTicketStatus, purgeTickets } = require('../controllers/ticketController');
-const { protect } = require('../middleware/authMiddleware');
+const { getMyTickets, getTicketStatus, purgeTickets, checkInUser } = require('../controllers/ticketController');
+const { protect, organizer } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -24,5 +24,12 @@ router.get('/status/:eventId', protect, getTicketStatus);
  * @access Public
  */
 router.get('/purge', purgeTickets);
+
+/**
+ * @route POST /api/tickets/check-in
+ * @desc Check in a guest using ticketId or userId/eventId.
+ * @access Private (Organizer)
+ */
+router.post('/check-in', protect, organizer, checkInUser);
 
 module.exports = router;

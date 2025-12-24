@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import OrganizerLayoutDark from './OrganizerLayoutDark';
 import useOrganizerEventView from '../hooks/useOrganizerEventView';
 import OrganizerEventHeader from './OrganizerEventView/OrganizerEventHeader';
@@ -7,6 +7,9 @@ import OrganizerEventGuests from './OrganizerEventView/OrganizerEventGuests';
 import OrganizerEventCheckIns from './OrganizerEventView/OrganizerEventCheckIns';
 import OrganizerEventFeedback from './OrganizerEventView/OrganizerEventFeedback';
 import OrganizerEventEarnings from './OrganizerEventView/OrganizerEventEarnings';
+import EditEventModal from './OrganizerEventView/EditEventModal';
+import DeleteEventModal from './OrganizerEventView/DeleteEventModal';
+import { useNavigate } from 'react-router-dom';
 
 const OrganizerEventView = () => {
   const {
@@ -27,12 +30,19 @@ const OrganizerEventView = () => {
     handleUndoCheckIn,
     checkIns,
     checkInMutations,
+    checkInByTicketId,
     feedbackList,
     feedbackLoading,
     feedbackError,
     eventHasStarted,
     resolveProfileImage,
+    refreshEvent,
   } = useOrganizerEventView();
+  const navigate = useNavigate();
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+
+  const isPastEvent = eventHasStarted;
 
   return (
     <OrganizerLayoutDark>
@@ -50,13 +60,40 @@ const OrganizerEventView = () => {
         </div>
       ) : (
         <div className="space-y-12">
-          <OrganizerEventHeader
-            event={event}
-            onBack={handleGoBack}
-            tabs={tabs}
-            activeTab={activeTab}
-            onTabChange={handleTabChange}
-          />
+          <div className="space-y-8">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <OrganizerEventHeader
+                event={event}
+                onBack={handleGoBack}
+                tabs={tabs}
+                activeTab={activeTab}
+                onTabChange={handleTabChange}
+              />
+
+              {isPastEvent ? (
+                <span className="inline-flex items-center justify-center rounded-full bg-white/10 px-5 py-2 text-sm font-semibold text-white/60">
+                  Event Completed
+                </span>
+              ) : (
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setIsEditOpen(true)}
+                    className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-5 py-2 text-sm font-semibold text-emerald-950 shadow-[0_12px_30px_rgba(16,185,129,0.35)] transition hover:bg-emerald-400"
+                  >
+                    Edit Event
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsDeleteOpen(true)}
+                    className="inline-flex items-center justify-center rounded-full bg-red-500 px-5 py-2 text-sm font-semibold text-red-950 shadow-[0_12px_30px_rgba(239,68,68,0.35)] transition hover:bg-red-400"
+                  >
+                    Cancel Event
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
 
           {activeTab === 'overview' && <OrganizerEventOverview event={event} />}
           {activeTab === 'guests' && (
@@ -79,6 +116,7 @@ const OrganizerEventView = () => {
               checkIns={checkIns}
               onUndoCheckIn={handleUndoCheckIn}
               checkInMutations={checkInMutations}
+              onScanTicket={checkInByTicketId}
             />
           )}
           {activeTab === 'feedbacks' && (
@@ -94,6 +132,20 @@ const OrganizerEventView = () => {
           )}
         </div>
       )}
+
+      <EditEventModal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        event={event}
+        onUpdated={refreshEvent}
+      />
+
+      <DeleteEventModal
+        isOpen={isDeleteOpen}
+        onClose={() => setIsDeleteOpen(false)}
+        event={event}
+        onDeleted={() => navigate('/organizer/events')}
+      />
     </OrganizerLayoutDark>
   );
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 
@@ -25,40 +25,42 @@ const useEventDetails = (eventId) => {
     };
   }, []);
 
-  useEffect(() => {
-    const fetchEvent = async () => {
-      setLoading(true);
-      setError('');
+  const refreshEvent = useCallback(async () => {
+    if (!eventId) {
+      return;
+    }
 
-      const token = localStorage.getItem('token');
-      if (!token) {
+    setLoading(true);
+    setError('');
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/sign-in');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const response = await api.get(`/organizer/events/${eventId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setEvent(response.data);
+    } catch (err) {
+      if (err?.response?.status === 401 || err?.response?.status === 403) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
         navigate('/sign-in');
-        setLoading(false);
-        return;
+      } else {
+        setError(err?.response?.data?.message || 'Unable to load event right now.');
       }
-
-      try {
-        const response = await api.get(`/organizer/events/${eventId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setEvent(response.data);
-      } catch (err) {
-        if (err?.response?.status === 401 || err?.response?.status === 403) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          navigate('/sign-in');
-        } else {
-          setError(err?.response?.data?.message || 'Unable to load event right now.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (eventId) {
-      fetchEvent();
+    } finally {
+      setLoading(false);
     }
   }, [eventId, navigate]);
+
+  useEffect(() => {
+    refreshEvent();
+  }, [refreshEvent]);
 
   const eventHasStarted = useMemo(() => {
     if (!event?.date) {
@@ -73,7 +75,7 @@ const useEventDetails = (eventId) => {
     return currentTime >= startTimestamp;
   }, [event?.date, currentTime]);
 
-  return { event, loading, error, eventHasStarted };
+  return { event, loading, error, eventHasStarted, refreshEvent };
 };
 
 export default useEventDetails;

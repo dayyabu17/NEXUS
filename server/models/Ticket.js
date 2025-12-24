@@ -12,6 +12,7 @@ const mongoose = require('mongoose');
  * @property {string} [paymentReference] - External payment gateway reference ID.
  * @property {number} amountPaid - Total amount paid for this ticket.
  * @property {Date} [checkedInAt] - Timestamp when the user checked in.
+ * @property {boolean} [isCheckedIn] - Flag indicating whether the attendee has checked in.
  * @property {string} [email] - Email address for ticket delivery.
  * @property {Object} metadata - Additional arbitrary data associated with the ticket.
  * @property {Date} createdAt - Timestamp of creation.
@@ -48,6 +49,10 @@ const ticketSchema = new mongoose.Schema(
     },
     checkedInAt: {
       type: Date,
+    },
+    isCheckedIn: {
+      type: Boolean,
+      default: false,
     },
     email: {
       type: String,

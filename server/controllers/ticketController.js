@@ -1,5 +1,31 @@
 const asyncHandler = require('express-async-handler');
 const Ticket = require('../models/Ticket');
+const Event = require('../models/Event');
+
+const safeDate = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+};
+
+const buildGuestPayload = (ticket) => {
+  const user = ticket.user || {};
+
+  return {
+    id: ticket._id,
+    ticketId: ticket._id,
+    userId: user?._id || ticket.user || null,
+    name: user?.name || ticket.name || 'Unknown Guest',
+    email: user?.email || ticket.email || 'unknown@nexus.app',
+    status: ticket.status,
+    checkedInAt: ticket.checkedInAt || null,
+    isCheckedIn: Boolean(ticket.isCheckedIn || ticket.status === 'checked-in'),
+    avatar: user?.profilePicture || null,
+  };
+};
 
 /**
  * Get current user's tickets.
@@ -11,6 +37,7 @@ const Ticket = require('../models/Ticket');
  * @param {import('express').Response} res - The Express response object.
  * @returns {void}
  */
+
 const getMyTickets = asyncHandler(async (req, res) => {
   const userId = req.user?._id;
 
@@ -79,8 +106,72 @@ const purgeTickets = asyncHandler(async (req, res) => {
   res.send('All tickets deleted. Ready for fresh test.');
 });
 
+const checkInUser = asyncHandler(async (req, res) => {
+  const { ticketId, userId, eventId } = req.body || {};
+
+  if (!ticketId && (!userId || !eventId)) {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Provide a ticketId or both userId and eventId.' });
+  }
+
+  const query = ticketId ? { _id: ticketId } : { user: userId, event: eventId };
+
+  const ticket = await Ticket.findOne(query)
+    .populate('event', 'organizer date endDate title')
+    .populate('user', 'name email profilePicture');
+
+  if (!ticket) {
+    return res.status(404).json({ success: false, message: 'Ticket not found for this guest.' });
+  }
+
+  const event = ticket.event || (await Event.findById(eventId).select('organizer date endDate title'));
+
+  if (!event) {
+    return res.status(404).json({ success: false, message: 'Event not found.' });
+  }
+
+  if (event.organizer?.toString() !== req.user._id.toString()) {
+    return res
+      .status(403)
+      .json({ success: false, message: 'You do not have permission to manage check-ins for this event.' });
+  }
+
+  const now = new Date();
+  const eventStart = safeDate(event.date);
+  if (!eventStart) {
+    return res.status(400).json({ success: false, message: 'Event start time is invalid.' });
+  }
+
+  if (now < eventStart) {
+    return res.status(400).json({ success: false, message: 'Event not started.' });
+  }
+
+  const eventEnd = safeDate(event.endDate);
+  if (eventEnd && now > eventEnd) {
+    return res.status(400).json({ success: false, message: 'Event ended.' });
+  }
+
+  if (ticket.status === 'pending') {
+    return res
+      .status(400)
+      .json({ success: false, message: 'Only confirmed tickets can be checked in.' });
+  }
+
+  ticket.status = 'checked-in';
+  ticket.checkedInAt = now;
+  ticket.isCheckedIn = true;
+
+  await ticket.save();
+
+  const guest = buildGuestPayload(ticket);
+
+  return res.json({ success: true, guest });
+});
+
 module.exports = {
   getMyTickets,
   getTicketStatus,
   purgeTickets,
+  checkInUser,
 };

@@ -82,11 +82,13 @@ const OrganizerEventGuests = ({
           <ul className="space-y-3">
             {guestList.map((guest) => {
               const isMutating = Boolean(checkInMutations[guest.id]);
-              const manualEntry = !guest.ticketId;
+              const hasBackendIdentity = Boolean(guest.ticketId || guest.userId);
+              const manualEntry = !hasBackendIdentity;
+              const isCheckedIn = Boolean(guest.isCheckedIn);
               const checkInTitle = !eventHasStarted
                 ? 'Check-in opens once the event starts.'
                 : manualEntry
-                  ? 'Manual guest - check-in is tracked locally.'
+                  ? 'This guest is not linked to a ticket; check-in is disabled.'
                   : undefined;
 
               return (
@@ -113,14 +115,14 @@ const OrganizerEventGuests = ({
                   <div className="flex items-center gap-3">
                     <span
                       className={`inline-flex items-center rounded-full px-3 py-1 text-xs ${
-                        guest.status === 'checked-in'
+                        isCheckedIn
                           ? 'bg-emerald-500/15 text-emerald-300'
                           : 'bg-white/10 text-white/70'
                       }`}
                     >
-                      {formatGuestStatus(guest.status)}
+                      {formatGuestStatus(guest.status, isCheckedIn)}
                     </span>
-                    {guest.status === 'checked-in' ? (
+                    {isCheckedIn ? (
                       <button
                         type="button"
                         onClick={() => onUndoCheckIn(guest.id)}
@@ -137,10 +139,10 @@ const OrganizerEventGuests = ({
                       <button
                         type="button"
                         onClick={() => onCheckIn(guest.id)}
-                        disabled={isMutating || !eventHasStarted}
+                        disabled={isMutating || !eventHasStarted || manualEntry}
                         title={checkInTitle}
                         className={`rounded-full border border-emerald-400/40 px-4 py-2 text-xs text-emerald-200 transition ${
-                          isMutating || !eventHasStarted
+                          isMutating || !eventHasStarted || manualEntry
                             ? 'cursor-not-allowed opacity-60'
                             : 'hover:border-emerald-300 hover:text-emerald-100'
                         }`}

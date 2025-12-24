@@ -652,7 +652,7 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'checkedIn flag must be provided as a boolean.' });
   }
 
-  const event = await Event.findOne({ _id: eventId, organizer: req.user._id }).select('date _id');
+  const event = await Event.findOne({ _id: eventId, organizer: req.user._id }).select('date endDate _id');
 
   if (!event) {
     return res.status(404).json({ message: 'Event not found.' });
@@ -665,6 +665,11 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
 
   if (checkedIn && eventStart.getTime() > Date.now()) {
     return res.status(400).json({ message: 'Check-in is available once the event has started.' });
+  }
+
+  const eventEnd = event.endDate ? new Date(event.endDate) : null;
+  if (checkedIn && eventEnd && !Number.isNaN(eventEnd.getTime()) && eventEnd.getTime() < Date.now()) {
+    return res.status(400).json({ message: 'Check-in period for this event has ended.' });
   }
 
   const ticket = await Ticket.findOne({ _id: ticketId, event: event._id })
@@ -681,6 +686,7 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
 
     ticket.status = 'checked-in';
     ticket.checkedInAt = new Date();
+    ticket.isCheckedIn = true;
   } else {
     if (ticket.status !== 'checked-in') {
       return res.status(400).json({ message: 'Guest has not been checked in yet.' });
@@ -688,6 +694,7 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
 
     ticket.status = 'confirmed';
     ticket.checkedInAt = null;
+    ticket.isCheckedIn = false;
   }
 
   await ticket.save();
@@ -702,6 +709,7 @@ const updateEventGuestCheckIn = asyncHandler(async (req, res) => {
       status: ticket.status,
       avatar: ticket.user?.profilePicture || null,
       checkedInAt: ticket.checkedInAt,
+      isCheckedIn: Boolean(ticket.isCheckedIn),
     },
   });
 });

@@ -15,6 +15,7 @@ const {
 	updateOrganizerPreferences,
 	getOrganizerEarnings,
 } = require('../controllers/organizerController');
+const { updateEvent } = require('../controllers/eventController');
 const { getOrganizerEventFeedback } = require('../controllers/feedbackController');
 const { protect, organizer } = require('../middleware/authMiddleware');
 
@@ -82,6 +83,8 @@ router
 	.route('/events')
 	.get(protect, organizer, getOrganizerEvents)
 	.post(protect, organizer, createOrganizerEvent);
+
+router.put('/events/:id', protect, organizer, updateEvent);
 
 /**
  * @route GET /api/organizer/events/:id/guests

@@ -42,9 +42,11 @@ const useEventGuests = (eventId) => {
         ticketId: ticket._id,
         avatar: ticket.user?.profilePicture || null,
         checkedInAt:
-          ticket.status === 'checked-in'
+          ticket.status === 'checked-in' || ticket.isCheckedIn
             ? ticket.checkedInAt || ticket.updatedAt || ticket.createdAt || null
             : null,
+        isCheckedIn: Boolean(ticket.isCheckedIn || ticket.status === 'checked-in'),
+        userId: ticket.user?._id || ticket.user || null,
       }));
 
       setGuestList(normalizedGuests);

@@ -6,18 +6,12 @@ import useCheckInManager from './useCheckInManager';
 import useEventFeedback from './useEventFeedback';
 import { resolveProfileImage } from '../components/OrganizerEventView/eventViewUtils';
 
-const normalizeStatus = (value) =>
-  (value || '')
-    .toString()
-    .toLowerCase()
-    .replace(/[_\s-]/g, '');
-
 const useOrganizerEventView = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
 
-  const { event, loading, error, eventHasStarted } = useEventDetails(id);
+  const { event, loading, error, eventHasStarted, refreshEvent } = useEventDetails(id);
 
   const {
     guestList,
@@ -38,14 +32,8 @@ const useOrganizerEventView = () => {
     refreshFeedback,
   } = useEventFeedback(id);
 
-  const { handleCheckIn, handleUndoCheckIn, checkInMutations } = useCheckInManager(
-    id,
-    guestList,
-    setGuestList,
-    eventHasStarted,
-    refreshGuests,
-    setGuestError,
-  );
+  const { handleCheckIn, handleUndoCheckIn, checkInMutations, checkInByTicketId } =
+    useCheckInManager(id, guestList, setGuestList, refreshGuests, setGuestError);
 
   const tabs = useMemo(() => {
     const base = [
@@ -88,15 +76,13 @@ const useOrganizerEventView = () => {
 
   const checkIns = useMemo(
     () =>
-      guestList.filter((guest) => {
-        const normalized = normalizeStatus(guest.status);
-
-        if (normalized === 'checkedin') {
-          return true;
-        }
-
-        return Boolean(guest.checkedInAt);
-      }),
+      guestList
+        .filter((guest) => Boolean(guest.isCheckedIn))
+        .sort((a, b) => {
+          const aTime = a.checkedInAt ? new Date(a.checkedInAt).getTime() : 0;
+          const bTime = b.checkedInAt ? new Date(b.checkedInAt).getTime() : 0;
+          return bTime - aTime;
+        }),
     [guestList],
   );
 
@@ -121,6 +107,7 @@ const useOrganizerEventView = () => {
     tabs,
     handleTabChange,
     handleGoBack,
+    refreshEvent,
     guestForm,
     handleGuestInputChange,
     handleAddGuest,
@@ -131,6 +118,7 @@ const useOrganizerEventView = () => {
     handleUndoCheckIn,
     checkIns,
     checkInMutations,
+    checkInByTicketId,
     feedbackList,
     feedbackLoading,
     feedbackError,
