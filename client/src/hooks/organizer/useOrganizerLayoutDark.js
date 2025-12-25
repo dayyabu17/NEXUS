@@ -4,7 +4,7 @@ import useAccentColorSync from '../useAccentColorSync';
 import useOrganizerProfile from './useOrganizerProfile';
 import useOrganizerNotifications from './useOrganizerNotifications';
 import useLayoutUI from '../useLayoutUI';
-import { NAV_ITEMS } from '../../layouts/OrganizerLayout/layoutConstants';
+import { ORGANIZER_NAV_ITEMS } from '../../constants/navigation';
 import { getNotificationInitial, notificationToneStyles } from '../../layouts/OrganizerLayout/layoutUtils';
 
 const useOrganizerLayoutDark = (suppressInitialLoader = false) => {
@@ -112,7 +112,7 @@ const useOrganizerLayoutDark = (suppressInitialLoader = false) => {
   return {
     location,
     currentTime,
-    navItems: NAV_ITEMS,
+    navItems: ORGANIZER_NAV_ITEMS,
     showSearch,
     openSearch,
     closeSearch,

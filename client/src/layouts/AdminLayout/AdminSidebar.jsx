@@ -1,22 +1,8 @@
 import React, { useCallback } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import nexusLogo from '../../assets/nexus-logo.svg';
-import DashboardFilledSvg from '../../assets/icons/dashboard_filled.svg';
-import DashboardOutlinedSvg from '../../assets/icons/dashboard_outlined.svg';
-import EventFilledSvg from '../../assets/icons/event_filled.svg';
-import EventOutlined2Svg from '../../assets/icons/event_outlined2.svg';
-import UserFilledSvg from '../../assets/icons/user_filled.svg';
-import UserOutlinedSvg from '../../assets/icons/user_outlined.svg';
-import SettingsFilledSvg from '../../assets/icons/settings_filled.svg';
-import SettingsOutlinedSvg from '../../assets/icons/settings_outlined.svg';
 import LogoutOutlinedSvg from '../../assets/icons/logout_outlined.svg';
-
-const navItems = [
-  { name: 'Dashboard', path: '/admin/dashboard', iconOutlined: DashboardOutlinedSvg, iconFilled: DashboardFilledSvg },
-  { name: 'Users', path: '/admin/users', iconOutlined: UserOutlinedSvg, iconFilled: UserFilledSvg },
-  { name: 'Events', path: '/admin/events', iconOutlined: EventOutlined2Svg, iconFilled: EventFilledSvg },
-  { name: 'Settings', path: '/admin/settings', iconOutlined: SettingsOutlinedSvg, iconFilled: SettingsFilledSvg },
-];
+import { ADMIN_NAV_ITEMS } from '../../constants/navigation';
 
 const AdminSidebar = ({ isOpen = false, onClose }) => {
   const location = useLocation();
@@ -52,7 +38,7 @@ const AdminSidebar = ({ isOpen = false, onClose }) => {
       </div>
 
       <nav className="flex-1 space-y-2">
-        {navItems.map((item) => {
+        {ADMIN_NAV_ITEMS.map((item) => {
           const isActive = location.pathname === item.path;
 
           return (
