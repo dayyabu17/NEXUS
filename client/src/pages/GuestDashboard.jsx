@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import GuestLayout from '../layouts/GuestLayout';
 import HeroSpotlight from '../components/GuestDashboard/HeroSpotlight';
 import RecommendedSection from '../components/GuestDashboard/RecommendedSection';
-import useGuestDashboard from '../hooks/useGuestDashboard';
+import useGuestDashboard from '../hooks/guest/useGuestDashboard';
 
 const GuestDashboard = () => {
   const navigate = useNavigate();

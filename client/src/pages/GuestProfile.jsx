@@ -8,7 +8,7 @@ import ThemeSelector from '../components/ThemeSelector';
 import GuestAvatarSection from '../components/GuestProfile/GuestAvatarSection';
 import GuestHistoryTab from '../components/GuestProfile/GuestHistoryTab';
 import GuestProfileForm from '../components/GuestProfile/GuestProfileForm';
-import useGuestProfile from '../hooks/useGuestProfile';
+import useGuestProfile from '../hooks/guest/useGuestProfile';
 
 const MotionSection = motion.section;
 
