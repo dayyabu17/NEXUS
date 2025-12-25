@@ -61,9 +61,19 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   }, []);
 
   useEffect(() => {
-    if (isMobileMenuOpen) {
-      setIsMobileMenuOpen(false);
+    if (!isMobileMenuOpen) {
+      return undefined;
     }
+
+    const timer = typeof window !== 'undefined'
+      ? window.setTimeout(() => setIsMobileMenuOpen(false), 0)
+      : null;
+
+    return () => {
+      if (timer !== null && typeof window !== 'undefined') {
+        window.clearTimeout(timer);
+      }
+    };
   }, [routerLocation.pathname, isMobileMenuOpen]);
 
   const profileMenuProps = {
