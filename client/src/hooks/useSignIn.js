@@ -20,7 +20,18 @@ const useSignIn = () => {
         const { data } = response;
 
         try {
-          localStorage.setItem('token', data.token);
+          if (data.token) {
+            localStorage.setItem('token', data.token);
+          } else {
+            localStorage.removeItem('token');
+          }
+
+          if (data.refreshToken) {
+            localStorage.setItem('refreshToken', data.refreshToken);
+          } else {
+            localStorage.removeItem('refreshToken');
+          }
+
           localStorage.setItem('user', JSON.stringify(data));
         } catch {
           // Ignore storage access errors to keep the flow uninterrupted
