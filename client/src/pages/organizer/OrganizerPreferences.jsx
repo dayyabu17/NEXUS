@@ -1,15 +1,15 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
-import api from '../api/axios';
+import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import api from '../../api/axios';
 import {
   ACCENT_OPTIONS,
   ACCENT_STORAGE_KEY,
   resolveAccentPalette,
   DEFAULT_ACCENT,
   DEFAULT_BRAND_COLOR,
-} from '../constants/accentTheme';
-import { hexToRgba } from '../utils/color';
+} from '../../constants/accentTheme';
+import { hexToRgba } from '../../utils/color';
 
 const MotionSection = motion.section;
 const BRAND_COLOR_STORAGE_KEY = 'organizer:preferences:brand-color';

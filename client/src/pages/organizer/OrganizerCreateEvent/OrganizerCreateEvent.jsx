@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import OrganizerLayoutDark from '../../../layouts/OrganizerLayoutDark';
 import OrganizerCreateEventSidebar from './OrganizerCreateEventSidebar';
 import OrganizerCreateEventSchedule from './OrganizerCreateEventSchedule';
 import OrganizerCreateEventDetails from './OrganizerCreateEventDetails';
 import OrganizerCreateEventOptions from './OrganizerCreateEventOptions';
 import OrganizerCreateEventExtras from './OrganizerCreateEventExtras';
 import OrganizerCreateEventPickerOverlay from './OrganizerCreateEventPickerOverlay';
-import useOrganizerCreateEvent from '../../hooks/organizer/useOrganizerCreateEvent';
+import useOrganizerCreateEvent from '../../../hooks/organizer/useOrganizerCreateEvent';
 import {
   capacityLabel,
   formatDateDisplay,
   formatTimeDisplay,
   ticketPriceLabel,
-} from '../../utils/eventFormatters';
+} from '../../../utils/eventFormatters';
 
 const MotionSection = motion.section;
 

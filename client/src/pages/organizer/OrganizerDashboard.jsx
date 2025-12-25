@@ -1,10 +1,10 @@
-import React from 'react'; // test
-import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
-import OrganizerSplashScreen from './OrganizerDashboard/OrganizerSplashScreen';
-import OrganizerStatsSection from './OrganizerDashboard/OrganizerStatsSection';
-import OrganizerUpcomingEvents from './OrganizerDashboard/OrganizerUpcomingEvents';
-import OrganizerActivitiesPanel from './OrganizerDashboard/OrganizerActivitiesPanel';
-import useOrganizerDashboard from '../hooks/organizer/useOrganizerDashboard';
+import React from 'react';
+import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import OrganizerSplashScreen from '../../components/OrganizerDashboard/OrganizerSplashScreen';
+import OrganizerStatsSection from '../../components/OrganizerDashboard/OrganizerStatsSection';
+import OrganizerUpcomingEvents from '../../components/OrganizerDashboard/OrganizerUpcomingEvents';
+import OrganizerActivitiesPanel from '../../components/OrganizerDashboard/OrganizerActivitiesPanel';
+import useOrganizerDashboard from '../../hooks/organizer/useOrganizerDashboard';
 
 const OrganizerDashboard = () => {
   const {
@@ -40,9 +40,7 @@ const OrganizerDashboard = () => {
             </header>
 
             {error && (
-              <div
-                className="mt-6 rounded-lg border border-red-400 bg-red-50/10 px-4 py-3 text-sm text-red-200"
-              >
+              <div className="mt-6 rounded-lg border border-red-400 bg-red-50/10 px-4 py-3 text-sm text-red-200">
                 {error}
               </div>
             )}

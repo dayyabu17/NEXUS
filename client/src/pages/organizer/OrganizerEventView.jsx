@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
-import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
-import useOrganizerEventView from '../hooks/organizer/useOrganizerEventView';
-import OrganizerEventHeader from './OrganizerEventView/OrganizerEventHeader';
-import OrganizerEventOverview from './OrganizerEventView/OrganizerEventOverview';
-import OrganizerEventGuests from './OrganizerEventView/OrganizerEventGuests';
-import OrganizerEventCheckIns from './OrganizerEventView/OrganizerEventCheckIns';
-import OrganizerEventFeedback from './OrganizerEventView/OrganizerEventFeedback';
-import OrganizerEventEarnings from './OrganizerEventView/OrganizerEventEarnings';
-import EditEventModal from './OrganizerEventView/EditEventModal';
-import DeleteEventModal from './OrganizerEventView/DeleteEventModal';
 import { useNavigate } from 'react-router-dom';
+import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import useOrganizerEventView from '../../hooks/organizer/useOrganizerEventView';
+import OrganizerEventHeader from '../../components/OrganizerEventView/OrganizerEventHeader';
+import OrganizerEventOverview from '../../components/OrganizerEventView/OrganizerEventOverview';
+import OrganizerEventGuests from '../../components/OrganizerEventView/OrganizerEventGuests';
+import OrganizerEventCheckIns from '../../components/OrganizerEventView/OrganizerEventCheckIns';
+import OrganizerEventFeedback from '../../components/OrganizerEventView/OrganizerEventFeedback';
+import OrganizerEventEarnings from '../../components/OrganizerEventView/OrganizerEventEarnings';
+import EditEventModal from '../../components/OrganizerEventView/EditEventModal';
+import DeleteEventModal from '../../components/OrganizerEventView/DeleteEventModal';
 
 const OrganizerEventView = () => {
   const {

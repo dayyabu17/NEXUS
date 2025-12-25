@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
-import api from '../api/axios';
+import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import api from '../../api/axios';
 
 const notificationToneStyles = {
   success: {

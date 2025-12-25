@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import LocationPicker from '../LocationPicker';
+import LocationPicker from '../../../components/LocationPicker';
 
 const MotionDiv = motion.div;
 

@@ -4,12 +4,12 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 // --- 1. Lazy Imports (Code Splitting) ---
 // This tells Vite: "Don't bundle this code into the main file. Keep it separate."
 
-const SignIn = lazy(() => import('./components/SignIn'));
-const SignUp = lazy(() => import('./components/SignUp'));
+const SignIn = lazy(() => import('./pages/Auth/SignIn'));
+const SignUp = lazy(() => import('./pages/Auth/SignUp'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminEventDetails = lazy(() => import('./components/AdminEventDetails'));
+const AdminEventDetails = lazy(() => import('./pages/AdminEventDetails'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
 const UserManagement = lazy(() => import('./pages/UserManagement'));
 const EventManagement = lazy(() => import('./pages/EventManagement'));
@@ -38,9 +38,9 @@ const OrganizerNotifications = loadOrganizerPage('OrganizerNotificationsPage');
 
 // Guest Components
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'));
-const GuestMap = lazy(() => import('./components/GuestMap'));
+const GuestMap = lazy(() => import('./pages/GuestMap'));
 const GuestNotifications = lazy(() => import('./components/GuestNotifications'));
-const PaymentCallback = lazy(() => import('./components/PaymentCallback'));
+const PaymentCallback = lazy(() => import('./pages/PaymentCallback'));
 const MyTickets = lazy(() => import('./pages/MyTickets')); // Note: This was in /pages
 const GuestProfile = lazy(() => import('./pages/GuestProfile'));
 const GuestEvents = lazy(() => import('./pages/GuestEvents')); // Note: This was in /pages

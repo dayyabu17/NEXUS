@@ -1,9 +1,9 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion as Motion } from 'framer-motion';
-import AuthLayout from '../layouts/AuthLayout';
-import useKonamiCode from '../hooks/useKonamiCode';
-import useSignIn from '../hooks/useSignIn';
+import AuthLayout from '../../layouts/AuthLayout';
+import useKonamiCode from '../../hooks/useKonamiCode';
+import useSignIn from '../../hooks/useSignIn';
 
 const SignIn = () => {
   const { triggered } = useKonamiCode();

@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapContainer, Marker, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet';
 import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
-import GuestNavbar from './GuestNavbar';
+import GuestNavbar from '../components/GuestNavbar';
 import api from '../api/axios';
 import 'leaflet/dist/leaflet.css';
 
@@ -194,7 +194,6 @@ const GuestMap = () => {
   );
 
   const scheduleMarkers = useMemo(() => {
-    // Placeholder: In a real implementation, filter by user RSVP status.
     return exploreMarkers.filter((_, index) => index % 2 === 0);
   }, [exploreMarkers]);
 

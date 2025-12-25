@@ -1,9 +1,9 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
-import OrganizerEventsHeader from './OrganizerEvents/OrganizerEventsHeader';
-import OrganizerEventsList from './OrganizerEvents/OrganizerEventsList';
-import useOrganizerEvents from '../hooks/organizer/useOrganizerEvents';
+import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
+import OrganizerEventsHeader from '../../components/OrganizerEvents/OrganizerEventsHeader';
+import OrganizerEventsList from '../../components/OrganizerEvents/OrganizerEventsList';
+import useOrganizerEvents from '../../hooks/organizer/useOrganizerEvents';
 
 const MotionSection = motion.section;
 
