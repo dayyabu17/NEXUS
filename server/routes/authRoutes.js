@@ -11,20 +11,21 @@ const {
 } = require('../controllers/authController'); 
 
 const { protect } = require('../middleware/authMiddleware'); 
+const { validateLogin, validateRegister } = require('../validators/authValidators');
 
 /**
  * @route POST /api/auth/login
  * @desc Authenticate user and get token.
  * @access Public
  */
-router.post('/login', loginUser);
+router.post('/login', validateLogin, loginUser);
 
 /**
  * @route POST /api/auth/register
  * @desc Register a new user.
  * @access Public
  */
-router.post('/register', registerUser);
+router.post('/register', validateRegister, registerUser);
 
 /**
  * @route GET /api/auth/profile

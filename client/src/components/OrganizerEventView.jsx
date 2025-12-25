@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import OrganizerLayoutDark from './OrganizerLayoutDark';
-import useOrganizerEventView from '../hooks/useOrganizerEventView';
+import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
+import useOrganizerEventView from '../hooks/organizer/useOrganizerEventView';
 import OrganizerEventHeader from './OrganizerEventView/OrganizerEventHeader';
 import OrganizerEventOverview from './OrganizerEventView/OrganizerEventOverview';
 import OrganizerEventGuests from './OrganizerEventView/OrganizerEventGuests';

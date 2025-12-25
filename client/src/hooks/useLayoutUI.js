@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { formatTime } from '../components/OrganizerLayout/layoutUtils';
+import { formatTime } from '../layouts/OrganizerLayout/layoutUtils';
 
 const CLOCK_INTERVAL_MS = 30000;
 

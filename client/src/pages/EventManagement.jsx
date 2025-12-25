@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import AdminLayout from '../components/AdminLayout';
+import AdminLayout from '../layouts/AdminLayout/AdminLayout';
 import useEventManagementState from '../hooks/useEventManagementState';
 import EventFilters from '../components/EventManagement/EventFilters';
 import EventTable from '../components/EventManagement/EventTable';

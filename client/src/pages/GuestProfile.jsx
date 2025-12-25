@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import GuestNavbar from '../components/GuestNavbar';
+import GuestLayout from '../layouts/GuestLayout';
 import NexusIDCard from '../components/NexusIDCard';
 import AchievementBadges from '../components/AchievementBadges';
 import ThemeSelector from '../components/ThemeSelector';
@@ -39,11 +39,8 @@ const GuestProfile = () => {
   } = useGuestProfile();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <GuestNavbar />
-
-      <main className="mx-auto max-w-6xl px-6 pb-20 pt-24">
-        <MotionSection
+    <GuestLayout mainClassName="mx-auto max-w-6xl px-6 pb-20 pt-24">
+      <MotionSection
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.45, ease: 'easeOut' }}
@@ -130,9 +127,8 @@ const GuestProfile = () => {
               />
             </div>
           </div>
-        </MotionSection>
-      </main>
-    </div>
+      </MotionSection>
+    </GuestLayout>
   );
 };
 

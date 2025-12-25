@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import GuestNavbar from '../components/GuestNavbar';
+import GuestLayout from '../layouts/GuestLayout';
 import EventHero from '../components/EventDetails/EventHero';
 import EventMapSection from '../components/EventDetails/EventMapSection';
 import TicketSidebar from '../components/EventDetails/TicketSidebar';
@@ -10,9 +10,8 @@ import useEventPage from '../hooks/useEventPage';
 import useEventLocation from '../hooks/useEventLocation';
 
 const renderSkeleton = () => (
-  <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-    <GuestNavbar />
-    <div className="animate-pulse space-y-10 px-6 py-24">
+  <GuestLayout mainClassName="mx-auto max-w-6xl px-6 py-24">
+    <div className="animate-pulse space-y-10">
       <div className="h-[320px] rounded-3xl border border-slate-200 bg-slate-100 dark:border-slate-800 dark:bg-slate-900" />
       <div className="grid gap-8 md:grid-cols-3">
         <div className="space-y-6 md:col-span-2">
@@ -29,17 +28,16 @@ const renderSkeleton = () => (
         </div>
       </div>
     </div>
-  </div>
+  </GuestLayout>
 );
 
 const renderErrorState = (title, message) => (
-  <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-    <GuestNavbar />
-    <div className="flex flex-col items-center justify-center px-6 py-32 text-center">
+  <GuestLayout mainClassName="flex flex-col items-center justify-center px-6 py-32 text-center">
+    <>
       <h1 className="text-3xl font-semibold text-slate-900 dark:text-white">{title}</h1>
       <p className="mt-4 max-w-xl text-slate-500 dark:text-slate-400">{message}</p>
-    </div>
-  </div>
+    </>
+  </GuestLayout>
 );
 
 const EventDetails = () => {
@@ -80,9 +78,8 @@ const EventDetails = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <GuestNavbar />
-      <main className="pb-24">
+    <GuestLayout useDefaultMainStyles={false} mainClassName="pb-24">
+      <>
         <EventHero
           eventData={eventData}
           theme={theme}
@@ -130,22 +127,22 @@ const EventDetails = () => {
             />
           </div>
         </section>
-      </main>
 
-      <EventCheckoutModal
-        isOpen={isCheckoutOpen}
-        onClose={() => setIsCheckoutOpen(false)}
-        event={eventData}
-        userId={currentUser?._id}
-        email={currentUser?.email}
-        theme={{
-          brandColor: theme?.brandColor,
-          accentColor: theme?.accentStyles?.highlight,
-        }}
-        hasTicket={hasTicket}
-        onPurchaseComplete={fetchTicketStatus}
-      />
-    </div>
+        <EventCheckoutModal
+          isOpen={isCheckoutOpen}
+          onClose={() => setIsCheckoutOpen(false)}
+          event={eventData}
+          userId={currentUser?._id}
+          email={currentUser?.email}
+          theme={{
+            brandColor: theme?.brandColor,
+            accentColor: theme?.accentStyles?.highlight,
+          }}
+          hasTicket={hasTicket}
+          onPurchaseComplete={fetchTicketStatus}
+        />
+      </>
+    </GuestLayout>
   );
 };
 

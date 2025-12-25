@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import OrganizerLayoutDark from './OrganizerLayoutDark';
+import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
 import api from '../api/axios';
 
 const notificationToneStyles = {

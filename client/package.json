@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "cleanup:proxies": "node scripts/cleanup-proxy-exports.mjs"
   },
   "dependencies": {
     "@yudiel/react-qr-scanner": "^2.5.0",

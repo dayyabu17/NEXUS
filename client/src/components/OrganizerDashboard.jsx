@@ -1,10 +1,10 @@
 import React from 'react';
-import OrganizerLayoutDark from './OrganizerLayoutDark';
+import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
 import OrganizerSplashScreen from './OrganizerDashboard/OrganizerSplashScreen';
 import OrganizerStatsSection from './OrganizerDashboard/OrganizerStatsSection';
 import OrganizerUpcomingEvents from './OrganizerDashboard/OrganizerUpcomingEvents';
 import OrganizerActivitiesPanel from './OrganizerDashboard/OrganizerActivitiesPanel';
-import useOrganizerDashboard from '../hooks/useOrganizerDashboard';
+import useOrganizerDashboard from '../hooks/organizer/useOrganizerDashboard';
 
 const OrganizerDashboard = () => {
   const {

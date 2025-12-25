@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import OrganizerLayoutDark from './OrganizerLayoutDark';
+import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
 import api from '../api/axios';
 import {
   ACCENT_OPTIONS,

@@ -3,9 +3,9 @@ const Event = require('../models/Event');
 const User = require('../models/User');
 const Ticket = require('../models/Ticket');
 
+const { DEFAULT_ACCENT, DEFAULT_BRAND_COLOR } = require('../config/themeDefaults');
+
 const ACCENT_CHOICES = ['blue', 'purple', 'green', 'orange'];
-const DEFAULT_ACCENT = 'blue';
-const DEFAULT_BRAND_COLOR = '#2563EB';
 const HEX_PATTERN = /^#([0-9A-Fa-f]{6})$/;
 
 const calculatePercentageChange = (current, previous) => {

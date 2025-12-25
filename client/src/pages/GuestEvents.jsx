@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import GuestNavbar from '../components/GuestNavbar';
+import GuestLayout from '../layouts/GuestLayout';
 import api from '../api/axios';
 
 const GuestEvents = () => {
@@ -101,12 +101,9 @@ const GuestEvents = () => {
   }, [events, activeCategory]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <GuestNavbar />
-
-      <main className="mx-auto max-w-6xl px-6 pb-16 pt-24">
-        <section className="space-y-10">
-          <div className="space-y-4">
+    <GuestLayout>
+      <section className="space-y-10">
+        <div className="space-y-4">
             <h1 className="text-4xl font-semibold tracking-tight text-slate-900 dark:text-white">All Events</h1>
             <p className="max-w-2xl text-base text-slate-600 dark:text-white/60">
               Dive into every upcoming experience across campus. Filter by categories and find the perfect event to match your mood today.
@@ -138,7 +135,7 @@ const GuestEvents = () => {
             </div>
           </div>
 
-          <section className="space-y-6">
+        <section className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">Discover Experiences</h3>
               <p className="text-sm text-slate-600 dark:text-white/55">Showing {filteredEvents.length} events</p>
@@ -266,10 +263,9 @@ const GuestEvents = () => {
                   );
                 })}
             </Motion.div>
-          </section>
         </section>
-      </main>
-    </div>
+      </section>
+    </GuestLayout>
   );
 };
 

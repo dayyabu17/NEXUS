@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import GuestNavbar from '../components/GuestNavbar';
+import GuestLayout from '../layouts/GuestLayout';
 import HeroSpotlight from '../components/GuestDashboard/HeroSpotlight';
 import RecommendedSection from '../components/GuestDashboard/RecommendedSection';
 import useGuestDashboard from '../hooks/useGuestDashboard';
@@ -21,11 +21,8 @@ const GuestDashboard = () => {
   } = useGuestDashboard();
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <GuestNavbar />
-
-      <main className="mx-auto max-w-6xl px-6 pb-16 pt-24">
-        <section className="space-y-10">
+    <GuestLayout>
+      <section className="space-y-10">
           <Motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -121,9 +118,8 @@ const GuestDashboard = () => {
               <p className="text-sm font-medium text-slate-700 dark:text-white">{errorMessage}</p>
             </div>
           )}
-        </section>
-      </main>
-    </div>
+      </section>
+    </GuestLayout>
   );
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import AdminLayout from '../components/AdminLayout';
+import AdminLayout from '../layouts/AdminLayout/AdminLayout';
 import useAdminDashboardData from '../hooks/useAdminDashboardData';
 import StatsGrid from '../components/AdminDashboard/StatsGrid';
 import PendingTable from '../components/AdminDashboard/PendingTable';

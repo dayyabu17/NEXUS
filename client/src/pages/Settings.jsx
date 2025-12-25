@@ -1,6 +1,6 @@
 
 import React from 'react';
-import AdminLayout from '../components/AdminLayout';
+import AdminLayout from '../layouts/AdminLayout/AdminLayout';
 import useAdminSettings from '../hooks/useAdminSettings';
 import useAdminTheme from '../hooks/useAdminTheme';
 import SettingsForm from '../components/AdminSettings/SettingsForm';

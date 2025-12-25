@@ -16,9 +16,8 @@ const {
   buildEventUpdateEmailHtml,
   buildEventCancellationEmailHtml,
 } = require('../utils/emailTemplates');
+const { DEFAULT_ACCENT, DEFAULT_BRAND_COLOR } = require('../config/themeDefaults');
 
-const DEFAULT_ACCENT = 'blue';
-const DEFAULT_BRAND_COLOR = '#2563EB';
 const PARTICIPANT_STATUSES = ['confirmed', 'checked-in'];
 
 const getPublicEvents = asyncHandler(async (req, res) => {

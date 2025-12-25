@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import AdminLayout from './AdminLayout';
+import AdminLayout from '../layouts/AdminLayout/AdminLayout';
 import api from '../api/axios';
 
 const AdminEventDetails = () => {

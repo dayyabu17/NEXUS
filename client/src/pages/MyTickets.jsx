@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { motion as Motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import GuestNavbar from '../components/GuestNavbar';
+import GuestLayout from '../layouts/GuestLayout';
 import TicketCard from '../components/TicketCard';
 import api from '../api/axios';
 
@@ -25,8 +25,6 @@ const MyTickets = () => {
     if (hasFetched.current) {
       return;
     }
-    hasFetched.current = true;
-
     const token = localStorage.getItem('token');
     if (!token) {
       navigate('/sign-in');
@@ -70,10 +68,8 @@ const MyTickets = () => {
   const hasTickets = useMemo(() => tickets.length > 0, [tickets]);
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
-      <GuestNavbar />
-
-      <main className="mx-auto max-w-6xl px-6 pb-16 pt-24">
+    <GuestLayout mainClassName="mx-auto max-w-6xl px-6 pb-20 pt-24">
+      <>
         <header className="mb-10 space-y-3">
           <p className="text-sm font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-white/40">My wallet</p>
           <h1 className="text-4xl font-semibold text-slate-900 dark:text-white">Your Tickets</h1>
@@ -153,8 +149,8 @@ const MyTickets = () => {
             })}
           </Motion.section>
         )}
-      </main>
-    </div>
+      </>
+    </GuestLayout>
   );
 };
 

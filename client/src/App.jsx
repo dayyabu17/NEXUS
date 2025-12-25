@@ -1,5 +1,5 @@
 import { Suspense, lazy } from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Outlet } from 'react-router-dom';
 
 // --- 1. Lazy Imports (Code Splitting) ---
 // This tells Vite: "Don't bundle this code into the main file. Keep it separate."
@@ -7,23 +7,34 @@ import { Routes, Route } from 'react-router-dom';
 const SignIn = lazy(() => import('./components/SignIn'));
 const SignUp = lazy(() => import('./components/SignUp'));
 
-// Admin Components
-const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+// Admin Pages
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminEventDetails = lazy(() => import('./components/AdminEventDetails'));
 const EventDetails = lazy(() => import('./pages/EventDetails'));
-const UserManagement = lazy(() => import('./components/UserManagement'));
-const EventManagement = lazy(() => import('./components/EventManagement'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const EventManagement = lazy(() => import('./pages/EventManagement'));
 const Settings = lazy(() => import('./pages/Settings'));
 
-// Organizer Components
-const OrganizerDashboard = lazy(() => import('./components/OrganizerDashboard'));
-const OrganizerEvents = lazy(() => import('./components/OrganizerEvents'));
-const OrganizerEarnings = lazy(() => import('./components/OrganizerEarnings'));
-const OrganizerCreateEvent = lazy(() => import('./components/OrganizerCreateEvent/index.js'));
-const OrganizerEventView = lazy(() => import('./components/OrganizerEventView'));
-const OrganizerAccount = lazy(() => import('./pages/OrganizerAccount'));
-const OrganizerPreferences = lazy(() => import('./components/OrganizerPreferences'));
-const OrganizerNotifications = lazy(() => import('./components/OrganizerNotifications'));
+// Organizer Pages via barrel loader
+const loadOrganizerPage = (exportName) =>
+  lazy(() =>
+    import('./pages/organizer').then((module) => {
+      const page = module[exportName];
+      if (!page) {
+        throw new Error(`Organizer page export "${exportName}" not found.`);
+      }
+      return { default: page };
+    }),
+  );
+
+const OrganizerDashboard = loadOrganizerPage('OrganizerDashboardPage');
+const OrganizerEvents = loadOrganizerPage('OrganizerEventsPage');
+const OrganizerEarnings = loadOrganizerPage('OrganizerEarningsPage');
+const OrganizerCreateEvent = loadOrganizerPage('OrganizerCreateEventPage');
+const OrganizerEventView = loadOrganizerPage('OrganizerEventDetailsPage');
+const OrganizerAccount = loadOrganizerPage('OrganizerAccountPage');
+const OrganizerPreferences = loadOrganizerPage('OrganizerPreferencesPage');
+const OrganizerNotifications = loadOrganizerPage('OrganizerNotificationsPage');
 
 // Guest Components
 const GuestDashboard = lazy(() => import('./pages/GuestDashboard'));
@@ -46,6 +57,15 @@ const LoadingFallback = () => (
   </div>
 );
 
+const RouteLoadingFallback = ({ label }) => (
+  <div className="flex min-h-[60vh] items-center justify-center bg-transparent text-slate-600 dark:text-slate-300">
+    <div className="flex flex-col items-center gap-3">
+      <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+      <p className="text-sm font-medium">{label}</p>
+    </div>
+  </div>
+);
+
 function App() {
   return (
     // 3. Wrap Routes in Suspense
@@ -62,23 +82,41 @@ function App() {
         <Route path="/admin/settings" element={<Settings />} />
 
         {/* Organizer Routes */}
-        <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
-        <Route path="/organizer/events" element={<OrganizerEvents />} />
-        <Route path="/organizer/events/create" element={<OrganizerCreateEvent />} />
-        <Route path="/organizer/events/:id" element={<OrganizerEventView />} />
-        <Route path="/organizer/earnings" element={<OrganizerEarnings />} />
-        <Route path="/organizer/account" element={<OrganizerAccount />} />
-        <Route path="/organizer/preferences" element={<OrganizerPreferences />} />
-        <Route path="/organizer/settings" element={<OrganizerAccount />} />
-        <Route path="/organizer/notifications" element={<OrganizerNotifications />} />
+        <Route
+          path="/organizer"
+          element={
+            <Suspense fallback={<RouteLoadingFallback label="Loading organizer workspace..." />}>
+              <Outlet />
+            </Suspense>
+          }
+        >
+          <Route path="dashboard" element={<OrganizerDashboard />} />
+          <Route path="events" element={<OrganizerEvents />} />
+          <Route path="events/create" element={<OrganizerCreateEvent />} />
+          <Route path="events/:id" element={<OrganizerEventView />} />
+          <Route path="earnings" element={<OrganizerEarnings />} />
+          <Route path="account" element={<OrganizerAccount />} />
+          <Route path="preferences" element={<OrganizerPreferences />} />
+          <Route path="settings" element={<OrganizerAccount />} />
+          <Route path="notifications" element={<OrganizerNotifications />} />
+        </Route>
 
         {/* Guest Routes */}
-        <Route path="/guest/dashboard" element={<GuestDashboard />} />
-        <Route path="/guest/map" element={<GuestMap />} />
-        <Route path="/guest/notifications" element={<GuestNotifications />} />
-        <Route path="/guest/tickets" element={<MyTickets />} />
-        <Route path="/guest/events" element={<GuestEvents />} />
-        <Route path="/guest/profile" element={<GuestProfile />} />
+        <Route
+          path="/guest"
+          element={
+            <Suspense fallback={<RouteLoadingFallback label="Loading guest experience..." />}>
+              <Outlet />
+            </Suspense>
+          }
+        >
+          <Route path="dashboard" element={<GuestDashboard />} />
+          <Route path="map" element={<GuestMap />} />
+          <Route path="notifications" element={<GuestNotifications />} />
+          <Route path="tickets" element={<MyTickets />} />
+          <Route path="events" element={<GuestEvents />} />
+          <Route path="profile" element={<GuestProfile />} />
+        </Route>
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/payment/callback" element={<PaymentCallback />} />
         <Route path="/dashboard" element={<GuestDashboard />} /> 

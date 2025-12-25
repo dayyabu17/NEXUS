@@ -1,12 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { CreditCard } from 'lucide-react';
-import OrganizerLayoutDark from './OrganizerLayoutDark';
+import OrganizerLayoutDark from '../layouts/OrganizerLayoutDark';
 import OrganizerEarningsSummaryCards from './OrganizerEarningsSummaryCards';
 import OrganizerRevenueTrendChart from './OrganizerRevenueTrendChart';
 import OrganizerPayoutSummary from './OrganizerPayoutSummary';
 import OrganizerTransactionsTable from './OrganizerTransactionsTable';
-import useOrganizerEarnings from '../hooks/useOrganizerEarnings';
+import useOrganizerEarnings from '../hooks/organizer/useOrganizerEarnings';
 
 const MotionSection = motion.section;
 
