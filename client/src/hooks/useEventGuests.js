@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { createGuestRecord } from '../components/OrganizerEventView/eventViewUtils';
+import { normalizeGuestTicket } from '../utils/ticketTransforms';
 
 const useEventGuests = (eventId) => {
   const navigate = useNavigate();
@@ -34,20 +35,7 @@ const useEventGuests = (eventId) => {
 
       const tickets = Array.isArray(response.data) ? response.data : [];
 
-      const normalizedGuests = tickets.map((ticket) => ({
-        id: ticket._id,
-        name: ticket.user?.name || 'Unknown Guest',
-        email: ticket.user?.email || ticket.email || 'unknown@nexus.app',
-        status: ticket.status || 'confirmed',
-        ticketId: ticket._id,
-        avatar: ticket.user?.profilePicture || null,
-        checkedInAt:
-          ticket.status === 'checked-in' || ticket.isCheckedIn
-            ? ticket.checkedInAt || ticket.updatedAt || ticket.createdAt || null
-            : null,
-        isCheckedIn: Boolean(ticket.isCheckedIn || ticket.status === 'checked-in'),
-        userId: ticket.user?._id || ticket.user || null,
-      }));
+      const normalizedGuests = tickets.map(normalizeGuestTicket).filter(Boolean);
 
       setGuestList(normalizedGuests);
     } catch (err) {

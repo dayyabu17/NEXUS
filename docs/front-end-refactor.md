@@ -32,7 +32,7 @@
 - [x] Create `client/src/hooks/organizer/` and relocate organizer-specific hooks, updating their import paths.
 - [x] Create `client/src/hooks/guest/` and migrate guest flows accordingly.
 - [x] Draft hook naming guidelines (for example `useOrganizerDashboard`) and document them in a README inside `client/src/hooks/`.
-- [ ] Extract ticket normalization into `client/src/utils/ticketTransforms.js` and refactor guest hooks to consume it.
+- [x] Extract ticket normalization into `client/src/utils/ticketTransforms.js` and refactor guest hooks to consume it.
 - [ ] Build `client/src/utils/formatters.js` for currency/time helpers currently defined inline in components such as [client/src/components/OrganizerDashboard/dashboardUtils.js](../client/src/components/OrganizerDashboard/dashboardUtils.js).
 - [ ] Extend [client/src/api/axios.js](../client/src/api/axios.js) with interceptors to normalize API errors and add auth refresh handling.
 - [ ] Add feature-focused service modules (for example `client/src/services/eventsService.js`, `client/src/services/notificationsService.js`) and migrate hooks to call them.

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import api from '../api/axios';
-import { DEFAULT_AVATAR, resolveProfileImage } from '../utils/profileUtils';
+import api from '../../api/axios';
+import { DEFAULT_AVATAR, resolveProfileImage } from '../../utils/profileUtils';
+import { summarizeTicketCollection } from '../../utils/ticketTransforms';
 
 const TABS = [
   { id: 'history', label: 'History' },
@@ -96,24 +97,9 @@ const useGuestProfile = () => {
         }
 
         const nextTickets = Array.isArray(response.data?.tickets) ? response.data.tickets : [];
-        const now = Date.now();
-        let upcoming = 0;
-        let past = 0;
+        const { metrics } = summarizeTicketCollection(nextTickets);
 
-        nextTickets.forEach((ticket) => {
-          const eventDate = ticket?.event?.date ? new Date(ticket.event.date).getTime() : NaN;
-          if (!Number.isFinite(eventDate)) {
-            past += 1;
-            return;
-          }
-          if (eventDate >= now) {
-            upcoming += 1;
-          } else {
-            past += 1;
-          }
-        });
-
-        setTicketMetrics({ total: nextTickets.length, upcoming, past: Math.max(past, 0) });
+        setTicketMetrics(metrics);
         setTickets(nextTickets);
       } catch (error) {
         console.warn('Unable to load ticket metrics', error);
@@ -269,27 +255,7 @@ const useGuestProfile = () => {
     return 'Community Explorer';
   }, [profile.email]);
 
-  const enrichedTickets = useMemo(() => {
-    if (!tickets.length) {
-      return [];
-    }
-    const now = Date.now();
-    return tickets
-      .map((ticket) => {
-        const event = ticket?.event || {};
-        const eventDate = event?.date ? new Date(event.date) : null;
-        const timestamp = eventDate && !Number.isNaN(eventDate.valueOf()) ? eventDate.getTime() : 0;
-        const isUpcoming = timestamp && timestamp >= now;
-        return {
-          id: ticket?._id || ticket?.id || Math.random().toString(36),
-          title: event?.title || 'Unnamed Experience',
-          location: event?.location || 'Location TBA',
-          date: eventDate,
-          isUpcoming,
-        };
-      })
-      .sort((a, b) => (b.date?.getTime() || 0) - (a.date?.getTime() || 0));
-  }, [tickets]);
+  const enrichedTickets = useMemo(() => summarizeTicketCollection(tickets).summaries, [tickets]);
 
   const recentTickets = useMemo(() => enrichedTickets.slice(0, 5), [enrichedTickets]);
 

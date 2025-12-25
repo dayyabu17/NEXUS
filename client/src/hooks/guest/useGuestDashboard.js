@@ -1,40 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../api/axios';
-
-const getEventId = (event) => {
-  if (!event) {
-    return null;
-  }
-
-  const sourceId = event._id ?? event.id;
-  if (sourceId === undefined || sourceId === null) {
-    return null;
-  }
-
-  try {
-    return sourceId.toString();
-  } catch {
-    return `${sourceId}`;
-  }
-};
-
-const normalizeEvent = (event) => {
-  if (!event) {
-    return null;
-  }
-
-  const eventId = getEventId(event);
-  if (!eventId) {
-    return event;
-  }
-
-  if (event.eventId === eventId) {
-    return event;
-  }
-
-  return { ...event, eventId };
-};
+import api from '../../api/axios';
+import {
+  dedupeEventsById,
+  normalizeEventRecord,
+  resolveEventId,
+} from '../../utils/ticketTransforms';
 
 const useGuestDashboard = () => {
   const navigate = useNavigate();
@@ -57,32 +28,6 @@ const useGuestDashboard = () => {
 
   useEffect(() => {
     let isMounted = true;
-
-    const dedupeById = (list = []) => {
-      if (!Array.isArray(list)) {
-        return [];
-      }
-
-      const seen = new Set();
-      return list.flatMap((item) => {
-        const normalized = normalizeEvent(item);
-        if (!normalized) {
-          return [];
-        }
-
-        const id = getEventId(normalized);
-        if (!id) {
-          return [normalized];
-        }
-
-        if (seen.has(id)) {
-          return [];
-        }
-
-        seen.add(id);
-        return [normalized];
-      });
-    };
 
     const fetchDashboard = async () => {
       setIsLoading(true);
@@ -112,24 +57,25 @@ const useGuestDashboard = () => {
         }
 
         const { heroEvent: hero, recommendedEvents, recentEvents } = response.data || {};
+        const normalizedHero = normalizeEventRecord(hero);
+        const heroId = resolveEventId(normalizedHero);
 
-        const heroId = getEventId(hero);
+        const normalizedRecommended = dedupeEventsById(recommendedEvents);
+        const normalizedRecent = dedupeEventsById(recentEvents);
 
-        const excludeHero = (list = []) =>
-          list.filter((item) => {
-            const id = getEventId(item);
-            if (!heroId) {
-              return true;
-            }
-            return id !== heroId;
-          });
+        const filterHero = (list) => {
+          if (!heroId) {
+            return list;
+          }
+          return list.filter((item) => resolveEventId(item) !== heroId);
+        };
 
-        const sanitizedRecommended = excludeHero(dedupeById(recommendedEvents)).slice(0, 6);
-        const sanitizedRecent = excludeHero(dedupeById(recentEvents));
+        const sanitizedRecommended = filterHero(normalizedRecommended).slice(0, 6);
+        const sanitizedRecent = filterHero(normalizedRecent);
 
-        setHeroEvent(normalizeEvent(hero) || null);
-        setRecommended(sanitizedRecommended.map(normalizeEvent).filter(Boolean));
-        setAllEvents(sanitizedRecent.map(normalizeEvent).filter(Boolean));
+        setHeroEvent(normalizedHero || null);
+        setRecommended(sanitizedRecommended);
+        setAllEvents(sanitizedRecent);
         setErrorMessage('');
       } catch (error) {
         console.error('Failed to fetch dashboard data', error);
@@ -157,12 +103,12 @@ const useGuestDashboard = () => {
     const map = new Map();
 
     const addToMap = (event) => {
-      const normalized = normalizeEvent(event);
+      const normalized = normalizeEventRecord(event);
       if (!normalized) {
         return;
       }
 
-      const id = getEventId(normalized);
+      const id = resolveEventId(normalized);
       if (!id) {
         return;
       }
