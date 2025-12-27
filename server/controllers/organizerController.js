@@ -742,16 +742,6 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     endTime,
   } = req.body;
 
-  if (!title || !description || !date || !location) {
-    return res.status(400).json({ message: 'Title, description, date, and location are required.' });
-  }
-
-  const parsedDate = new Date(date);
-
-  if (Number.isNaN(parsedDate.getTime())) {
-    return res.status(400).json({ message: 'Invalid event date supplied.' });
-  }
-
   const parsedTagsSource = Array.isArray(tags)
     ? tags
     : typeof tags === 'string'
@@ -761,6 +751,49 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
   const normalizedTags = parsedTagsSource
     .map((tag) => (tag || '').toString().trim())
     .filter(Boolean);
+
+  const isBlank = (value) =>
+    value === undefined ||
+    value === null ||
+    (typeof value === 'string' && value.trim().length === 0);
+
+  const missingFields = [];
+
+  if (isBlank(title)) {
+    missingFields.push('Title');
+  }
+
+  if (isBlank(description)) {
+    missingFields.push('Description');
+  }
+
+  if (isBlank(date)) {
+    missingFields.push('Date');
+  }
+
+  if (isBlank(location)) {
+    missingFields.push('Location');
+  }
+
+  if (isBlank(category)) {
+    missingFields.push('Category');
+  }
+
+  if (normalizedTags.length === 0) {
+    missingFields.push('Tags');
+  }
+
+  if (missingFields.length > 0) {
+    return res.status(400).json({
+      message: `You are missing the following compulsory fields: ${missingFields.join(', ')}`,
+    });
+  }
+
+  const parsedDate = new Date(date);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return res.status(400).json({ message: 'Invalid event date supplied.' });
+  }
 
   const normalizedCapacity =
     capacity === undefined || capacity === null || capacity === ''

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { AnimatePresence, motion } from 'framer-motion';
 import OrganizerLayoutDark from '../../../layouts/OrganizerLayoutDark';
 import OrganizerCreateEventSidebar from './OrganizerCreateEventSidebar';
 import OrganizerCreateEventSchedule from './OrganizerCreateEventSchedule';
@@ -81,14 +81,19 @@ const OrganizerCreateEvent = () => {
           </p>
         </motion.header>
 
-        {success && (
-          <motion.div
-            className="pointer-events-none fixed left-1/2 top-6 z-[1100] w-full max-w-xl -translate-x-1/2 rounded-3xl border border-white/15 bg-[rgba(20,26,36,0.85)] px-6 py-4 text-center text-sm font-medium text-white/90 shadow-[0_25px_70px_rgba(5,10,20,0.6)] backdrop-blur"
-            variants={itemVars}
-          >
-            {success}
-          </motion.div>
-        )}
+        <AnimatePresence>
+          {success && (
+            <motion.div
+              className="pointer-events-none fixed left-1/2 top-6 z-[1100] w-full max-w-xl -translate-x-1/2 rounded-3xl border border-white/15 bg-[rgba(20,26,36,0.85)] px-6 py-4 text-center text-sm font-medium text-white/90 shadow-[0_25px_70px_rgba(5,10,20,0.6)] backdrop-blur"
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.25 }}
+            >
+              {success}
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <motion.form onSubmit={handleSubmit} className="flex flex-col gap-8 lg:flex-row" variants={itemVars}>
           <OrganizerCreateEventSidebar
@@ -163,14 +168,19 @@ const OrganizerCreateEvent = () => {
               onChange={handleChange}
             />
 
-            {error && (
-              <motion.div
-                className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-200"
-                variants={itemVars}
-              >
-                {error}
-              </motion.div>
-            )}
+            <AnimatePresence>
+              {error && (
+                <motion.div
+                  className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  {error}
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             <motion.div className="flex flex-col gap-4" variants={itemVars}>
               <button

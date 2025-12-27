@@ -30,9 +30,34 @@ const INITIAL_FORM = {
   timezone: TIMEZONE_OPTIONS[0].value,
 };
 
+const MINUTES_IN_DAY = 24 * 60;
+
+const addOneHourToTime = (value) => {
+  if (typeof value !== 'string') {
+    return '';
+  }
+
+  const [hoursStr, minutesStr] = value.split(':');
+  const hours = Number.parseInt(hoursStr, 10);
+  const minutes = Number.parseInt(minutesStr, 10);
+
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) {
+    return '';
+  }
+
+  const totalMinutes = hours * 60 + minutes + 60;
+  const normalized = ((totalMinutes % MINUTES_IN_DAY) + MINUTES_IN_DAY) % MINUTES_IN_DAY;
+  const nextHours = Math.floor(normalized / 60);
+  const nextMinutes = normalized % 60;
+
+  return `${String(nextHours).padStart(2, '0')}:${String(nextMinutes).padStart(2, '0')}`;
+};
+
 const useOrganizerCreateEvent = () => {
   const navigate = useNavigate();
   const successTimeoutRef = useRef(null);
+  const previousStartDateRef = useRef('');
+  const previousStartTimeRef = useRef('');
   const [formData, setFormData] = useState(() => ({ ...INITIAL_FORM }));
   const [coverPreview, setCoverPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -45,6 +70,34 @@ const useOrganizerCreateEvent = () => {
       successTimeoutRef.current = null;
     }
   }, []);
+
+  useEffect(() => {
+    const prevStartDate = previousStartDateRef.current;
+    const nextStartDate = formData.date || '';
+    const shouldSync =
+      !!nextStartDate && (!formData.endDate || (!!prevStartDate && formData.endDate === prevStartDate));
+
+    if (shouldSync && formData.endDate !== nextStartDate) {
+      setFormData((prev) => ({ ...prev, endDate: nextStartDate }));
+    }
+
+    previousStartDateRef.current = nextStartDate;
+  }, [formData.date, formData.endDate, setFormData]);
+
+  useEffect(() => {
+    const prevStartTime = previousStartTimeRef.current;
+    const nextStartTime = formData.time || '';
+    const nextAutoEnd = addOneHourToTime(nextStartTime);
+    const prevAutoEnd = addOneHourToTime(prevStartTime);
+    const shouldSync =
+      !!nextAutoEnd && (!formData.endTime || (!!prevStartTime && formData.endTime === prevAutoEnd));
+
+    if (shouldSync && formData.endTime !== nextAutoEnd) {
+      setFormData((prev) => ({ ...prev, endTime: nextAutoEnd }));
+    }
+
+    previousStartTimeRef.current = nextStartTime;
+  }, [formData.time, formData.endTime, setFormData]);
 
   const clearSuccess = useCallback(() => {
     setSuccess('');
