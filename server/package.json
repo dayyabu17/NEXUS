@@ -12,6 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@paystack/paystack-sdk": "^1.0.1",
     "axios": "^1.13.2",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
@@ -26,6 +27,7 @@
     "paystack": "^2.0.1"
   },
   "devDependencies": {
+    "jest": "^30.2.0",
     "nodemon": "^3.1.11"
   }
 }
