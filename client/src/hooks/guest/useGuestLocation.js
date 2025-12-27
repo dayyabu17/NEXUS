@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { reverseGeocode } from '../services/locationService';
+import { reverseGeocode } from '../../services/locationService';
 
 const STORAGE_KEY = 'userLocation';
 const DETECTING_LABEL = 'Detecting...';

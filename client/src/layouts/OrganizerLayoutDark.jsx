@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { X } from 'lucide-react';
+import { Bell, Search, X } from 'lucide-react';
 import GlobalSearch from '../components/GlobalSearch';
 import OrganizerLayoutHeader from './OrganizerLayout/OrganizerLayoutHeader';
 import OrganizerBrandSpotlight from './OrganizerLayout/OrganizerBrandSpotlight';
@@ -47,6 +47,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   const routerLocation = useLocation();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isMobileMenuOpenRef = useRef(false);
 
   const handleOpenMobileMenu = useCallback(() => {
     setIsMobileMenuOpen(true);
@@ -61,7 +62,25 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
   }, []);
 
   useEffect(() => {
-    setIsMobileMenuOpen(false);
+    isMobileMenuOpenRef.current = isMobileMenuOpen;
+  }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!isMobileMenuOpenRef.current) {
+      return undefined;
+    }
+
+    const timer = typeof window !== 'undefined'
+      ? window.setTimeout(() => {
+          setIsMobileMenuOpen(false);
+        }, 0)
+      : null;
+
+    return () => {
+      if (timer !== null && typeof window !== 'undefined') {
+        window.clearTimeout(timer);
+      }
+    };
   }, [routerLocation.pathname]);
 
   const profileMenuProps = {
@@ -90,7 +109,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
           aria-modal="true"
         >
           <div
-            className="relative flex h-full w-full flex-col items-center justify-center px-8"
+            className="relative flex h-full w-full flex-col justify-between px-8 pb-16 pt-20"
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -102,22 +121,78 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
               <X className="h-6 w-6" />
             </button>
 
-            <nav className="flex flex-col items-center gap-7 text-center" aria-label="Organizer mobile navigation">
-              {navItems.map(({ label, path }) => (
-                <NavLink
-                  key={label}
-                  to={path}
-                  onClick={handleMobileNavClick}
-                  className={({ isActive }) =>
-                    `text-2xl font-semibold tracking-wide transition-colors duration-200 ${
-                      isActive ? 'text-white' : 'text-white/70 hover:text-white'
-                    }`
-                  }
-                >
-                  {label}
-                </NavLink>
-              ))}
-            </nav>
+            <div className="flex h-full flex-col items-center gap-10">
+              <div className="w-full max-w-sm rounded-3xl border border-white/20 bg-white/5 px-6 py-4 text-center">
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/50">Current Time</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{currentTime}</p>
+              </div>
+
+              <nav className="flex w-full flex-col items-center gap-7 text-center" aria-label="Organizer mobile navigation">
+                {navItems.map(({ label, path }) => (
+                  <NavLink
+                    key={label}
+                    to={path}
+                    onClick={handleMobileNavClick}
+                    className={({ isActive }) =>
+                      `text-2xl font-semibold tracking-wide transition-colors duration-200 ${
+                        isActive ? 'text-white' : 'text-white/70 hover:text-white'
+                      }`
+                    }
+                  >
+                    {label}
+                  </NavLink>
+                ))}
+              </nav>
+
+              <NavLink
+                to="/organizer/events/create"
+                onClick={handleMobileNavClick}
+                className="w-full max-w-sm rounded-3xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_16px_45px_rgba(91,104,219,0.45)] transition hover:shadow-[0_20px_55px_rgba(91,104,219,0.55)]"
+              >
+                Create Event
+              </NavLink>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleLogout();
+                }}
+                className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400 transition hover:text-red-300"
+              >
+                Sign Out
+              </button>
+            </div>
+
+            <div className="mt-10 flex items-center justify-center gap-6">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  openSearch();
+                }}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition hover:border-white/40 hover:bg-white/10"
+                aria-label="Open search"
+              >
+                <Search className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  handleToggleNotifications();
+                }}
+                className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition hover:border-white/40 hover:bg-white/10"
+                aria-label="View notifications"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadBadge > 0 && (
+                  <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 py-[2px] text-[10px] font-semibold text-white">
+                    {unreadBadge > 9 ? '9+' : unreadBadge}
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

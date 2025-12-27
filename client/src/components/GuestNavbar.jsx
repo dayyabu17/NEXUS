@@ -38,6 +38,23 @@ const BRAND_HIGHLIGHTS = [
   },
 ];
 
+const MobileBellIcon = ({ className }) => (
+  <svg
+    className={className}
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    aria-hidden
+  >
+    <path
+      d="M6.66667 8.83333V13L5 15.5V18H20V15.5L18.3333 13V8.83333C18.3333 8.06729 18.1824 7.30875 17.8893 6.60101C17.5961 5.89328 17.1665 5.25022 16.6248 4.70854C16.0831 4.16687 15.4401 3.73719 14.7323 3.44404C14.0246 3.15088 13.266 3 12.5 3C11.734 3 10.9754 3.15088 10.2677 3.44404C9.55995 3.73719 8.91689 4.16687 8.37521 4.70854C7.83354 5.25022 7.40385 5.89328 7.1107 6.60101C6.81755 7.30875 6.66667 8.06729 6.66667 8.83333ZM9.58333 18H15.4167C15.4167 18.383 15.3412 18.7623 15.1946 19.1162C15.0481 19.47 14.8332 19.7916 14.5624 20.0624C14.2916 20.3332 13.97 20.5481 13.6162 20.6946C13.2623 20.8412 12.883 20.9167 12.5 20.9167C12.117 20.9167 11.7377 20.8412 11.3838 20.6946C11.03 20.5481 10.7084 20.3332 10.4376 20.0624C10.1668 19.7916 9.95193 19.47 9.80535 19.1162C9.65877 18.7623 9.58333 18.383 9.58333 18Z"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="square"
+    />
+  </svg>
+);
+
 const GuestNavbar = () => {
   const navigate = useNavigate();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -346,6 +363,20 @@ const GuestNavbar = () => {
               onSignOut={handleSignOut}
             />
           </div>
+
+          <button
+            type="button"
+            className="relative flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-100 dark:border-white/10 dark:bg-[#121824] dark:text-white md:hidden"
+            aria-label="View notifications"
+            onClick={() => handleNotificationsNavigate('ALL')}
+          >
+            <MobileBellIcon className="h-5 w-5" />
+            {guestUnreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 inline-flex min-w-[18px] items-center justify-center rounded-full bg-red-500 px-1 py-[2px] text-[10px] font-semibold text-white">
+                {guestUnreadCount > 9 ? '9+' : guestUnreadCount}
+              </span>
+            )}
+          </button>
 
           <button
             type="button"

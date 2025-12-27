@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import api from '../api/axios';
+import api from '../../api/axios';
 
 const STORAGE_KEY = 'guest:notifications:unread';
 
