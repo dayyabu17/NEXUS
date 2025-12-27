@@ -147,7 +147,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
               <NavLink
                 to="/organizer/events/create"
                 onClick={handleMobileNavClick}
-                className="w-full max-w-sm rounded-3xl bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_16px_45px_rgba(91,104,219,0.45)] transition hover:shadow-[0_20px_55px_rgba(91,104,219,0.55)]"
+                className="w-full max-w-sm rounded-3xl bg-blue-500 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_16px_40px_rgba(59,130,246,0.4)] transition hover:bg-blue-600 hover:shadow-[0_20px_55px_rgba(37,99,235,0.55)]"
               >
                 Create Event
               </NavLink>
