@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 
 const MotionDiv = motion.div;
+const MOBILE_QUERY = '(max-width: 767px)';
 
 const StatusBadge = ({ status }) => {
   const isSettled = status === 'Settled';
@@ -19,6 +20,90 @@ const StatusBadge = ({ status }) => {
 };
 
 const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }) => {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') {
+      return false;
+    }
+    return window.matchMedia(MOBILE_QUERY).matches;
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return undefined;
+    }
+
+    const mediaQuery = window.matchMedia(MOBILE_QUERY);
+    const handleChange = (event) => {
+      setIsMobile((previous) => {
+        if (previous === event.matches) {
+          return previous;
+        }
+        setCurrentPage((page) => (page === 1 ? page : 1));
+        return event.matches;
+      });
+    };
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
+    }
+
+    mediaQuery.addListener(handleChange);
+    return () => mediaQuery.removeListener(handleChange);
+  }, []);
+
+  const perPage = isMobile ? 3 : 6;
+  const totalPages = Math.max(1, Math.ceil(transactions.length / perPage));
+  const displayPage = Math.min(currentPage, totalPages);
+
+  const paginatedTransactions = useMemo(() => {
+    if (!transactions.length) {
+      return [];
+    }
+    const startIndex = (displayPage - 1) * perPage;
+    return transactions.slice(startIndex, startIndex + perPage);
+  }, [transactions, displayPage, perPage]);
+
+  const shouldShowPagination = !loading && totalPages > 1 && transactions.length > 0;
+
+  const renderPagination = (variant) => {
+    if (!shouldShowPagination) {
+      return null;
+    }
+
+    const containerClasses =
+      variant === 'mobile'
+        ? 'mt-4 flex justify-center gap-2 md:hidden'
+        : 'mt-6 hidden justify-end gap-2 md:flex';
+
+    return (
+      <div className={containerClasses} aria-label="Transaction pagination">
+        {Array.from({ length: totalPages }, (_, index) => {
+          const pageNumber = index + 1;
+          const isActive = pageNumber === displayPage;
+          const label = pageNumber === 1 ? `Page ${pageNumber}` : `${pageNumber}`;
+
+          return (
+            <button
+              type="button"
+              key={`transactions-page-${pageNumber}`}
+              onClick={() => setCurrentPage(pageNumber)}
+              className={`min-w-[56px] rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                isActive
+                  ? 'border-white/60 bg-white/15 text-white'
+                  : 'border-white/15 bg-transparent text-white/55 hover:border-white/35 hover:text-white'
+              }`}
+              aria-current={isActive ? 'page' : undefined}
+            >
+              {label}
+            </button>
+          );
+        })}
+      </div>
+    );
+  };
+
   const renderRows = () => {
     if (loading) {
       return (
@@ -38,7 +123,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
 
     return (
       <div className="flex flex-col gap-4">
-        {transactions.map((transaction) => {
+        {paginatedTransactions.map((transaction) => {
           const parsedDate = transaction.date ? new Date(transaction.date) : null;
           const displayDate = parsedDate && !Number.isNaN(parsedDate.getTime())
             ? parsedDate.toLocaleString('en-US', {
@@ -105,7 +190,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
       );
     }
 
-    return transactions.map((transaction) => {
+    return paginatedTransactions.map((transaction) => {
       const parsedDate = transaction.date ? new Date(transaction.date) : null;
       const displayDate = parsedDate && !Number.isNaN(parsedDate.getTime())
         ? parsedDate.toLocaleString('en-US', {
@@ -154,6 +239,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
 
       <div className="mt-6 md:hidden">
         {renderRows()}
+        {renderPagination('mobile')}
       </div>
 
       <div className="mt-6 hidden overflow-x-auto md:block">
@@ -170,6 +256,8 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
           <tbody>{renderTable()}</tbody>
         </table>
       </div>
+
+      {renderPagination('desktop')}
     </MotionDiv>
   );
 };

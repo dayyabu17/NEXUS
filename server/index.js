@@ -20,6 +20,7 @@ app.use(cors({
     "http://localhost:5173", // Keep this for your laptop
     "https://nexus-6753-usman-dayyabus-projects.vercel.app", // Add your specific Vercel link
     "https://nexus-6753.vercel.app"  // Add your specific Vercel link
+    
   ],
   credentials: true
 }));

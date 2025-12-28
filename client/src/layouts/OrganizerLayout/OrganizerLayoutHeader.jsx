@@ -31,7 +31,7 @@ const OrganizerLayoutHeader = ({
   notificationsMenuRef,
   profileMenuProps,
 }) => (
-  <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0A0F16]/70 px-4 pt-12 pb-3 backdrop-blur-md md:px-10 md:py-4">
+  <header className="sticky top-0 z-50 border-b border-white/10 bg-[#0A0F16]/70 px-4 pt-3 pb-3 backdrop-blur-md md:px-10 md:py-4">
     <div className="mx-auto flex w-full max-w-[1455px] items-center justify-between gap-4">
       <div className="flex items-center gap-4 md:gap-10">
         <button

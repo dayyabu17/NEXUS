@@ -51,7 +51,7 @@ const OrganizerEarningsSummaryCards = ({ metrics, loading, currencyFormatter }) 
   };
 
   return (
-    <div className="mt-8 flex snap-x gap-4 overflow-x-auto pb-2 md:mt-10 md:grid md:snap-none md:gap-5 md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-4">
+    <div className="mt-8 grid grid-cols-2 gap-4 md:mt-10 md:gap-5 xl:grid-cols-4">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
@@ -60,7 +60,7 @@ const OrganizerEarningsSummaryCards = ({ metrics, loading, currencyFormatter }) 
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.45, ease: 'easeOut' }}
-            className="min-w-[240px] snap-center rounded-3xl border border-slate-700/70 bg-slate-950/65 p-6 shadow-[0_20px_60px_rgba(4,8,20,0.45)] md:min-w-0"
+            className="rounded-3xl border border-slate-700/70 bg-slate-950/65 p-6 shadow-[0_20px_60px_rgba(4,8,20,0.45)]"
           >
             <div className="flex items-center justify-between">
               <div>
@@ -70,7 +70,10 @@ const OrganizerEarningsSummaryCards = ({ metrics, loading, currencyFormatter }) 
                 </p>
                 <p className="mt-2 text-xs text-white/40">{card.subtext}</p>
               </div>
-              <div className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 ${card.accent}`}>
+              <div
+                className={`flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-white/5 opacity-0 md:opacity-100 ${card.accent}`}
+                aria-hidden
+              >
                 <Icon className="h-6 w-6" />
               </div>
             </div>

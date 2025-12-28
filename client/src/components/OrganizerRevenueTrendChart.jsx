@@ -38,7 +38,7 @@ const OrganizerRevenueTrendChart = ({ chartData = [], loading, gradientId, curre
   <MotionDiv
     initial={{ opacity: 0, y: 18 }}
     whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, amount: 0.4 }}
+    viewport={{ once: true, amount: 0.1 }}
     transition={{ duration: 0.55, ease: [0.25, 0.8, 0.5, 1] }}
     className="w-full min-w-0 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-[0_28px_80px_rgba(5,10,30,0.5)] sm:p-6"
   >
