@@ -2,6 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { avatarImage, formatDisplayName } from '../../layouts/OrganizerLayout/layoutUtils';
+import { resolveProfileImage } from '../../utils/profileUtils';
 
 const useOrganizerProfile = () => {
   const navigate = useNavigate();
@@ -29,10 +30,12 @@ const useOrganizerProfile = () => {
         typeof data?.name === 'string' && data.name.trim().length > 0
           ? data.name.trim()
           : 'Organizer';
-      const normalizedAvatar =
+      const rawAvatar =
         typeof data?.profilePicture === 'string' && data.profilePicture.trim().length > 0
           ? data.profilePicture.trim()
-          : avatarImage;
+          : '';
+
+      const normalizedAvatar = rawAvatar ? resolveProfileImage(rawAvatar) : avatarImage;
 
       setOrganizerProfile({
         name: normalizedName,
