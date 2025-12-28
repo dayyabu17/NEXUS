@@ -29,22 +29,22 @@ const OrganizerEarnings = () => {
   return (
     <OrganizerLayoutDark>
       <MotionSection
-        className="pb-20"
+        className="pb-16 sm:pb-20"
         initial={{ opacity: 0, y: 18 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="flex flex-wrap items-center justify-between gap-4 pt-6">
-          <div>
-            <h1 className="text-4xl font-semibold tracking-tight text-white">Earnings &amp; Payouts</h1>
-            <p className="mt-2 max-w-xl text-sm text-white/60">
+        <div className="flex flex-wrap items-center justify-between gap-4 pt-2 sm:pt-6">
+          <div className="max-w-2xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Earnings &amp; Payouts</h1>
+            <p className="mt-2 text-sm text-white/60 sm:max-w-xl">
               Monitor revenue performance, track settlement timelines, and keep a pulse on your business health.
             </p>
           </div>
           <button
             type="button"
             disabled
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-semibold text-white/60 transition hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/60 transition hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"
             aria-disabled
             title="Withdrawals can be initiated once payouts are enabled"
           >
@@ -65,7 +65,7 @@ const OrganizerEarnings = () => {
           currencyFormatter={currencyFormatter}
         />
 
-        <div className="mt-10 grid gap-6 xl:grid-cols-[2fr_1fr]">
+        <div className="mt-10 grid gap-6 lg:grid-cols-[1.7fr_1fr]">
           <OrganizerRevenueTrendChart
             chartData={chartData}
             loading={loading}

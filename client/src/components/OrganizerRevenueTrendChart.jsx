@@ -27,7 +27,9 @@ const CustomTooltip = ({ active, payload, label, currencyFormatter }) => {
   );
 };
 
-const OrganizerRevenueTrendChart = ({ chartData, loading, gradientId, currencyFormatter }) => {
+const OrganizerRevenueTrendChart = ({ chartData = [], loading, gradientId, currencyFormatter }) => {
+  const hasData = Array.isArray(chartData) && chartData.length > 0;
+
   const renderTooltip = (props) => (
     <CustomTooltip {...props} currencyFormatter={currencyFormatter} />
   );
@@ -38,7 +40,7 @@ const OrganizerRevenueTrendChart = ({ chartData, loading, gradientId, currencyFo
     whileInView={{ opacity: 1, y: 0 }}
     viewport={{ once: true, amount: 0.4 }}
     transition={{ duration: 0.55, ease: [0.25, 0.8, 0.5, 1] }}
-    className="rounded-3xl border border-slate-800 bg-slate-950/70 p-6 shadow-[0_28px_80px_rgba(5,10,30,0.5)]"
+    className="w-full min-w-0 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-[0_28px_80px_rgba(5,10,30,0.5)] sm:p-6"
   >
     <div className="flex items-center justify-between">
       <div>
@@ -47,14 +49,15 @@ const OrganizerRevenueTrendChart = ({ chartData, loading, gradientId, currencyFo
       </div>
       <span className="text-xs text-emerald-300">Rolling 30-day window</span>
     </div>
-    <div className="mt-8 h-[320px] w-full">
-      {chartData.length === 0 ? (
-        <div className="flex h-full items-center justify-center text-sm text-white/45">
+    <div className="mt-6 w-full min-w-0 sm:mt-8">
+      {!hasData ? (
+        <div className="flex h-64 min-h-[250px] w-full items-center justify-center rounded-2xl border border-dashed border-white/10 text-sm text-white/45">
           {loading ? 'Loading trend…' : 'No revenue recorded yet.'}
         </div>
       ) : (
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -18, bottom: 0 }}>
+        <div className="h-64 min-h-[250px] w-full">
+          <ResponsiveContainer width="100%" height={256}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 12, left: -18, bottom: 0 }}>
             <defs>
               <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#6366F1" stopOpacity={0.65} />
@@ -78,15 +81,16 @@ const OrganizerRevenueTrendChart = ({ chartData, loading, gradientId, currencyFo
               tickFormatter={(value) => `${Math.round(value / 1000)}k`}
             />
             <Tooltip content={renderTooltip} cursor={{ stroke: 'rgba(99,102,241,0.4)', strokeWidth: 1 }} />
-            <Area
-              type="monotone"
-              dataKey="revenue"
-              stroke="#8b5cf6"
-              strokeWidth={2.8}
-              fill={`url(#${gradientId})`}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
+              <Area
+                type="monotone"
+                dataKey="revenue"
+                stroke="#8b5cf6"
+                strokeWidth={2.8}
+                fill={`url(#${gradientId})`}
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   </MotionDiv>
