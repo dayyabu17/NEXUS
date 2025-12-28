@@ -4,7 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { searchAddress as searchAddressService } from '../services/locationService';
 
-const DARK_TILE_URL = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
+const WARM_TILE_URL = 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png';
 const TILE_ATTRIBUTION =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>';
 
@@ -231,9 +231,9 @@ const LocationPicker = ({ value, coordinates, onChange }) => {
             zoom={14}
             scrollWheelZoom={false}
             className="h-full w-full"
-            style={{ background: '#0b1120' }}
+            style={{ background: '#f9f3ea' }}
           >
-            <TileLayer url={DARK_TILE_URL} attribution={TILE_ATTRIBUTION} />
+            <TileLayer url={WARM_TILE_URL} attribution={TILE_ATTRIBUTION} />
             <RecenterMap position={mapCenter} />
             <Marker position={mapCenter} />
           </MapContainer>
