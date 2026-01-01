@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Event = require('../models/Event');
+const { sendNotificationEmail } = require('../utils/emailService');
+const { buildStatusChangeEmailHtml } = require('../utils/emailTemplates');
 
 
 
@@ -75,22 +77,60 @@ const getEventDetails = asyncHandler(async (req, res) => {
  * @returns {void}
  */
 const updateEventStatus = asyncHandler(async (req, res) => {
-  const { status } = req.body;
-  
+  const { status, remarks } = req.body || {};
+
   if (!['approved', 'rejected'].includes(status)) {
     return res.status(400).json({ message: 'Invalid status value' });
   }
-  
+
   const event = await Event.findById(req.params.id);
 
   if (!event) {
     return res.status(404).json({ message: 'Event not found' });
   }
 
+  const previousStatus = event.status;
   event.status = status;
   await event.save();
 
-  res.json({ message: `Event ${status} successfully.`, eventId: event._id, newStatus: status });
+  if (status !== previousStatus) {
+    const organizerId = event.organizer?._id || event.organizer;
+
+    if (organizerId) {
+      try {
+        const organizer = await User.findById(organizerId).select('email name organizationName');
+        const organizerEmail = organizer?.email;
+
+        if (organizerEmail) {
+          const organizerName = organizer?.name || organizer?.organizationName || 'Organizer';
+          const subject = `Event ${status.charAt(0).toUpperCase() + status.slice(1)}: ${event.title}`;
+          const htmlContent = buildStatusChangeEmailHtml({
+            organizerName,
+            eventTitle: event.title,
+            status,
+            remarks: remarks && remarks.trim() ? remarks.trim() : undefined,
+          });
+
+          sendNotificationEmail(organizerEmail, subject, htmlContent).catch((error) => {
+            console.error('Failed to queue event status notification email:', error);
+          });
+        } else {
+          console.error('Organizer email not found; notification email skipped.', { eventId: event._id });
+        }
+      } catch (error) {
+        console.error('Failed to fetch organizer for notification email:', error);
+      }
+    } else {
+      console.error('Organizer reference missing on event; notification email skipped.', { eventId: event._id });
+    }
+  }
+
+  res.json({
+    message: `Event ${status} successfully.`,
+    eventId: event._id,
+    newStatus: status,
+    previousStatus,
+  });
 });
 
 /**

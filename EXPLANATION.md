@@ -1,13 +1,16 @@
 # Nexus MERN Event Platform – Deep Dive
 
 ## Project Architecture
+
 - **Frontend (React + Vite)**: The client (`client/`) renders the event experience, handles route-based views, and interacts with the backend through the shared Axios instance (`src/api/axios.js`). It manages theme control, guest/organizer dashboards, ticket purchase flows, and orchestrates UI state using React hooks and context.
 - **Backend (Express + Node.js)**: The server (`server/`) exposes RESTful APIs, enforces authorization (`middleware/authMiddleware.js`), and implements domain logic via modular controllers (e.g., `controllers/organizerController.js`, `controllers/eventController.js`). Routes under `/api/*` marshal requests to the appropriate controllers.
 - **Database (MongoDB + Mongoose)**: MongoDB stores users, events, and tickets. Mongoose schemas (`server/models/*.js`) describe data structures and enforce relationships; tickets reference both users and events. Controllers use these models to persist and query domain entities.
 - **Workflow**: The frontend calls an endpoint (e.g., `/api/organizer/events`); Express route parses the request, controller executes business logic, uses Mongoose model to read/write the database, and returns JSON to the frontend. The frontend consumes the response to update UI state and feedback.
 
 ## Folder Structure
+
 ```
+
 NEXUS/
 ├── EXPLANATION.md             # (Added) Comprehensive walkthrough for final defense
 ├── organizer_prev.txt         # Historical notes, likely from prior iterations
@@ -48,6 +51,7 @@ NEXUS/
 ## Key Workflows
 
 ### 1. User Login (Guest/Organizer/Admin)
+
 1. **Frontend Component**: `client/src/components/SignIn.jsx` – renders login form, collects credentials, calls API.
 2. **API Service**: Uses `api.post('/auth/login', payload)` from `client/src/api/axios.js`.
 3. **Backend Route**: `server/routes/authRoutes.js` → `router.post('/login', loginUser)`.
@@ -55,6 +59,7 @@ NEXUS/
 5. **Model**: `server/models/User.js` – used via Mongoose to fetch user, compare hashed password.
 
 ### 2. Organizer Creates Event
+
 1. **Frontend Component**: `client/src/components/OrganizerCreateEvent.jsx` – handles form state, validates, submits to backend.
 2. **API Request**: `api.post('/organizer/events', payload)` with JWT header.
 3. **Backend Route**: `server/routes/organizerRoutes.js` → `router.route('/events').post(protect, organizer, createOrganizerEvent)`.
@@ -62,6 +67,7 @@ NEXUS/
 5. **Model**: `server/models/Event.js` – schema for events, storing registrationFee, capacity, tags, date/time.
 
 ### 3. Guest Purchases Ticket / RSVPs
+
 1. **Frontend Component**: `client/src/components/EventDetails.jsx` & `EventCheckoutModal.jsx` – shows event, opens checkout modal.
 2. **API Request**: `api.post('/tickets/purchase', payload)` inside checkout component.
 3. **Backend Route**: `server/routes/ticketRoutes.js` → `router.post('/purchase', protect, createTicket)`.
@@ -71,6 +77,7 @@ NEXUS/
 ## Complex Logic – Top 3 Functions Explained
 
 ### 1. `buildNotifications` (server/controllers/organizerController.js)
+
 ```javascript
 const buildNotifications = (events, readSet = new Set()) => {
   const notifications = [];
@@ -165,8 +172,11 @@ const buildNotifications = (events, readSet = new Set()) => {
     .filter((notification) => notification.createdAt)
     .sort((a, b) => b.createdAt - a.createdAt);
 };
+
 ```
+
 - **Purpose**: Generates organizer-facing notifications summarizing event lifecycle changes and attendance metrics.
+
 - Steps:
   1. Initializes `notifications` array and helper `pushNotification` to enforce ID uniqueness and read tracking.
   2. Iterates over each event to build base payload shared across notification types.
@@ -178,6 +188,7 @@ const buildNotifications = (events, readSet = new Set()) => {
 - Complexity arises from multiple event states, dynamic messaging, and merging read/unread state.
 
 ### 2. `fetchGuests` Hook (client/src/components/OrganizerEventView.jsx)
+
 ```javascript
 const fetchGuests = useCallback(async () => {
   setGuestLoading(true);
@@ -229,8 +240,11 @@ const fetchGuests = useCallback(async () => {
     setGuestLoading(false);
   }
 }, [id, navigate]);
+
 ```
+
 - **Purpose**: Organizer-side logic to pull RSVP data for a specific event and transform it into UI-friendly records.
+
 - Steps:
   1. Sets loading state and clears previous errors.
   2. Guards against missing event ID (e.g., route not ready).
@@ -243,6 +257,7 @@ const fetchGuests = useCallback(async () => {
 - Complexity lies in the branching for error handling, normalization of nested user references, and ensuring UI reacts gracefully.
 
 ### 3. `createOrganizerEvent` (server/controllers/organizerController.js)
+
 ```javascript
 const createOrganizerEvent = asyncHandler(async (req, res) => {
   const {
@@ -355,8 +370,11 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
     endTime: event.endTime,
   });
 });
+
 ```
+
 - **Purpose**: Validates and persists a new event submission from an organizer.
+
 - Steps:
   1. Destructures request payload.
   2. Validates required fields (title, description, date, location) and early-returns with 400 if missing.
@@ -371,6 +389,7 @@ const createOrganizerEvent = asyncHandler(async (req, res) => {
 - Complexity stems from numerous optional fields, type conversions, and cross-field validation.
 
 ## Defense Q&A
+
 1. **Q:** How does the frontend ensure theme consistency between guest and organizer views?
    **A:** `ThemeProvider` (`client/src/context/ThemeContext.jsx`) toggles `html.dark` based on stored preference; organizer components lock dark styles while guest components add light/dark Tailwind classes.
 

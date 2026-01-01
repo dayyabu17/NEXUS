@@ -74,7 +74,7 @@ const OrganizerCreateEvent = () => {
       <MotionSection className="pb-16" initial="hidden" animate="show" variants={containerVars}>
         <motion.header className="mb-10 space-y-3" variants={itemVars}>
           <p className="text-sm font-medium uppercase tracking-wide text-white/50">Create event</p>
-          <h1 className="text-4xl font-semibold text-white">Design a new experience</h1>
+          <h1 className="text-4xl font-semibold text-white">Create a new event</h1>
           <p className="text-base text-white/60">
             Provide the details, pick the perfect time, and submit for approval. Newly created events stay
             pending until an admin reviews them.
