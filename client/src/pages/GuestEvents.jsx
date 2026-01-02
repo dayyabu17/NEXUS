@@ -8,6 +8,7 @@ const GuestEvents = () => {
   const [events, setEvents] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState('All');
+  const [timelineFilter, setTimelineFilter] = useState('upcoming');
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
@@ -94,11 +95,32 @@ const GuestEvents = () => {
   }, [events, activeCategory]);
 
   const filteredEvents = useMemo(() => {
-    if (activeCategory === 'All') {
-      return events;
+    const categoryFiltered =
+      activeCategory === 'All'
+        ? events
+        : events.filter((event) => event?.category === activeCategory);
+
+    if (timelineFilter === 'all') {
+      return categoryFiltered;
     }
-    return events.filter((event) => event?.category === activeCategory);
-  }, [events, activeCategory]);
+
+    const now = Date.now();
+
+    return categoryFiltered.filter((event) => {
+      const dateValue = event?.date ? new Date(event.date).getTime() : Number.NaN;
+      if (Number.isNaN(dateValue)) {
+        return timelineFilter === 'upcoming';
+      }
+      return timelineFilter === 'upcoming' ? dateValue >= now : dateValue < now;
+    });
+  }, [events, activeCategory, timelineFilter]);
+
+  const timelineLabel =
+    timelineFilter === 'all'
+      ? 'events'
+      : timelineFilter === 'upcoming'
+      ? 'upcoming events'
+      : 'past events';
 
   return (
     <GuestLayout>
@@ -133,12 +155,31 @@ const GuestEvents = () => {
                 })}
               </Motion.div>
             </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              {[{ value: 'upcoming', label: 'Upcoming' }, { value: 'past', label: 'Past' }, { value: 'all', label: 'All' }].map(({ value, label }) => {
+                const isActive = timelineFilter === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setTimelineFilter(value)}
+                    className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+                      isActive
+                        ? 'border border-blue-600 bg-blue-600 text-white shadow-lg shadow-blue-500/20 dark:border-white/20 dark:bg-white/20 dark:text-white'
+                        : 'border border-slate-200 bg-white text-slate-600 hover:border-slate-300 hover:text-slate-900 dark:border-white/10 dark:bg-[#151b27] dark:text-white/65 dark:hover:border-white/25 dark:hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
         <section className="space-y-6">
             <div className="flex items-center justify-between">
               <h3 className="text-2xl font-semibold text-slate-900 dark:text-white">Discover Experiences</h3>
-              <p className="text-sm text-slate-600 dark:text-white/55">Showing {filteredEvents.length} events</p>
+              <p className="text-sm text-slate-600 dark:text-white/55">Showing {filteredEvents.length} {timelineLabel}</p>
             </div>
 
             <Motion.div layout className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
