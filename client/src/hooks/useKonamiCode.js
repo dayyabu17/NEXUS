@@ -14,6 +14,8 @@ const KONAMI_SEQUENCE = [
   'a',
 ];
 
+// this was made for experimentation
+
 const useKonamiCode = () => {
   const [triggered, setTriggered] = useState(false);
   const sequenceIndexRef = useRef(0);

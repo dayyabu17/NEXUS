@@ -5,7 +5,7 @@ import AuthLayout from '../../layouts/AuthLayout';
 import api from '../../api/axios';
 
 const SignUp = () => {
-  // 'guest' or 'organizer'
+  // 'student' or 'organizer'
   const [userType, setUserType] = useState('student');
   const [formData, setFormData] = useState({
     name: '',
@@ -86,7 +86,7 @@ const SignUp = () => {
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            Guest
+            Student
           </button>
           <button
             type="button"
