@@ -68,7 +68,7 @@ const OrganizerEventOverview = ({ event }) => {
             <img
               src={event.imageUrl}
               alt={event.title}
-              className="w-full rounded-3xl border border-white/10 object-cover"
+              className="mx-auto h-[500px] w-[500px] max-w-full rounded-3xl border border-white/10 object-cover"
             />
           )}
         </aside>

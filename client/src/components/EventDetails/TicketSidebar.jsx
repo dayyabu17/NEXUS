@@ -7,8 +7,12 @@ const TicketSidebar = ({ eventData, ticketStatus, theme, brandStyles, onOpenChec
   const registrationFee = eventData?.registrationFee;
 
   const registrationLabel = useMemo(() => {
-    if (typeof registrationFee === 'number' && registrationFee > 0) {
-      return `$${registrationFee.toFixed(2)}`;
+    const feeValue = Number(registrationFee);
+    if (Number.isFinite(feeValue) && feeValue > 0) {
+      return `₦${feeValue.toLocaleString('en-NG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      })}`;
     }
     return 'Free';
   }, [registrationFee]);

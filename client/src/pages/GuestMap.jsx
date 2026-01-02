@@ -44,6 +44,10 @@ const FlyToBounds = ({ markers }) => {
   const markersRef = useRef(markers);
 
   useEffect(() => {
+    if (mapInstance) {
+      mapInstance.invalidateSize();
+    }
+
     const prev = markersRef.current;
     markersRef.current = markers;
 
@@ -53,6 +57,56 @@ const FlyToBounds = ({ markers }) => {
 
     fitBoundsToMarkers(mapInstance, markers);
   }, [mapInstance, markers]);
+
+  return null;
+};
+
+const MapEvents = () => {
+  const mapInstance = useMap();
+
+  useEffect(() => {
+    if (!mapInstance || typeof ResizeObserver === 'undefined') {
+      return undefined;
+    }
+
+    const container = mapInstance.getContainer();
+    if (!container) {
+      return undefined;
+    }
+
+    let frameId = window.requestAnimationFrame(() => {
+      mapInstance.invalidateSize();
+    });
+
+    const observer = new ResizeObserver((entries) => {
+      const entry = entries?.[0];
+      if (!entry) {
+        return;
+      }
+
+      const { width, height } = entry.contentRect;
+      if (width === 0 || height === 0) {
+        return;
+      }
+
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+
+      frameId = window.requestAnimationFrame(() => {
+        mapInstance.invalidateSize();
+      });
+    });
+
+    observer.observe(container);
+
+    return () => {
+      observer.disconnect();
+      if (frameId) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
+  }, [mapInstance]);
 
   return null;
 };
@@ -225,15 +279,24 @@ const GuestMap = () => {
 
   useEffect(() => {
     if (!map) {
-      return;
+      return undefined;
     }
-    const timeout = window.setTimeout(() => {
+
+    map.invalidateSize();
+
+    const timeout100 = window.setTimeout(() => {
       map.invalidateSize();
     }, 100);
+
+    const timeout400 = window.setTimeout(() => {
+      map.invalidateSize();
+    }, 400);
+
     return () => {
-      window.clearTimeout(timeout);
+      window.clearTimeout(timeout100);
+      window.clearTimeout(timeout400);
     };
-  }, [map]);
+  }, [map, isLoading]);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-300 dark:bg-slate-950 dark:text-white">
@@ -272,10 +335,11 @@ const GuestMap = () => {
               center={userLocation ? [userLocation.lat, userLocation.lng] : DEFAULT_CENTER}
               zoom={DEFAULT_ZOOM}
               scrollWheelZoom
-              className="w-full bg-slate-200 grayscale-0 dark:bg-slate-900 dark:invert dark:hue-rotate-180 dark:brightness-95"
+              className="w-full bg-slate-200 grayscale-0 dark:bg-slate-900"
               style={{ height: MAP_HEIGHT }}
               ref={setMap}
             >
+              <MapEvents />
               <TileLayer
                 url={OSM_TILE_URL}
                 attribution={TILE_ATTRIBUTION}
