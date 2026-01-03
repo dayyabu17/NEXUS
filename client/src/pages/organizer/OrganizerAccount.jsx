@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import OrganizerLayoutDark from '../../layouts/OrganizerLayoutDark';
 import AvatarSection from '../../components/OrganizerAccount/AvatarSection';
+import PayoutSettings from '../../components/OrganizerAccount/PayoutSettings';
 import ProfileForm from '../../components/OrganizerAccount/ProfileForm';
 import useOrganizerAccount from '../../hooks/organizer/useOrganizerAccount';
 
@@ -62,6 +63,10 @@ const OrganizerAccountPage = () => {
             onSubmit={handleProfileSubmit}
             onFieldChange={handleProfileFieldChange}
           />
+        </div>
+
+        <div className="mt-12">
+          <PayoutSettings />
         </div>
       </MotionSection>
     </OrganizerLayoutDark>

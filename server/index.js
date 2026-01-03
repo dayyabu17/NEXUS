@@ -11,6 +11,7 @@ const organizerRoutes = require('./routes/organizerRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
+const payoutRoutes = require('./routes/payoutRoutes');
 
 const app = express();
 
@@ -35,6 +36,7 @@ app.use('/api/organizer', organizerRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/tickets', ticketRoutes);
+app.use('/api', payoutRoutes);
 
 // -----------------------------------------
 // SERVE STATIC ASSETS IN PRODUCTION
