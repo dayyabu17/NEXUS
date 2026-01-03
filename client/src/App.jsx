@@ -6,6 +6,7 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 
 const SignIn = lazy(() => import('./pages/Auth/SignIn'));
 const SignUp = lazy(() => import('./pages/Auth/SignUp'));
+const LandingPage = lazy(() => import('./pages/LandingPage'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -71,6 +72,7 @@ function App() {
     // 3. Wrap Routes in Suspense
     <Suspense fallback={<LoadingFallback />}>
       <Routes>
+        <Route path="/landingpage" element={<LandingPage />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
         
