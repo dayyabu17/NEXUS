@@ -8,15 +8,17 @@ import EventGallery from '../components/landing/EventGallery';
 
 const LandingPage = () => (
   <PublicLayout>
-    <div className="mx-auto flex max-w-6xl flex-col gap-24 px-6 pb-24">
+    <>
       <HeroSection />
-      <TrustBadgeStrip />
-      <ProcessSteps />
-      <section id="features" className="scroll-mt-24">
-        <FeatureShowcase />
-      </section>
-      <EventGallery />
-    </div>
+      <div className="mx-auto flex max-w-7xl flex-col gap-24 px-6 pb-24">
+        <TrustBadgeStrip />
+        <ProcessSteps />
+        <section id="features" className="scroll-mt-24">
+          <FeatureShowcase />
+        </section>
+        <EventGallery />
+      </div>
+    </>
   </PublicLayout>
 );
 

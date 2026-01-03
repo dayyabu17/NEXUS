@@ -1,63 +1,82 @@
 import React from 'react';
-import { motion } from 'framer-motion';
-import { Compass, Ticket, QrCode } from 'lucide-react';
-import { fadeUp } from './motionPresets';
 
 const steps = [
   {
     title: 'Discover',
-    description: 'Browse events tailored to you.',
-    Icon: Compass,
+    description: 'Browse events tailored to your interests across campus.',
+    Icon: () => (
+      <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <path strokeWidth="1.6" d="m11 3 1.2 2.9L15 7l-2 2.2L13.4 12 11 10.7 8.6 12 9 9.2 7 7l2.8-.1L11 3z" />
+        <circle strokeWidth="1.6" cx="11" cy="11" r="7" />
+      </svg>
+    ),
   },
   {
     title: 'Book',
-    description: 'Secure your spot digitally.',
-    Icon: Ticket,
+    description: 'Secure your spot instantly with a digital ticket.',
+    Icon: () => (
+      <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <rect strokeWidth="1.6" x="4" y="5" width="16" height="14" rx="2" />
+        <path strokeWidth="1.6" d="M4 9h16M10 13l2 2 4-4" />
+      </svg>
+    ),
   },
   {
     title: 'Check-in',
-    description: 'Scan and join the fun.',
-    Icon: QrCode,
+    description: 'Scan your QR code at the venue and join the fun.',
+    Icon: () => (
+      <svg className="h-8 w-8 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
+        <path strokeWidth="1.6" d="M3 4h18" />
+        <path strokeWidth="1.6" d="M3 20h18" />
+        <rect strokeWidth="1.6" x="7" y="8" width="4" height="4" rx="1" />
+        <rect strokeWidth="1.6" x="13" y="8" width="4" height="4" rx="1" />
+        <path strokeWidth="1.6" d="M7 16h4" />
+        <path strokeWidth="1.6" d="M13 16h4" />
+      </svg>
+    ),
   },
 ];
 
-const MotionSection = motion.section;
-const MotionDiv = motion.div;
-
 const ProcessSteps = () => (
-  <MotionSection
-    initial="hidden"
-    whileInView="visible"
-    viewport={{ once: true, amount: 0.3 }}
-    variants={fadeUp}
-    className="relative rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-10 shadow-lg shadow-slate-200/40 dark:border-white/10 dark:from-[#10192d] dark:to-[#0f1729]"
-  >
-    <div className="mx-auto max-w-4xl text-center">
-      <p className="text-xs font-semibold uppercase tracking-[0.4em] text-slate-500 dark:text-slate-300">
-        How Nexus works
+  <section className="mx-auto flex w-full max-w-5xl flex-col items-center gap-12">
+    <div className="space-y-4 text-center">
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">How Telesite Works</h2>
+      <p className="text-base text-slate-600 dark:text-slate-400">
+        Follow the simple journey to plan and enjoy unforgettable experiences.
       </p>
-      <h2 className="mt-3 text-3xl font-semibold tracking-tight">From discovery to check-in in minutes</h2>
     </div>
-    <div className="relative mt-12 flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
-      <div className="pointer-events-none absolute left-12 right-12 top-[52%] hidden border-t border-dashed border-slate-300 dark:border-white/20 md:block" />
-      {steps.map(({ title, description, Icon }) => (
-        <MotionDiv
-          key={title}
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
-          transition={{ duration: 0.4 }}
-          className="relative flex flex-1 flex-col items-center gap-4 rounded-2xl border border-transparent bg-white/80 px-6 py-8 text-center shadow-sm shadow-slate-200/40 backdrop-blur dark:bg-white/5 dark:shadow-none"
-        >
-          <div className="rounded-full border border-emerald-200 bg-emerald-50 p-4 text-emerald-600 shadow dark:border-emerald-500/30 dark:bg-emerald-500/15 dark:text-emerald-200">
-            <Icon className="h-6 w-6" aria-hidden />
+
+    <div className="relative w-full">
+      <svg
+        className="pointer-events-none absolute top-8 left-0 h-20 w-full -z-0"
+        viewBox="0 0 1200 200"
+        preserveAspectRatio="none"
+      >
+        <path
+          d="M120 140 C320 40 520 40 720 140 S1080 240 1080 120"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeDasharray="6 6"
+          className="stroke-slate-400 dark:stroke-slate-700"
+        />
+      </svg>
+
+      <div className="relative z-10 flex flex-col items-center gap-12 sm:flex-row sm:justify-between">
+        {steps.map(({ title, description, Icon }) => (
+          <div key={title} className="flex w-full max-w-[220px] flex-col items-center gap-6 text-center">
+            <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600">
+              <Icon />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
+              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{description}</p>
+            </div>
           </div>
-          <h3 className="text-lg font-semibold">{title}</h3>
-          <p className="text-sm text-slate-600 dark:text-slate-300">{description}</p>
-        </MotionDiv>
-      ))}
+        ))}
+      </div>
     </div>
-  </MotionSection>
+  </section>
 );
 
 export default ProcessSteps;
