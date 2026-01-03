@@ -39,8 +39,28 @@ const loginUser = asyncHandler(async (req, res) => {
  * @returns {void}
  */
 const registerUserHandler = asyncHandler(async (req, res) => {
+  const {
+    name,
+    email,
+    password,
+    role,
+    organization,
+    phoneNumber,
+    regNo,
+    address,
+  } = req.body || {};
+
   try {
-    await registerUser(req.body || {});
+    await registerUser({
+      name,
+      email,
+      password,
+      role,
+      organization,
+      phoneNumber,
+      regNo,
+      address,
+    });
     res.status(201).json({ message: 'Registration successful. Please log in.' });
   } catch (error) {
     const statusCode = error.statusCode || 500;

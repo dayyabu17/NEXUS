@@ -10,6 +10,9 @@ const SignUp = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phoneNumber: '',
+    regNo: '',
+    address: '',
     password: '',
     confirmPassword: '',
     organization: '',
@@ -18,6 +21,7 @@ const SignUp = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
   const isOrganizer = userType === 'organizer';
+  const isStudent = userType === 'student';
   const MotionContainer = motion.div;
 
   const handleChange = (event) => {
@@ -37,15 +41,31 @@ const SignUp = () => {
       return;
     }
 
+    if (!formData.phoneNumber.trim()) {
+      setError('Phone number is required.');
+      return;
+    }
+
+    if (isStudent && (!formData.regNo.trim() || !formData.address.trim())) {
+      setError('Registration number and address are required for students.');
+      return;
+    }
+
     const payload = {
       name: formData.name.trim(),
       email: formData.email.trim(),
       password: formData.password,
       role: userType,
+      phoneNumber: formData.phoneNumber.trim(),
     };
 
     if (isOrganizer && formData.organization.trim()) {
       payload.organization = formData.organization.trim();
+    }
+
+    if (isStudent) {
+      payload.regNo = formData.regNo.trim();
+      payload.address = formData.address.trim();
     }
 
     setLoading(true);
@@ -118,6 +138,14 @@ const SignUp = () => {
             onChange={handleChange}
             className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
           />
+          <input
+            type="tel"
+            placeholder="Enter your phone number"
+            name="phoneNumber"
+            value={formData.phoneNumber}
+            onChange={handleChange}
+            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+          />
 
           <AnimatePresence initial={false}>
             {isOrganizer && (
@@ -136,6 +164,37 @@ const SignUp = () => {
                   onChange={handleChange}
                   className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
                 />
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          <AnimatePresence initial={false}>
+            {isStudent && (
+              <motion.div
+                initial={{ opacity: 0, height: 0, marginTop: 0 }}
+                animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
+                exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                transition={{ type: 'spring', bounce: 0.5, duration: 0.6 }}
+                style={{ overflow: 'hidden' }}
+              >
+                <div className="flex flex-col gap-4">
+                  <input
+                    type="text"
+                    placeholder="Enter your registration number"
+                    name="regNo"
+                    value={formData.regNo}
+                    onChange={handleChange}
+                    className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                  />
+                  <input
+                    type="text"
+                    placeholder="Enter your address"
+                    name="address"
+                    value={formData.address}
+                    onChange={handleChange}
+                    className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                  />
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

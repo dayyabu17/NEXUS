@@ -56,8 +56,17 @@ const authenticateUser = async ({ email, password }) => {
   return { profile, token };
 };
 
-const registerUser = async ({ name, email, password, role, organization }) => {
-  if (!name || !email || !password || !role) {
+const registerUser = async ({
+  name,
+  email,
+  password,
+  role,
+  organization,
+  phoneNumber,
+  regNo,
+  address,
+}) => {
+  if (!name || !email || !password || !role || !phoneNumber) {
     throw createHttpError(400, 'Missing required registration fields');
   }
 
@@ -65,7 +74,21 @@ const registerUser = async ({ name, email, password, role, organization }) => {
     throw createHttpError(400, 'Invalid role selection');
   }
 
+  const normalizedName = name.trim();
   const normalizedEmail = email.trim().toLowerCase();
+  const normalizedPhone = phoneNumber.trim();
+  const normalizedOrganization = organization ? organization.trim() : '';
+  const normalizedRegNo = regNo ? regNo.trim() : '';
+  const normalizedAddress = address ? address.trim() : '';
+
+  if (!normalizedName || !normalizedEmail || !normalizedPhone) {
+    throw createHttpError(400, 'Missing required registration fields');
+  }
+
+  if (role === 'student' && (!normalizedRegNo || !normalizedAddress)) {
+    throw createHttpError(400, 'Registration number and address are required for students');
+  }
+
   const existingUser = await User.findOne({ email: normalizedEmail });
 
   if (existingUser) {
@@ -76,14 +99,20 @@ const registerUser = async ({ name, email, password, role, organization }) => {
   const hashedPassword = await bcrypt.hash(password, salt);
 
   const payload = {
-    name: name.trim(),
+    name: normalizedName,
     email: normalizedEmail,
     password: hashedPassword,
     role,
+    phoneNumber: normalizedPhone,
   };
 
-  if (role === 'organizer' && organization) {
-    payload.organizationName = organization.trim();
+  if (role === 'organizer' && normalizedOrganization) {
+    payload.organizationName = normalizedOrganization;
+  }
+
+  if (role === 'student') {
+    payload.regNo = normalizedRegNo;
+    payload.address = normalizedAddress;
   }
 
   await User.create(payload);

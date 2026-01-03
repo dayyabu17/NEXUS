@@ -40,9 +40,25 @@ const userSchema = new mongoose.Schema({
   organizationName: {
     type: String, // Only required if role is 'organizer'
   },
+  phoneNumber: {
+    type: String,
+    required: true,
+  },
+  regNo: {
+    type: String,
+    required: function requiredStudentRegNo() {
+      return this.role === 'student';
+    },
+  },
+  address: {
+    type: String,
+    required: function requiredStudentAddress() {
+      return this.role === 'student';
+    },
+  },
   createdAt: {
     type: Date,
-    default: Date.now,
+    default: Date.now ,
   },
   profilePicture: { type: String, default: '/images/default-avatar.jpeg' },
   notificationReads: {
