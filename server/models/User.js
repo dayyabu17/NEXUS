@@ -60,7 +60,9 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now ,
   },
-  profilePicture: { type: String, default: '/images/default-avatar.jpeg' },
+  profilePicture: { 
+    type: String, default: '/images/default-avatar.jpeg' 
+   },
   notificationReads: {
     type: [String],
     default: [],
