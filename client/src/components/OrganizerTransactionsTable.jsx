@@ -4,17 +4,25 @@ import { motion } from 'framer-motion';
 const MotionDiv = motion.div;
 const MOBILE_QUERY = '(max-width: 767px)';
 
+const STATUS_VARIANTS = {
+  settled: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200',
+  paid: 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/40 dark:bg-emerald-500/15 dark:text-emerald-200',
+  pending: 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-400/40 dark:bg-amber-500/15 dark:text-amber-200',
+  processing: 'border-sky-200 bg-sky-50 text-sky-700 dark:border-sky-400/40 dark:bg-sky-500/15 dark:text-sky-200',
+  refunded: 'border-indigo-200 bg-indigo-50 text-indigo-700 dark:border-indigo-400/40 dark:bg-indigo-500/15 dark:text-indigo-200',
+  failed: 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-400/40 dark:bg-rose-500/15 dark:text-rose-200',
+};
+
 const StatusBadge = ({ status }) => {
-  const isSettled = status === 'Settled';
+  const normalized = (status || '').toLowerCase();
+  const variantClassName = STATUS_VARIANTS[normalized] || STATUS_VARIANTS.pending;
+  const displayStatus = status || 'Pending';
+
   return (
     <span
-      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
-        isSettled
-          ? 'border border-emerald-400/40 bg-emerald-500/15 text-emerald-200'
-          : 'border border-amber-400/40 bg-amber-500/15 text-amber-200'
-      }`}
+      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] transition ${variantClassName}`}
     >
-      {status}
+      {displayStatus}
     </span>
   );
 };
@@ -77,6 +85,9 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
         ? 'mt-4 flex justify-center gap-2 md:hidden'
         : 'mt-6 hidden justify-end gap-2 md:flex';
 
+    const baseButtonClasses =
+      'min-w-[56px] rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500';
+
     return (
       <div className={containerClasses} aria-label="Transaction pagination">
         {Array.from({ length: totalPages }, (_, index) => {
@@ -89,10 +100,10 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
               type="button"
               key={`transactions-page-${pageNumber}`}
               onClick={() => setCurrentPage(pageNumber)}
-              className={`min-w-[56px] rounded-full border px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+              className={`${baseButtonClasses} ${
                 isActive
-                  ? 'border-white/60 bg-white/15 text-white'
-                  : 'border-white/15 bg-transparent text-white/55 hover:border-white/35 hover:text-white'
+                  ? 'border-slate-900 bg-slate-900 text-white dark:border-white/60 dark:bg-white/15 dark:text-white'
+                  : 'border-slate-200 bg-white text-slate-500 hover:border-slate-300 hover:text-slate-800 dark:border-white/15 dark:bg-transparent dark:text-white/60 dark:hover:border-white/30 dark:hover:text-white'
               }`}
               aria-current={isActive ? 'page' : undefined}
             >
@@ -107,7 +118,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
   const renderRows = () => {
     if (loading) {
       return (
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-white/40">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/45">
           Loading transactions…
         </div>
       );
@@ -115,7 +126,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
 
     if (!transactions.length) {
       return (
-        <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-6 text-center text-sm text-white/40">
+        <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500 dark:border-white/10 dark:bg-white/5 dark:text-white/45">
           No transactions yet.
         </div>
       );
@@ -137,29 +148,29 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
           return (
             <div
               key={`mobile-transaction-${transaction.id}`}
-              className="rounded-3xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-white/80"
+              className="rounded-3xl border border-slate-200 bg-white px-4 py-5 text-sm text-slate-600 shadow-sm dark:border-white/10 dark:bg-slate-950/50 dark:text-white/70"
             >
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-white/45">Event</p>
-                  <p className="mt-1 text-base font-semibold text-white">{transaction.event || '—'}</p>
+                  <p className="text-xs uppercase tracking-[0.28em] text-slate-400 dark:text-white/45">Event</p>
+                  <p className="mt-1 text-base font-semibold text-slate-900 dark:text-white">{transaction.event || '—'}</p>
                 </div>
                 <StatusBadge status={transaction.status} />
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-4 text-xs text-white/60">
+              <div className="mt-4 grid grid-cols-2 gap-4 text-xs text-slate-500 dark:text-white/60">
                 <div>
-                  <p className="uppercase tracking-[0.2em] text-white/35">Buyer</p>
-                  <p className="mt-1 text-sm text-white/80">{transaction.buyer || '—'}</p>
+                  <p className="uppercase tracking-[0.2em] text-slate-400 dark:text-white/40">Buyer</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-white/70">{transaction.buyer || '—'}</p>
                 </div>
                 <div>
-                  <p className="uppercase tracking-[0.2em] text-white/35">Amount</p>
-                  <p className="mt-1 text-sm font-semibold text-white">
+                  <p className="uppercase tracking-[0.2em] text-slate-400 dark:text-white/40">Amount</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
                     {currencyFormatter.format(transaction.amount)}
                   </p>
                 </div>
                 <div>
-                  <p className="uppercase tracking-[0.2em] text-white/35">Date</p>
-                  <p className="mt-1 text-sm text-white/80">{displayDate}</p>
+                  <p className="uppercase tracking-[0.2em] text-slate-400 dark:text-white/40">Date</p>
+                  <p className="mt-1 text-sm text-slate-600 dark:text-white/70">{displayDate}</p>
                 </div>
               </div>
             </div>
@@ -173,7 +184,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
     if (loading) {
       return (
         <tr>
-          <td colSpan={5} className="py-10 text-center text-sm text-white/40">
+          <td colSpan={5} className="py-10 text-center text-sm text-slate-500 dark:text-white/45">
             Loading transactions…
           </td>
         </tr>
@@ -183,7 +194,7 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
     if (!transactions.length) {
       return (
         <tr>
-          <td colSpan={5} className="py-10 text-center text-sm text-white/40">
+          <td colSpan={5} className="py-10 text-center text-sm text-slate-500 dark:text-white/45">
             No transactions yet.
           </td>
         </tr>
@@ -204,11 +215,11 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
       return (
         <tr
           key={transaction.id}
-          className="border-t border-white/5 hover:bg-white/5"
+          className="border-t border-slate-100 text-slate-600 transition hover:bg-slate-50 dark:border-white/5 dark:text-white/70 dark:hover:bg-white/5"
         >
-          <td className="py-4 pr-6 text-white">{transaction.event || '—'}</td>
+          <td className="py-4 pr-6 font-medium text-slate-900 dark:text-white">{transaction.event || '—'}</td>
           <td className="py-4 pr-6">{transaction.buyer || '—'}</td>
-          <td className="py-4 pr-6 text-white">{currencyFormatter.format(transaction.amount)}</td>
+          <td className="py-4 pr-6 font-semibold text-slate-900 dark:text-white">{currencyFormatter.format(transaction.amount)}</td>
           <td className="py-4 pr-6">{displayDate}</td>
           <td className="py-4"><StatusBadge status={transaction.status} /></td>
         </tr>
@@ -222,16 +233,16 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
       transition={{ duration: 0.55, ease: [0.25, 0.8, 0.5, 1] }}
-      className="mt-10 rounded-3xl border border-slate-800 bg-slate-950/70 p-5 shadow-[0_30px_90px_rgba(5,10,35,0.55)] sm:p-6"
+      className="mt-10 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition dark:border-slate-800 dark:bg-slate-950/70 dark:shadow-[0_30px_90px_rgba(5,10,35,0.55)] sm:p-6"
     >
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/45">Recent transactions</p>
-          <h2 className="mt-2 text-xl font-semibold text-white">Latest ticket settlements</h2>
+          <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-white/45">Recent transactions</p>
+          <h2 className="mt-2 text-xl font-semibold text-slate-900 dark:text-white">Latest ticket settlements</h2>
         </div>
         <button
           type="button"
-          className="hidden text-xs font-semibold uppercase tracking-[0.28em] text-white/40 transition hover:text-white/80 md:inline-flex"
+          className="hidden text-xs font-semibold uppercase tracking-[0.28em] text-slate-500 transition hover:text-slate-800 dark:text-white/50 dark:hover:text-white/80 md:inline-flex"
         >
           Export CSV
         </button>
@@ -243,9 +254,9 @@ const OrganizerTransactionsTable = ({ transactions, loading, currencyFormatter }
       </div>
 
       <div className="mt-6 hidden overflow-x-auto md:block">
-        <table className="min-w-full table-auto text-sm text-white/70">
+        <table className="min-w-full table-auto text-sm text-slate-600 dark:text-white/70">
           <thead>
-            <tr className="text-left text-xs uppercase tracking-[0.35em] text-white/40">
+            <tr className="text-left text-xs uppercase tracking-[0.35em] text-slate-400 dark:text-white/45">
               <th className="py-3 pr-6">Event</th>
               <th className="py-3 pr-6">Buyer</th>
               <th className="py-3 pr-6">Amount</th>
