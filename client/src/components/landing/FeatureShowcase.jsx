@@ -28,22 +28,24 @@ const FeatureShowcase = () => (
         transition={{ duration: 0.5 }}
         className="w-full max-w-2xl"
       >
-        <div className="relative h-auto w-full rounded-xl">
-          <img
-            src="/images/organizer-earnings.png"
-            alt="Organizer earnings dashboard"
-            className="relative z-0 h-auto w-full rounded-xl border border-slate-800 shadow-2xl"
-          />
-          <img
-            src="/images/organizer-feedback.png"
-            alt="Organizer feedback panel"
-            className="absolute -bottom-6 -left-4 z-20 w-48 rounded-lg border border-slate-700 shadow-2xl -rotate-6"
-          />
-          <img
-            src="/images/organizer-guest.png"
-            alt="Organizer guest list"
-            className="absolute -top-6 -right-4 z-10 w-40 rounded-lg border border-slate-700 shadow-2xl rotate-6"
-          />
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-4 backdrop-blur-sm">
+          <div className="grid w-full grid-cols-2 gap-4">
+            <img
+              src="/images/organizer-earnings.png"
+              alt="Organizer earnings dashboard"
+              className="col-span-2 h-auto w-full rounded-xl border border-slate-800 shadow-lg"
+            />
+            <img
+              src="/images/organizer-feedback.png"
+              alt="Organizer feedback panel"
+              className="h-full w-full rounded-xl border border-slate-800 object-cover object-top shadow-lg"
+            />
+            <img
+              src="/images/organizer-guest.png"
+              alt="Organizer guest list"
+              className="h-full w-full rounded-xl border border-slate-800 object-cover object-top shadow-lg"
+            />
+          </div>
         </div>
       </MotionDiv>
     </div>
