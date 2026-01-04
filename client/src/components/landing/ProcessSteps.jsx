@@ -40,7 +40,7 @@ const steps = [
 const ProcessSteps = () => (
   <section className="mx-auto flex w-full max-w-5xl flex-col items-center gap-12">
     <div className="space-y-4 text-center">
-      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">How Telesite Works</h2>
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">How Nexus Works</h2>
       <p className="text-base text-slate-600 dark:text-slate-400">
         Follow the simple journey to plan and enjoy unforgettable experiences.
       </p>

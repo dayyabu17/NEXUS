@@ -9,6 +9,7 @@ export default {
   theme: {
     extend: {
       colors: {
+        primary: '#1A73E8',
         'nexus-primary': '#1A73E8', 
         'nexus-accent': '#FFD700', 
         'nexus-dark': '#000000',   

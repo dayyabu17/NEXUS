@@ -7,7 +7,7 @@ const MotionDiv = motion.div;
 const MotionH1 = motion.h1;
 
 const HeroSection = () => (
-  <div className="relative w-full overflow-hidden bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/20 via-slate-950 to-slate-950">
+  <div className="relative w-full overflow-hidden bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-slate-950 to-slate-950">
     <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" aria-hidden />
 
     <MotionSection
@@ -18,14 +18,14 @@ const HeroSection = () => (
     >
       <div className="space-y-6">
         <MotionH1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-        A campus that connects. A community that grows.
-      </MotionH1>
+          A campus that <span className="text-primary">connects</span>. A community that <span className="text-primary">grows</span>.
+        </MotionH1>
         <p className="mx-auto max-w-2xl text-lg text-slate-300">
           The central hub for every event, workshop, and gathering at Bayero University Kano.
         </p>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-full bg-emerald-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-emerald-500/30 transition hover:bg-emerald-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-300"
+          className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
         >
           Get Started
         </button>
