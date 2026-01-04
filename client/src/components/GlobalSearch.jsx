@@ -63,7 +63,7 @@ const formatEventMeta = (value) => {
 const QuickLinkIcon = ({ icon }) => {
   if (React.isValidElement(icon)) {
     return (
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white" aria-hidden>
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white" aria-hidden>
         {React.cloneElement(icon, {
           className: `${icon.props.className || ''} h-5 w-5`.trim(),
         })}
@@ -74,7 +74,7 @@ const QuickLinkIcon = ({ icon }) => {
   if (typeof icon === 'function') {
     const IconComponent = icon;
     return (
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-white" aria-hidden>
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-slate-600 dark:bg-white/10 dark:text-white" aria-hidden>
         <IconComponent className="h-5 w-5" />
       </span>
     );
@@ -82,14 +82,14 @@ const QuickLinkIcon = ({ icon }) => {
 
   if (typeof icon === 'string') {
     return (
-      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-lg" aria-hidden>
+      <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 dark:bg-white/10 dark:text-white" aria-hidden>
         {icon}
       </span>
     );
   }
 
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 text-lg" aria-hidden>
+    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-lg text-slate-600 dark:bg-white/10 dark:text-white" aria-hidden>
       ★
     </span>
   );
@@ -361,7 +361,7 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
       onClick={handleBackdropClick}
     >
       <div
-        className={`w-full max-w-2xl rounded-3xl border border-white/10 bg-[rgba(15,19,29,0.92)] px-6 py-6 text-white shadow-[0_30px_120px_rgba(4,8,18,0.7)] transition-all duration-300 ease-out ${
+        className={`w-full max-w-2xl rounded-3xl border border-slate-200 bg-white px-6 py-6 text-slate-700 shadow-2xl transition-all duration-300 ease-out dark:border-white/10 dark:bg-[rgba(15,19,29,0.92)] dark:text-white dark:shadow-[0_30px_120px_rgba(4,8,18,0.7)] ${
           isVisible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'
         }`}
       >
@@ -371,12 +371,12 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search events, categories, or tags..."
-            className="w-full rounded-2xl border border-white/15 bg-[rgba(20,24,34,0.85)] px-4 py-3 text-base text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
+            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/15 dark:bg-[rgba(20,24,34,0.85)] dark:text-white dark:placeholder:text-white/40 dark:focus:border-white/35"
           />
           <button
             type="button"
             onClick={requestClose}
-            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-white/15 px-3 py-1 text-xs text-white/70 transition hover:border-white/35 hover:text-white"
+            className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full border border-slate-200 bg-slate-200 px-3 py-1 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:text-slate-800 dark:border-white/15 dark:bg-transparent dark:text-white/70 dark:hover:border-white/35 dark:hover:text-white"
           >
             Esc
           </button>
@@ -385,7 +385,7 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
         <div className="mt-6 space-y-6">
           {quickLinks.length > 0 && (
             <section>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-white/45">
                 Shortcuts
               </h3>
               <div className="mt-3 flex flex-col gap-2">
@@ -394,13 +394,15 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
                     key={link.title}
                     type="button"
                     onClick={() => handleQuickLinkClick(link)}
-                    className="flex items-center justify-between rounded-2xl border border-white/10 bg-[rgba(28,33,44,0.85)] px-4 py-3 text-sm font-medium text-white transition hover:border-white/25 hover:bg-[rgba(35,40,52,0.9)]"
+                    className="flex items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-white/10 dark:bg-[rgba(28,33,44,0.85)] dark:text-white dark:hover:border-white/25 dark:hover:bg-[rgba(35,40,52,0.9)]"
                   >
                     <span className="flex items-center gap-3">
                       <QuickLinkIcon icon={link.icon} />
                       {link.title}
                     </span>
-                    <span className="text-xs text-white/45">Enter</span>
+                    <span className="rounded-md bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-400">
+                      Enter
+                    </span>
                   </button>
                 ))}
               </div>
@@ -409,11 +411,11 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
 
           <section>
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-white/45">
+              <h3 className="text-xs font-semibold uppercase tracking-[0.25em] text-slate-500 dark:text-white/45">
                 {hasQuery ? 'Search results' : 'Upcoming'}
               </h3>
               {!hasQuery && displayEvents.length > 0 && (
-                <span className="text-xs text-white/50">Next {displayEvents.length} events</span>
+                <span className="text-xs text-slate-500 dark:text-white/50">Next {displayEvents.length} events</span>
               )}
             </div>
 
@@ -423,19 +425,19 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
               onMouseLeave={!hasQuery ? resetParallax : undefined}
             >
               {loading && (
-                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/10 dark:bg-[#161b27] dark:text-white/60">
                   Loading events...
                 </div>
               )}
 
               {!loading && error && (
-                <div className="rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-400/40 dark:bg-red-500/10 dark:text-red-200">
                   {error}
                 </div>
               )}
 
               {!loading && !error && displayEvents.length === 0 && (
-                <div className="rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-sm text-white/60">
+                <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-500 dark:border-white/10 dark:bg-[#161b27] dark:text-white/60">
                   {emptyMessage}
                 </div>
               )}
@@ -457,17 +459,19 @@ const GlobalSearch = ({ isOpen, onClose, quickLinks = [] }) => {
                       key={eventItem.id || eventItem._id || `${eventItem.title}-${index}`}
                       type="button"
                       onClick={() => handleResultSelect(eventItem)}
-                      className="flex w-full items-center justify-between rounded-2xl border border-white/10 bg-[#161b27] px-4 py-3 text-left text-sm text-white transition hover:border-white/25 hover:bg-[#1e2433]"
+                      className="flex w-full items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-left text-sm text-slate-700 transition hover:border-slate-300 hover:bg-slate-100 dark:border-white/10 dark:bg-[#161b27] dark:text-white dark:hover:border-white/25 dark:hover:bg-[#1e2433]"
                       style={style}
                     >
                       <div className="flex flex-col">
-                        <span className="font-semibold">{eventItem.title}</span>
-                        <span className="text-xs text-white/55">
+                        <span className="font-semibold text-slate-900 dark:text-white">{eventItem.title}</span>
+                        <span className="text-xs text-slate-500 dark:text-white/55">
                           {eventItem.category ? `${eventItem.category} • ` : ''}
                           {formatEventMeta(eventItem.date)}
                         </span>
                       </div>
-                      <span className="text-xs text-white/45">View</span>
+                      <span className="rounded-md bg-slate-200 px-2 py-0.5 text-xs font-semibold text-slate-600 dark:bg-slate-700 dark:text-slate-400">
+                        View
+                      </span>
                     </button>
                   );
                 })}
