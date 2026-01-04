@@ -51,10 +51,10 @@ const DateGrid = ({ value, onSelect, anchorDate, setAnchorDate }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between text-white/80">
+      <div className="flex items-center justify-between text-slate-700 dark:text-white/80">
         <button
           type="button"
-          className="rounded-full border border-white/10 px-3 py-1 text-sm transition hover:bg-white/10"
+          className="rounded-full border border-slate-200 px-3 py-1 text-sm transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-white/10 dark:hover:bg-white/10 dark:focus-visible:outline-white"
           onClick={() => {
             const next = new Date(workingDate);
             next.setMonth(next.getMonth() - 1);
@@ -66,7 +66,7 @@ const DateGrid = ({ value, onSelect, anchorDate, setAnchorDate }) => {
         <span className="text-base font-medium">{monthLabel}</span>
         <button
           type="button"
-          className="rounded-full border border-white/10 px-3 py-1 text-sm transition hover:bg-white/10"
+          className="rounded-full border border-slate-200 px-3 py-1 text-sm transition hover:bg-slate-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:border-white/10 dark:hover:bg-white/10 dark:focus-visible:outline-white"
           onClick={() => {
             const next = new Date(workingDate);
             next.setMonth(next.getMonth() + 1);
@@ -77,7 +77,7 @@ const DateGrid = ({ value, onSelect, anchorDate, setAnchorDate }) => {
         </button>
       </div>
 
-      <div className="grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-wider text-white/40">
+      <div className="grid grid-cols-7 gap-2 text-center text-xs uppercase tracking-wider text-slate-400 dark:text-white/40">
         {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((label) => (
           <span key={label}>{label}</span>
         ))}
@@ -94,8 +94,10 @@ const DateGrid = ({ value, onSelect, anchorDate, setAnchorDate }) => {
             <button
               key={day}
               type="button"
-              className={`h-11 w-full rounded-2xl border border-transparent text-sm transition ${
-                isSelected ? 'bg-white text-black' : 'bg-[#1a212d] text-white/85 hover:border-white/30'
+              className={`h-11 w-full rounded-2xl border text-sm transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500 dark:focus-visible:outline-white ${
+                isSelected
+                  ? 'border-slate-900 bg-slate-900 font-semibold text-white dark:border-white dark:bg-white dark:text-black'
+                  : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100 dark:border-transparent dark:bg-[#1a212d] dark:text-white/85 dark:hover:border-white/30'
               }`}
               onClick={() => {
                 onSelect(makeDateValue(day));

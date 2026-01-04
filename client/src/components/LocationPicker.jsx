@@ -164,7 +164,7 @@ const LocationPicker = ({ value, coordinates, onChange }) => {
 
   return (
     <div className="relative">
-      <label htmlFor="event-location" className="text-sm font-medium text-white/80">
+      <label htmlFor="event-location" className="text-sm font-medium text-slate-900 dark:text-white/80">
         Location
       </label>
       <div className="relative mt-3">
@@ -178,7 +178,7 @@ const LocationPicker = ({ value, coordinates, onChange }) => {
             }
           }}
           placeholder="Search for a venue or landmark"
-          className="w-full rounded-[18px] border border-white/10 bg-[#151b27] px-5 py-4 pr-20 text-base text-white placeholder:text-white/35 focus:border-white/40 focus:outline-none"
+          className="w-full rounded-[18px] border border-slate-200 bg-slate-50 px-5 py-4 pr-20 text-base text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-[#151b27] dark:text-white dark:placeholder:text-white/35 dark:focus:border-white/40"
           autoComplete="off"
         />
 
@@ -186,30 +186,30 @@ const LocationPicker = ({ value, coordinates, onChange }) => {
           <button
             type="button"
             onClick={handleClearLocation}
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-400 transition-colors hover:text-red-400"
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-slate-500 transition-colors hover:text-red-500 dark:text-slate-400"
           >
             Clear
           </button>
         )}
 
         {isLoading && (
-          <div className="absolute right-4 top-full mt-2 text-xs text-white/50" aria-live="polite">
+          <div className="absolute right-4 top-full mt-2 text-xs text-slate-500 dark:text-white/50" aria-live="polite">
             Searching…
           </div>
         )}
 
         {suggestions.length > 0 && (
-          <ul className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-white/10 bg-[#0f1729] shadow-[0_18px_40px_rgba(4,8,16,0.55)]">
+          <ul className="absolute left-0 right-0 top-full z-50 mt-2 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg dark:border-white/10 dark:bg-[#0f1729] dark:shadow-[0_18px_40px_rgba(4,8,16,0.55)]">
             {suggestions.map((suggestion) => (
               <li key={suggestion.id}>
                 <button
                   type="button"
-                  className="flex w-full flex-col items-start gap-1 px-4 py-3 text-left text-sm text-white/85 transition hover:bg-white/5"
+                  className="flex w-full flex-col items-start gap-1 px-4 py-3 text-left text-sm text-slate-700 transition hover:bg-slate-100 dark:text-white/85 dark:hover:bg-white/5"
                   onClick={() => handleSelectSuggestion(suggestion)}
                 >
-                  <span className="font-semibold text-white">{suggestion.label}</span>
+                  <span className="font-semibold text-slate-900 dark:text-white">{suggestion.label}</span>
                   {suggestion.detail && (
-                    <span className="text-xs text-white/45">{suggestion.detail}</span>
+                    <span className="text-xs text-slate-500 dark:text-white/45">{suggestion.detail}</span>
                   )}
                 </button>
               </li>
@@ -219,13 +219,13 @@ const LocationPicker = ({ value, coordinates, onChange }) => {
       </div>
 
       {error && (
-        <p className="mt-2 text-xs text-red-300" role="alert">
+        <p className="mt-2 text-xs text-red-500 dark:text-red-300" role="alert">
           {error}
         </p>
       )}
 
       {position && (
-        <div className="mt-4 h-64 overflow-hidden rounded-xl border border-white/10">
+        <div className="mt-4 h-64 overflow-hidden rounded-xl border border-slate-200 dark:border-white/10">
           <MapContainer
             center={mapCenter}
             zoom={14}

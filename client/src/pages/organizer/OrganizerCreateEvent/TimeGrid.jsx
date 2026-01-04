@@ -14,12 +14,12 @@ const times = Array.from({ length: 24 * 2 }, (_, index) => {
 });
 
 const TimeGrid = ({ value, onSelect }) => (
-  <div className="flex max-h-[320px] flex-col overflow-hidden rounded-2xl border border-white/10">
-    <div className="flex items-center justify-between bg-white/5 px-4 py-3 text-xs uppercase tracking-[0.3em] text-white/50">
+  <div className="flex max-h-[320px] flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-transparent">
+    <div className="flex items-center justify-between bg-slate-100 px-4 py-3 text-xs uppercase tracking-[0.3em] text-slate-500 dark:bg-white/5 dark:text-white/50">
       <span>Time</span>
       <span>GMT +00:00</span>
     </div>
-    <div className="custom-scrollbar flex-1 overflow-y-auto bg-[#121824]">
+    <div className="custom-scrollbar flex-1 overflow-y-auto bg-white dark:bg-[#121824]">
       {times.map((time) => {
         const isSelected = time.value === value;
         return (
@@ -28,7 +28,9 @@ const TimeGrid = ({ value, onSelect }) => (
             type="button"
             onClick={() => onSelect(time.value)}
             className={`flex w-full items-center justify-between px-4 py-3 text-sm transition ${
-              isSelected ? 'bg-white text-black font-semibold' : 'text-white/80 hover:bg-white/10'
+              isSelected
+                ? 'bg-slate-900 font-semibold text-white dark:bg-white dark:text-black'
+                : 'text-slate-600 hover:bg-slate-100 dark:text-white/80 dark:hover:bg-white/10'
             }`}
           >
             <span>{time.label}</span>

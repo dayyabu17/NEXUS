@@ -73,9 +73,9 @@ const OrganizerCreateEvent = () => {
     <OrganizerLayoutDark>
       <MotionSection className="pb-16" initial="hidden" animate="show" variants={containerVars}>
         <motion.header className="mb-10 space-y-3" variants={itemVars}>
-          <p className="text-sm font-medium uppercase tracking-wide text-white/50">Create event</p>
-          <h1 className="text-4xl font-semibold text-white">Create a new event</h1>
-          <p className="text-base text-white/60">
+          <p className="text-sm font-medium uppercase tracking-wide text-slate-600 dark:text-white/50">Create event</p>
+          <h1 className="text-4xl font-semibold text-slate-900 dark:text-white">Create a new event</h1>
+          <p className="text-base text-slate-500 dark:text-white/60">
             Provide the details, pick the perfect time, and submit for approval. Newly created events stay
             pending until an admin reviews them.
           </p>
@@ -110,7 +110,7 @@ const OrganizerCreateEvent = () => {
               <button
                 type="button"
                 aria-label="Set event name"
-                className="relative flex min-h-[72px] w-full items-center rounded-none bg-transparent text-left outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white/40"
+                className="relative flex min-h-[72px] w-full items-center rounded-none bg-transparent text-left outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-slate-400 dark:focus-visible:outline-white/40"
                 onClick={() => {
                   clearSuccess();
                   setActivePicker('title');
@@ -118,7 +118,7 @@ const OrganizerCreateEvent = () => {
               >
                 {!formData.title && (
                   <span
-                    className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-white/70 transition-opacity ${
+                    className={`pointer-events-none absolute left-0 top-1/2 -translate-y-1/2 text-slate-400 transition-opacity dark:text-white/70 ${
                       showTitleCaret ? 'opacity-100' : 'opacity-0'
                     }`}
                     aria-hidden
@@ -128,7 +128,9 @@ const OrganizerCreateEvent = () => {
                 )}
                 <span
                   className={`block pl-5 text-5xl font-semibold leading-tight sm:text-6xl ${
-                    formData.title ? 'text-white' : 'text-white/40'
+                    formData.title
+                      ? 'text-slate-900 dark:text-white'
+                      : 'text-slate-400 dark:text-white/40'
                   }`}
                 >
                   {formData.title || titlePlaceholder}
@@ -171,7 +173,7 @@ const OrganizerCreateEvent = () => {
             <AnimatePresence>
               {error && (
                 <motion.div
-                  className="rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-3 text-sm text-red-200"
+                  className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-400/50 dark:bg-red-500/10 dark:text-red-200"
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -8 }}
@@ -190,7 +192,7 @@ const OrganizerCreateEvent = () => {
               >
                 {submitting ? 'Creating…' : 'Create event'}
               </button>
-              <p className="text-center text-xs text-white/60">
+              <p className="text-center text-xs text-slate-500 dark:text-white/60">
                 Events submit in a pending state while your admin team reviews the details.
               </p>
             </motion.div>

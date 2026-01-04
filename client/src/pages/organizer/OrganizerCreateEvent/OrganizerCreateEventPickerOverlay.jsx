@@ -114,15 +114,15 @@ const OrganizerCreateEventPickerOverlay = ({
 
   return (
     <div
-      className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 backdrop-blur"
+      className="fixed inset-0 z-[1200] flex items-center justify-center bg-slate-900/40 backdrop-blur dark:bg-black/60"
       onClick={handleBackdropClick}
     >
-      <div className="w-full max-w-md rounded-3xl border border-white/10 bg-[rgba(13,17,27,0.95)] p-6 text-white shadow-[0_30px_90px_rgba(5,10,20,0.65)]">
+      <div className="w-full max-w-md rounded-3xl border border-slate-200 bg-white p-6 text-slate-700 shadow-xl transition dark:border-white/10 dark:bg-[rgba(13,17,27,0.95)] dark:text-white dark:shadow-[0_30px_90px_rgba(5,10,20,0.65)]">
         <div className="mb-5 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white/90">{heading}</h2>
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-white/90">{heading}</h2>
           <button
             type="button"
-            className="rounded-full border border-white/10 px-3 py-1 text-xs text-white/70 transition hover:bg-white/10"
+            className="rounded-full border border-slate-200 px-3 py-1 text-xs text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/10 dark:text-white/70 dark:hover:bg-white/10"
             onClick={onClose}
           >
             Close

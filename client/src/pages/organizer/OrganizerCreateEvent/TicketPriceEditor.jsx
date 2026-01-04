@@ -31,7 +31,7 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <fieldset className="space-y-3">
-        <legend className="text-sm font-medium text-white/70">Ticket pricing</legend>
+        <legend className="text-sm font-medium text-slate-900 dark:text-white/70">Ticket pricing</legend>
         <div className="space-y-3">
           <button
             type="button"
@@ -41,8 +41,8 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
             }}
             className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
               mode === 'free'
-                ? 'border-white bg-white text-black'
-                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
+                : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 dark:border-white/15 dark:bg-[#151b27] dark:text-white/85 dark:hover:border-white/30'
             }`}
           >
             <span className="font-semibold">Free</span>
@@ -59,8 +59,8 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
             }}
             className={`flex w-full items-center justify-between rounded-2xl border px-4 py-3 text-left text-sm transition ${
               mode === 'paid'
-                ? 'border-white bg-white text-black'
-                : 'border-white/15 bg-[#151b27] text-white/85 hover:border-white/30'
+                ? 'border-slate-900 bg-slate-900 text-white dark:border-white dark:bg-white dark:text-black'
+                : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 dark:border-white/15 dark:bg-[#151b27] dark:text-white/85 dark:hover:border-white/30'
             }`}
           >
             <span className="font-semibold">Paid</span>
@@ -72,7 +72,7 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
       {mode === 'paid' && (
         <div className="space-y-4">
           <div className="space-y-2">
-            <label htmlFor="ticket-price" className="text-xs font-medium uppercase tracking-wide text-white/45">
+            <label htmlFor="ticket-price" className="text-xs font-medium uppercase tracking-wide text-slate-500 dark:text-white/45">
               Price per ticket (₦)
             </label>
             <input
@@ -82,7 +82,7 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
               value={price}
               onChange={(event) => setPrice(event.target.value)}
               placeholder="Enter ticket price"
-              className="w-full rounded-2xl border border-white/15 bg-[#161b27] px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/15 dark:bg-[#161b27] dark:text-white dark:placeholder:text-white/40 dark:focus:border-white/35"
             />
           </div>
 
@@ -92,7 +92,7 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
                 key={option}
                 type="button"
                 onClick={() => applyQuickPrice(option)}
-                className="rounded-xl border border-white/15 px-3 py-1 text-xs font-medium text-white/75 transition hover:border-white/35 hover:text-white"
+                className="rounded-xl border border-slate-200 px-3 py-1 text-xs font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/15 dark:text-white/75 dark:hover:border-white/35 dark:hover:text-white"
               >
                 ₦{Number(option).toLocaleString()}
               </button>
@@ -105,7 +105,7 @@ const TicketPriceEditor = ({ value, onSave, onCancel }) => {
         <button
           type="button"
           onClick={onCancel}
-          className="rounded-xl border border-white/15 px-4 py-2 text-sm font-medium text-white/70 transition hover:border-white/35 hover:text-white"
+          className="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:text-slate-900 dark:border-white/15 dark:text-white/70 dark:hover:border-white/35 dark:hover:text-white"
         >
           Cancel
         </button>
