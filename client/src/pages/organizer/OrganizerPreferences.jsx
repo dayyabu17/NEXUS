@@ -298,13 +298,13 @@ const OrganizerPreferences = () => {
       >
         <header className="mb-10 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-4xl font-semibold text-white">App Preferences</h1>
-            <p className="text-sm text-white/60">
+            <h1 className="text-4xl font-semibold text-slate-900 dark:text-white">App Preferences</h1>
+            <p className="text-sm text-slate-500 dark:text-white/60">
               Tune the appearance of your organizer surfaces and update public-facing branding.
             </p>
           </div>
           {(loadingPreferences || isSaving) && (
-            <span className="text-xs font-medium text-white/50">
+            <span className="text-xs font-medium text-slate-500 dark:text-white/60">
               {loadingPreferences ? 'Loading preferences…' : 'Saving…'}
             </span>
           )}
@@ -314,22 +314,22 @@ const OrganizerPreferences = () => {
           <div
             className={`mb-8 rounded-2xl border px-4 py-4 text-sm ${
               preferencesStatus.type === 'error'
-                ? 'border-red-500/40 bg-red-500/10 text-red-200'
-                : 'border-emerald-400/30 bg-emerald-500/10 text-emerald-100'
+                ? 'border-rose-200 bg-rose-50 text-rose-700 dark:border-rose-500/40 dark:bg-rose-500/10 dark:text-rose-200'
+                : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-400/30 dark:bg-emerald-500/10 dark:text-emerald-100'
             }`}
           >
             {preferencesStatus.message}
           </div>
         )}
 
-        <section className="mb-12 rounded-3xl border border-white/10 bg-[rgba(14,18,27,0.92)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
+        <section className="mb-12 rounded-3xl border border-slate-200 bg-white p-8 text-slate-700 shadow-sm transition dark:border-white/10 dark:bg-[rgba(14,18,27,0.92)] dark:text-white dark:shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
           <div className="flex flex-col gap-2">
-            <span className="text-xs uppercase tracking-[0.35em] text-white/45">App Appearance</span>
+            <span className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-white/45">App Appearance</span>
             <div className="flex flex-wrap items-center justify-between gap-4">
-              <h2 className="text-2xl font-semibold text-white">Accent palette</h2>
-              <span className="text-xs text-white/45">Selected: {activeAccentOption.label}</span>
+              <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Accent palette</h2>
+              <span className="text-xs text-slate-500 dark:text-white/55">Selected: {activeAccentOption.label}</span>
             </div>
-            <p className="text-sm text-white/55">
+            <p className="text-sm text-slate-500 dark:text-white/60">
               These accents will power highlights, buttons, and focus rings throughout the organizer experience.
             </p>
           </div>
@@ -351,8 +351,8 @@ const OrganizerPreferences = () => {
                   disabled={accentButtonDisabled}
                   className={`group flex flex-col gap-4 rounded-3xl border p-5 text-left transition-all disabled:cursor-not-allowed disabled:opacity-60 ${
                     isActive
-                      ? 'border-white/40 bg-white/10'
-                      : 'border-white/10 bg-white/[0.02] hover:border-white/25 hover:bg-white/[0.06]'
+                      ? 'border-slate-900/20 bg-slate-900/[0.04] shadow-sm dark:border-white/40 dark:bg-white/10'
+                      : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50 dark:border-white/10 dark:bg-white/[0.02] dark:hover:border-white/25 dark:hover:bg-white/[0.06]'
                   }`}
                   style={cardShadowStyle}
                 >
@@ -368,25 +368,25 @@ const OrganizerPreferences = () => {
                     {option.label.charAt(0)}
                   </span>
                   <div className="space-y-1">
-                    <p className="text-sm font-semibold text-white">{option.label}</p>
-                    <p className="text-xs text-white/55">{option.description}</p>
+                    <p className="text-sm font-semibold text-slate-900 dark:text-white">{option.label}</p>
+                    <p className="text-xs text-slate-500 dark:text-white/60">{option.description}</p>
                   </div>
                 </button>
               );
             })}
           </div>
 
-          <div className="mt-8 rounded-3xl border border-white/10 bg-white/[0.04] p-6">
+          <div className="mt-8 rounded-3xl border border-slate-200 bg-slate-50 p-6 dark:border-white/10 dark:bg-white/[0.04]">
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm font-semibold text-white">Public preview</p>
-                <p className="text-xs text-white/55">
+                <p className="text-sm font-semibold text-slate-900 dark:text-white">Public preview</p>
+                <p className="text-xs text-slate-500 dark:text-white/60">
                   This color will appear on your public event pages (e.g., the ‘Register’ button).
                 </p>
               </div>
               <button
                 type="button"
-                className="rounded-full px-6 py-2 text-sm font-semibold shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+                className="rounded-full px-6 py-2 text-sm font-semibold text-white shadow-lg transition focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 dark:focus-visible:ring-white/40"
                 style={registerPreviewStyle}
                 aria-label="Register button preview"
               >
@@ -395,23 +395,23 @@ const OrganizerPreferences = () => {
             </div>
           </div>
 
-          <p className="mt-6 text-xs text-white/40">
+          <p className="mt-6 text-xs text-slate-500 dark:text-white/40">
             We store your selection locally so you can keep iterating before rolling it out to attendees.
           </p>
         </section>
 
-        <section className="rounded-3xl border border-white/10 bg-[rgba(14,18,27,0.92)] p-8 shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
+        <section className="rounded-3xl border border-slate-200 bg-white p-8 text-slate-700 shadow-sm transition dark:border-white/10 dark:bg-[rgba(14,18,27,0.92)] dark:text-white dark:shadow-[0_24px_90px_rgba(5,8,18,0.55)]">
           <div className="flex flex-col gap-2">
-            <span className="text-xs uppercase tracking-[0.35em] text-white/45">Profile Identity</span>
-            <h2 className="text-2xl font-semibold text-white">Public brand color</h2>
-            <p className="text-sm text-white/55">
+            <span className="text-xs uppercase tracking-[0.35em] text-slate-500 dark:text-white/45">Profile Identity</span>
+            <h2 className="text-2xl font-semibold text-slate-900 dark:text-white">Public brand color</h2>
+            <p className="text-sm text-slate-500 dark:text-white/60">
               This shade powers key touchpoints on your guest-facing experiences like the register button and badges.
             </p>
           </div>
 
           <div className="mt-6 grid gap-6 lg:grid-cols-[220px_1fr]">
-            <div className="space-y-4 rounded-3xl border border-white/10 bg-white/[0.04] p-5">
-              <label className="text-xs uppercase tracking-[0.25em] text-white/50" htmlFor="brand-color">
+            <div className="space-y-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-white/[0.04] dark:shadow-none">
+              <label className="text-xs uppercase tracking-[0.25em] text-slate-500 dark:text-white/50" htmlFor="brand-color">
                 Hex value
               </label>
               <input
@@ -419,7 +419,7 @@ const OrganizerPreferences = () => {
                 value={brandColor}
                 onChange={(event) => handleBrandColorInput(event.target.value)}
                 disabled={loadingPreferences}
-                className="w-full rounded-2xl border border-white/15 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/35 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 transition focus:border-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-200 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-black/40 dark:text-white dark:placeholder:text-white/40 dark:focus:border-white/35 dark:focus:ring-0"
                 placeholder="#2563EB"
               />
               <input
@@ -427,21 +427,21 @@ const OrganizerPreferences = () => {
                 value={brandColor}
                 onChange={handleBrandColorPicker}
                 disabled={loadingPreferences}
-                className="h-12 w-full cursor-pointer rounded-2xl border border-white/15 bg-transparent p-0 disabled:cursor-not-allowed disabled:opacity-60"
+                className="h-12 w-full cursor-pointer rounded-2xl border border-slate-300 bg-white p-0 transition hover:border-slate-400 disabled:cursor-not-allowed disabled:opacity-60 dark:border-white/15 dark:bg-transparent"
                 aria-label="Pick brand color"
               />
               {brandColorError ? (
-                <p className="text-xs text-rose-300">{brandColorError}</p>
+                <p className="text-xs text-rose-600 dark:text-rose-300">{brandColorError}</p>
               ) : (
-                <p className="text-xs text-white/40">Saved locally—apply it to your themes when you are ready.</p>
+                <p className="text-xs text-slate-500 dark:text-white/40">Saved locally—apply it to your themes when you are ready.</p>
               )}
             </div>
 
-            <div className="space-y-6 rounded-3xl border border-white/10 bg-white/[0.02] p-6">
+            <div className="space-y-6 rounded-3xl border border-slate-200 bg-slate-50 p-6 shadow-sm dark:border-white/10 dark:bg-white/[0.02] dark:shadow-none">
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-sm font-semibold text-white">Avatar ring</p>
-                  <p className="text-xs text-white/55">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-white">Avatar ring</p>
+                  <p className="text-xs text-slate-500 dark:text-white/60">
                     Highlight your profile image with a verified glow across public listings.
                   </p>
                 </div>
@@ -450,20 +450,22 @@ const OrganizerPreferences = () => {
                   onClick={handleAvatarRingToggle}
                   disabled={loadingPreferences || isSaving}
                   className={`relative flex h-8 w-16 items-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-60 ${
-                    avatarRing ? 'bg-emerald-500/60' : 'bg-white/20'
+                    avatarRing ? 'bg-emerald-500/70 shadow-inner dark:bg-emerald-500/60' : 'bg-slate-200 dark:bg-white/20'
                   }`}
                   aria-pressed={avatarRing}
                 >
                   <span
-                    className={`absolute left-1 top-1 inline-flex h-6 w-6 transform items-center justify-center rounded-full bg-white text-[10px] font-semibold text-[#0B1120] transition ${
-                      avatarRing ? 'translate-x-8' : 'translate-x-0'
+                    className={`absolute left-1 top-1 inline-flex h-6 w-6 transform items-center justify-center rounded-full text-[10px] font-semibold transition ${
+                      avatarRing
+                        ? 'translate-x-8 bg-white text-slate-900'
+                        : 'translate-x-0 bg-white text-slate-600 dark:bg-slate-900 dark:text-white'
                     }`}
                   >
                     {avatarRing ? 'ON' : 'OFF'}
                   </span>
                 </button>
               </div>
-              <div className="rounded-2xl border border-white/10 bg-black/40 p-4 text-xs text-white/50">
+              <div className="rounded-2xl border border-slate-200 bg-white p-4 text-xs text-slate-600 shadow-sm dark:border-white/10 dark:bg-black/40 dark:text-white/50 dark:shadow-none">
                 <p>
                   Once enabled, guests will see a subtle animated border around your avatar, reinforcing trust and
                   authenticity on your event pages.

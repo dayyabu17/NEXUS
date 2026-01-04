@@ -167,10 +167,10 @@ const PayoutSettings = () => {
   );
 
   return (
-    <section className="rounded-3xl border border-white/10 bg-slate-900/70 p-6 text-white shadow-[0_18px_60px_rgba(8,12,24,0.55)]">
+    <section className="rounded-3xl border border-slate-200 bg-white p-6 text-slate-700 shadow-sm transition dark:border-white/10 dark:bg-slate-900/70 dark:text-white dark:shadow-[0_18px_60px_rgba(8,12,24,0.55)]">
       <header className="mb-6">
-        <h2 className="text-lg font-semibold">Payout / Bank Details</h2>
-        <p className="text-sm text-white/60">
+        <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Payout / Bank Details</h2>
+        <p className="text-sm text-slate-500 dark:text-white/60">
           Connect your Paystack subaccount to receive settlements.
         </p>
       </header>
@@ -179,8 +179,8 @@ const PayoutSettings = () => {
         <div
           className={`mb-6 rounded-2xl border px-4 py-3 text-sm ${
             status.type === 'error'
-              ? 'border-red-500/40 bg-red-500/10 text-red-200'
-              : 'border-emerald-500/30 bg-emerald-500/10 text-emerald-100'
+              ? 'border-red-200 bg-red-50 text-red-600 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200'
+              : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-500/30 dark:bg-emerald-500/10 dark:text-emerald-100'
           }`}
         >
           {status.message}
@@ -189,13 +189,13 @@ const PayoutSettings = () => {
 
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-[0.3em] text-white/50">Bank</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Bank</label>
           <div className="relative">
             <select
               name="bankCode"
               value={form.bankCode}
               onChange={handleFieldChange}
-              className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/40 focus:border-white/30 focus:outline-none"
+              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/40 dark:focus:border-white/30"
               disabled={loadingBanks}
             >
               <option value="">{loadingBanks ? 'Loading banks…' : 'Select a bank'}</option>
@@ -206,13 +206,13 @@ const PayoutSettings = () => {
               ))}
             </select>
             {loadingBanks && (
-              <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-white/60" />
+              <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-slate-400 dark:text-white/60" />
             )}
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-[0.3em] text-white/50">Account number</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Account number</label>
           <input
             name="accountNumber"
             value={form.accountNumber}
@@ -221,31 +221,31 @@ const PayoutSettings = () => {
             maxLength={10}
             inputMode="numeric"
             placeholder="0123456789"
-            className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/30"
           />
-          <p className="text-xs text-white/45">
+          <p className="text-xs text-slate-500 dark:text-white/45">
             We will auto-fill the account name after verifying with Paystack.
           </p>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-[0.3em] text-white/50">Account name</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Account name</label>
           <div className="relative">
             <input
               name="accountName"
               value={form.accountName}
               readOnly
-              className="w-full cursor-not-allowed rounded-2xl border border-white/10 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/30"
+              className="w-full cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 dark:border-white/10 dark:bg-black/30 dark:text-white dark:placeholder:text-white/30"
               placeholder={resolvingAccount ? 'Resolving…' : 'Resolved account name'}
             />
             {resolvingAccount && (
-              <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-white/60" />
+              <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-slate-400 dark:text-white/60" />
             )}
           </div>
         </div>
 
         <div className="flex flex-col gap-2">
-          <label className="text-xs uppercase tracking-[0.3em] text-white/50">Split percentage</label>
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Split percentage</label>
           <input
             name="splitPercentage"
             type="number"
@@ -253,9 +253,9 @@ const PayoutSettings = () => {
             max={100}
             value={form.splitPercentage}
             onChange={handleFieldChange}
-            className="rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white placeholder:text-white/30 focus:border-white/30 focus:outline-none"
+            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/30"
           />
-          <p className="text-xs text-white/45">
+          <p className="text-xs text-slate-500 dark:text-white/45">
             Default is 10% (Paystack's percentage_charge field).
           </p>
         </div>
@@ -263,7 +263,7 @@ const PayoutSettings = () => {
         <button
           type="submit"
           disabled={submitting || resolvingAccount}
-          className="flex items-center justify-center gap-2 rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-black transition hover:bg-white/80 disabled:cursor-not-allowed disabled:opacity-60"
+          className="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-white/80"
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin" />}
           Save payout account
