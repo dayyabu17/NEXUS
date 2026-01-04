@@ -23,10 +23,19 @@ export const getStatusBadge = (status) => {
 
   switch (normalized) {
     case 'approved':
-      return { label: 'Approved', className: 'bg-[#7ba743]' };
+      return {
+        label: 'Approved',
+        className: 'bg-green-100 text-green-700 dark:bg-[#7ba743] dark:text-white',
+      };
     case 'rejected':
-      return { label: 'Rejected', className: 'bg-[#802020]' };
+      return {
+        label: 'Rejected',
+        className: 'bg-red-100 text-red-700 dark:bg-[#802020] dark:text-white',
+      };
     default:
-      return { label: 'Pending', className: 'bg-[#5a3f00]' };
+      return {
+        label: 'Pending',
+        className: 'bg-yellow-100 text-yellow-700 dark:bg-[#5a3f00] dark:text-white',
+      };
   }
 };

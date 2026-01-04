@@ -41,15 +41,15 @@ const OrganizerEvents = () => {
         />
 
         {error && (
-          <div className="mt-6 rounded-lg border border-red-400 bg-red-50/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-6 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-400/40 dark:bg-red-500/10 dark:text-red-200">
             {error}
           </div>
         )}
 
         {loading ? (
-          <div className="mt-12 text-center text-white/60">Loading events...</div>
+          <div className="mt-12 text-center text-slate-500 dark:text-white/60">Loading events...</div>
         ) : filteredEvents.length === 0 ? (
-          <div className="mt-12 rounded-xl border border-white/10 bg-black/40 px-6 py-12 text-center text-white/70">
+          <div className="mt-12 rounded-xl border border-slate-200 bg-white px-6 py-12 text-center text-slate-600 dark:border-white/10 dark:bg-black/40 dark:text-white/70">
             No events match the selected filter.
           </div>
         ) : (

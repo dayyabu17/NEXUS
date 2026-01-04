@@ -36,15 +36,15 @@ const OrganizerEarnings = () => {
       >
         <div className="flex flex-wrap items-center justify-between gap-4 pt-2 sm:pt-6">
           <div className="max-w-2xl">
-            <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl">Earnings &amp; Payouts</h1>
-            <p className="mt-2 text-sm text-white/60 sm:max-w-xl">
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white sm:text-4xl">Earnings &amp; Payouts</h1>
+            <p className="mt-2 text-sm text-slate-500 dark:text-white/60 sm:max-w-xl">
               Monitor revenue performance, track settlement timelines, and keep a pulse on your business health.
             </p>
           </div>
           <button
             type="button"
             disabled
-            className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white/60 transition hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500 transition hover:border-slate-300 hover:text-slate-800 dark:border-white/15 dark:bg-white/10 dark:text-white/60 dark:hover:border-white/25 disabled:cursor-not-allowed disabled:opacity-60"
             aria-disabled
             title="Withdrawals can be initiated once payouts are enabled"
           >
@@ -54,7 +54,7 @@ const OrganizerEarnings = () => {
         </div>
 
         {error && (
-          <div className="mt-6 rounded-2xl border border-red-400/40 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-400/40 dark:bg-red-500/10 dark:text-red-200">
             {error}
           </div>
         )}
