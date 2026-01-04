@@ -42,6 +42,7 @@ const useEventGuests = (eventId) => {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
         navigate('/sign-in');
       } else {
         setGuestError(err?.response?.data?.message || 'Unable to load guests right now.');

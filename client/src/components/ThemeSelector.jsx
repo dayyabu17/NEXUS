@@ -4,12 +4,6 @@ import { useTheme } from '../context/ThemeContext';
 
 const THEME_OPTIONS = [
   {
-    id: 'system',
-    title: 'System',
-    description: 'Sync with your device preference.',
-    previewClass: 'bg-gradient-to-br from-white via-white to-[#0b1220]',
-  },
-  {
     id: 'light',
     title: 'Light',
     description: 'Bright and airy experience.',
@@ -41,7 +35,7 @@ const PreviewSkeleton = ({ mode }) => {
 };
 
 const ThemeCard = ({ option, isActive, onSelect }) => {
-  const resolvedPreviewMode = option.id === 'system' ? 'dark' : option.id;
+  const resolvedPreviewMode = option.id;
 
   return (
     <Motion.button
@@ -58,25 +52,12 @@ const ThemeCard = ({ option, isActive, onSelect }) => {
       <div className="relative">
         <div
           className={`mx-4 mt-4 rounded-2xl border border-slate-200 p-4 transition-[border-color] duration-300 ${
-            option.id === 'system'
-              ? 'bg-gradient-to-br from-white via-white/70 to-[#0f1729]/80 dark:border-white/10 dark:from-white/15 dark:via-white/5 dark:to-[#0f1729]'
-              : option.id === 'light'
+            option.id === 'light'
               ? 'bg-slate-50 dark:border-white/10 dark:bg-white/10'
               : 'bg-[#0f1729] text-white dark:border-white/10'
           }`}
         >
-          {option.id === 'system' ? (
-            <div className="flex gap-4">
-              <div className="w-1/2">
-                <PreviewSkeleton mode="light" />
-              </div>
-              <div className="w-1/2">
-                <PreviewSkeleton mode="dark" />
-              </div>
-            </div>
-          ) : (
-            <PreviewSkeleton mode={resolvedPreviewMode} />
-          )}
+          <PreviewSkeleton mode={resolvedPreviewMode} />
         </div>
       </div>
       <div className="flex items-center justify-between px-5 py-4">
@@ -99,7 +80,8 @@ const ThemeCard = ({ option, isActive, onSelect }) => {
 };
 
 const ThemeSelector = () => {
-  const { theme, setTheme, resolvedTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
+  const activeThemeLabel = theme === 'dark' ? 'Dark' : 'Light';
 
   return (
     <section className="rounded-3xl border border-slate-200 bg-white p-8 shadow-lg dark:border-slate-800 dark:bg-[#0d1423]/70 dark:shadow-[0_24px_70px_rgba(5,10,25,0.45)]">
@@ -107,8 +89,8 @@ const ThemeSelector = () => {
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-600 dark:text-white/60">Display</p>
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Choose your desired Nexus interface.</h2>
         <p className="text-xs text-slate-500 dark:text-white/45">
-          Toggle between light, dark, or follow your system preference. Current mode:{' '}
-          <span className="font-semibold text-slate-800 dark:text-white/75">{resolvedTheme}</span>.
+          Toggle between light and dark modes. Current mode:{' '}
+          <span className="font-semibold text-slate-800 dark:text-white/75">{activeThemeLabel}</span>.
         </p>
       </header>
 

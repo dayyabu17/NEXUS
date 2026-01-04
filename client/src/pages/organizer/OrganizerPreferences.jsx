@@ -53,6 +53,7 @@ const syncStoredUser = (update) => {
     const parsed = JSON.parse(raw);
     const nextUser = { ...parsed, ...update };
     window.localStorage.setItem('user', JSON.stringify(nextUser));
+    window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: nextUser } }));
   } catch (error) {
     console.warn('Unable to sync stored user preferences', error);
   }

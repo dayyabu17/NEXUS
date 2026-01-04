@@ -9,6 +9,8 @@ const createHttpError = (statusCode, message) => {
   return error;
 };
 
+const ALLOWED_THEMES = new Set(['light', 'dark']);
+
 const buildUserPayload = (user) => ({
   _id: user._id,
   name: user.name,
@@ -19,6 +21,7 @@ const buildUserPayload = (user) => ({
   accentPreference: user.accentPreference || DEFAULT_ACCENT,
   brandColor: user.brandColor || DEFAULT_BRAND_COLOR,
   avatarRingEnabled: Boolean(user.avatarRingEnabled),
+  theme: user.theme || 'light',
 });
 
 const generateToken = (user) => {
@@ -120,7 +123,7 @@ const registerUser = async ({
 
 const getUserProfile = async (userId) => {
   const user = await User.findById(userId).select(
-    'name email role organizationName profilePicture accentPreference brandColor avatarRingEnabled'
+    'name email role organizationName profilePicture accentPreference brandColor avatarRingEnabled theme'
   );
 
   if (!user) {
@@ -175,6 +178,23 @@ const updateProfilePicture = async (userId, relativePath) => {
   };
 };
 
+const updateUserTheme = async (userId, theme) => {
+  if (!ALLOWED_THEMES.has(theme)) {
+    throw createHttpError(400, 'Theme must be either "light" or "dark"');
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw createHttpError(404, 'User not found');
+  }
+
+  user.theme = theme;
+  const updatedUser = await user.save();
+
+  return buildUserPayload(updatedUser);
+};
+
 module.exports = {
   authenticateUser,
   registerUser,
@@ -182,4 +202,5 @@ module.exports = {
   updateUserProfile,
   updateProfilePicture,
   buildUserPayload,
+  updateUserTheme,
 };

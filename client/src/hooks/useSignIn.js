@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
+import { useTheme } from '../context/ThemeContext.jsx';
 
 const useSignIn = () => {
   const navigate = useNavigate();
@@ -8,6 +9,7 @@ const useSignIn = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { setTheme } = useTheme();
 
   const handleSubmit = useCallback(
     async (event) => {
@@ -33,6 +35,10 @@ const useSignIn = () => {
           }
 
           localStorage.setItem('user', JSON.stringify(data));
+          if (data?.theme && (data.theme === 'light' || data.theme === 'dark')) {
+            setTheme(data.theme, { skipServerSync: true });
+          }
+          window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: data } }));
         } catch {
           // Ignore storage access errors to keep the flow uninterrupted
         }

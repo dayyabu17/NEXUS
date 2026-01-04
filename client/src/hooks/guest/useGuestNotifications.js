@@ -92,6 +92,7 @@ const useGuestNotifications = (navigate) => {
         if (typeof window !== 'undefined') {
           window.localStorage.removeItem('token');
           window.localStorage.removeItem('user');
+          window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
         }
         navigate('/sign-in');
       }

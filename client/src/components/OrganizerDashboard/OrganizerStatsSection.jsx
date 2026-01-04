@@ -145,17 +145,18 @@ const OrganizerStatsSection = ({ statsCards }) => (
     {statsCards.map(({ id, title, value, change, formatter, trendSeries, color }) => {
       const numericValue = Number(value) || 0;
       const numericChange = Number(change) || 0;
-      const trendColor = numericChange >= 0 ? 'text-[#4d997a]' : 'text-[#c26666]';
       const changePrefix = numericChange > 0 ? '+' : '';
+      const trendColorClass =
+        numericChange >= 0 ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400';
 
       return (
         <article
           key={id}
-          className="rounded-xl border border-white/5 bg-[rgba(25,27,29,0.78)] px-6 py-8 shadow-lg shadow-black/20"
+          className="rounded-xl border border-slate-200 bg-white px-6 py-8 shadow-lg shadow-slate-900/5 transition-colors dark:border-slate-700 dark:bg-slate-800 dark:shadow-black/20"
         >
-          <p className="text-sm text-white/70">{title}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">{title}</p>
           <div className="mt-3 flex items-center justify-between">
-            <p className="text-3xl font-semibold">
+            <p className="text-3xl font-semibold text-slate-900 dark:text-white">
               <AnimatedStatValue
                 value={numericValue}
                 formatter={formatter}
@@ -169,9 +170,12 @@ const OrganizerStatsSection = ({ statsCards }) => (
               animate={false}
             />
           </div>
-          <p className={`mt-4 text-xs font-medium ${trendColor}`}>
-            {changePrefix}
-            {numericChange}% compared to last 7 days
+          <p className="mt-4 text-xs text-slate-500 dark:text-slate-400">
+            <span className={`font-semibold ${trendColorClass}`}>
+              {changePrefix}
+              {numericChange}%
+            </span>{' '}
+            compared to last 7 days
           </p>
         </article>
       );

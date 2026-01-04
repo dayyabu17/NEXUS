@@ -36,24 +36,24 @@ export const formatDisplayName = (value) => {
 
 export const notificationToneStyles = {
   success: {
-    accent: 'bg-emerald-500/15',
-    iconColor: 'text-emerald-200',
+    accent: 'bg-emerald-100/80 dark:bg-emerald-500/15',
+    iconColor: 'text-emerald-600 dark:text-emerald-200',
     dot: 'bg-emerald-400',
   },
   highlight: {
-    accent: 'bg-amber-500/12',
-    iconColor: 'text-amber-200',
+    accent: 'bg-amber-100/80 dark:bg-amber-500/12',
+    iconColor: 'text-amber-600 dark:text-amber-200',
     dot: 'bg-amber-400',
   },
   info: {
-    accent: 'bg-accent-500/12',
-    iconColor: 'text-accent-500',
-    dot: 'bg-accent-500',
+    accent: 'bg-accent-100/70 dark:bg-accent-500/12',
+    iconColor: 'text-accent-600 dark:text-accent-500',
+    dot: 'bg-accent-400 dark:bg-accent-500',
   },
   default: {
-    accent: 'bg-white/8',
-    iconColor: 'text-white/70',
-    dot: 'bg-white/50',
+    accent: 'bg-slate-100 dark:bg-white/8',
+    iconColor: 'text-slate-600 dark:text-white/70',
+    dot: 'bg-slate-300 dark:bg-white/50',
   },
 };
 

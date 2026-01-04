@@ -131,6 +131,7 @@ const useGuestProfile = () => {
       const nextUser = { ...stored, ...update };
       localStorage.setItem('user', JSON.stringify(nextUser));
       window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: nextUser } }));
     } catch (error) {
       console.warn('Unable to sync stored user', error);
     }

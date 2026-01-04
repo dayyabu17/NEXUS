@@ -72,6 +72,11 @@ const userSchema = new mongoose.Schema({
     enum: ['blue', 'purple', 'green', 'orange'],
     default: 'blue',
   },
+  theme: {
+    type: String,
+    enum: ['light', 'dark'],
+    default: 'light',
+  },
   brandColor: {
     type: String,
     default: '#2563EB',

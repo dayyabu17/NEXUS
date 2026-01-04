@@ -43,15 +43,22 @@ const useOrganizerProfile = () => {
       });
 
       try {
-        localStorage.setItem(
-          'user',
-          JSON.stringify({
-            name: normalizedName,
-            email: data?.email,
-            organizationName: data?.organizationName,
-            profilePicture: normalizedAvatar,
-          }),
-        );
+        const existingRaw = localStorage.getItem('user');
+        const existingUser = existingRaw ? JSON.parse(existingRaw) : {};
+        const nextUser = {
+          ...existingUser,
+          name: normalizedName,
+          email: data?.email,
+          organizationName: data?.organizationName,
+          profilePicture: normalizedAvatar,
+        };
+
+        if (data?.theme && (data.theme === 'light' || data.theme === 'dark')) {
+          nextUser.theme = data.theme;
+        }
+
+        localStorage.setItem('user', JSON.stringify(nextUser));
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: nextUser } }));
       } catch {
         // Ignore storage write failures.
       }
@@ -59,6 +66,7 @@ const useOrganizerProfile = () => {
       if (error?.response?.status === 401 || error?.response?.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
         navigate('/sign-in');
       }
     }
@@ -67,6 +75,7 @@ const useOrganizerProfile = () => {
   const handleLogout = useCallback(() => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
     navigate('/sign-in');
   }, [navigate]);
 

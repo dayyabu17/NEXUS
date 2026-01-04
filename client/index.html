@@ -5,6 +5,21 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>client</title>
+    <script>
+      (() => {
+        try {
+          const stored = window.localStorage.getItem('nexus-theme');
+          const mediaQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+          const prefersDark = Boolean(mediaQuery && mediaQuery.matches);
+          const theme = stored === 'dark' || stored === 'light' ? stored : prefersDark ? 'dark' : 'light';
+          if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch {
+          // Ignore access errors (e.g., private browsing).
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

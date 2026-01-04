@@ -170,8 +170,9 @@ const useAdminSettings = () => {
         const currentUser = currentUserRaw ? JSON.parse(currentUserRaw) : {};
         const updatedUser = { ...currentUser, ...response.data };
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: updatedUser } }));
       } catch {
-        // Ignore storage errors.
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
       }
 
       window.dispatchEvent(new Event('storage'));
@@ -213,8 +214,9 @@ const useAdminSettings = () => {
         const currentUser = currentUserRaw ? JSON.parse(currentUserRaw) : {};
         const updatedUser = { ...currentUser, profilePicture: response.data.profilePicture };
         localStorage.setItem('user', JSON.stringify(updatedUser));
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: updatedUser } }));
       } catch {
-        // Ignore storage errors.
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
       }
 
       if (previewUrlRef.current) {

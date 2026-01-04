@@ -96,14 +96,14 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
 
   return (
     <div
-      className="min-h-screen w-full bg-gradient-to-b from-[#0A121E] via-[#050912] to-[#020305] text-white"
+      className="min-h-screen w-full bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-white"
       data-name="Organizer_Layout_Dark"
       data-node-id="138:24"
     >
       {isMobileMenuOpen && (
         <div
           id="organizer-mobile-menu"
-          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-md"
+          className="fixed inset-0 z-[60] flex flex-col items-center justify-center bg-white/75 backdrop-blur-md dark:bg-slate-900/60"
           onClick={handleCloseMobileMenu}
           role="dialog"
           aria-modal="true"
@@ -115,16 +115,16 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
             <button
               type="button"
               onClick={handleCloseMobileMenu}
-              className="absolute right-6 top-12 flex h-12 w-12 items-center justify-center rounded-full border border-white/20 text-white transition hover:border-white/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+              className="absolute right-6 top-12 flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 text-slate-600 transition hover:border-slate-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 dark:border-white/20 dark:text-white dark:hover:border-white/40 dark:focus-visible:ring-white/60"
               aria-label="Close navigation menu"
             >
               <X className="h-6 w-6" />
             </button>
 
             <div className="flex h-full flex-col items-center gap-10">
-              <div className="w-full max-w-sm rounded-3xl border border-white/20 bg-white/5 px-6 py-4 text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-white/50">Current Time</p>
-                <p className="mt-2 text-3xl font-semibold tracking-tight text-white">{currentTime}</p>
+              <div className="w-full max-w-sm rounded-3xl border border-slate-200 bg-white px-6 py-4 text-center shadow-sm dark:border-white/20 dark:bg-white/5">
+                <p className="text-xs font-semibold uppercase tracking-[0.35em] text-slate-500 dark:text-white/50">Current Time</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">{currentTime}</p>
               </div>
 
               <nav className="flex w-full flex-col items-center gap-7 text-center" aria-label="Organizer mobile navigation">
@@ -135,7 +135,9 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                     onClick={handleMobileNavClick}
                     className={({ isActive }) =>
                       `text-2xl font-semibold tracking-wide transition-colors duration-200 ${
-                        isActive ? 'text-white' : 'text-white/70 hover:text-white'
+                        isActive
+                          ? 'text-slate-900 dark:text-white'
+                          : 'text-slate-600 hover:text-slate-900 dark:text-white/70 dark:hover:text-white'
                       }`
                     }
                   >
@@ -147,7 +149,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
               <NavLink
                 to="/organizer/events/create"
                 onClick={handleMobileNavClick}
-                className="w-full max-w-sm rounded-3xl bg-blue-500 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_16px_40px_rgba(59,130,246,0.4)] transition hover:bg-blue-600 hover:shadow-[0_20px_55px_rgba(37,99,235,0.55)]"
+                className="w-full max-w-sm rounded-3xl bg-blue-500 px-6 py-3 text-center text-sm font-semibold uppercase tracking-[0.3em] text-white shadow-[0_16px_40px_rgba(59,130,246,0.35)] transition hover:bg-blue-600 hover:shadow-[0_20px_55px_rgba(37,99,235,0.45)]"
               >
                 Create Event
               </NavLink>
@@ -158,7 +160,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                   setIsMobileMenuOpen(false);
                   handleLogout();
                 }}
-                className="text-sm font-semibold uppercase tracking-[0.3em] text-red-400 transition hover:text-red-300"
+                className="text-sm font-semibold uppercase tracking-[0.3em] text-red-500 transition hover:text-red-400 dark:text-red-400 dark:hover:text-red-300"
               >
                 Sign Out
               </button>
@@ -171,7 +173,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                   setIsMobileMenuOpen(false);
                   openSearch();
                 }}
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition hover:border-white/40 hover:bg-white/10"
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/10"
                 aria-label="Open search"
               >
                 <Search className="h-5 w-5" />
@@ -182,7 +184,7 @@ const OrganizerLayoutDark = ({ children, suppressInitialLoader = false }) => {
                   setIsMobileMenuOpen(false);
                   handleToggleNotifications();
                 }}
-                className="relative flex h-12 w-12 items-center justify-center rounded-full border border-white/20 bg-white/5 text-white transition hover:border-white/40 hover:bg-white/10"
+                className="relative flex h-12 w-12 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 transition hover:border-slate-400 hover:text-slate-900 dark:border-white/20 dark:bg-white/5 dark:text-white dark:hover:border-white/40 dark:hover:bg-white/10"
                 aria-label="View notifications"
               >
                 <Bell className="h-5 w-5" />

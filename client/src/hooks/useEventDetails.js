@@ -49,6 +49,7 @@ const useEventDetails = (eventId) => {
       if (err?.response?.status === 401 || err?.response?.status === 403) {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: null } }));
         navigate('/sign-in');
       } else {
         setError(err?.response?.data?.message || 'Unable to load event right now.');

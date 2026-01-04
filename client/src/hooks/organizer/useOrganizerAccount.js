@@ -47,6 +47,7 @@ const useOrganizerAccount = () => {
       const nextUser = { ...parsed, ...update };
       localStorage.setItem('user', JSON.stringify(nextUser));
       window.dispatchEvent(new Event('storage'));
+      window.dispatchEvent(new CustomEvent('nexus-auth:changed', { detail: { user: nextUser } }));
     } catch {
       // Ignore storage sync issues between tabs
     }
