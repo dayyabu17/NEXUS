@@ -1,10 +1,11 @@
 import React, { useCallback } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import nexusLogo from '../../assets/nexus-logo.svg';
+import nexusIcon from '../../assets/icons/nexus-icon.svg';
 import LogoutOutlinedSvg from '../../assets/icons/logout_outlined.svg';
 import { ADMIN_NAV_ITEMS } from '../../constants/navigation';
 
-const AdminSidebar = ({ isOpen = false, onClose }) => {
+const AdminSidebar = ({ isOpen = false, onClose, theme = 'light' }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -23,10 +24,13 @@ const AdminSidebar = ({ isOpen = false, onClose }) => {
     isOpen ? 'translate-x-0' : '-translate-x-full'
   }`;
 
+  const logoSrc = theme === 'dark' ? nexusIcon : nexusLogo;
+  const logoAlt = theme === 'dark' ? 'Nexus Icon' : 'Nexus Logo';
+
   return (
     <aside className={sidebarClasses} aria-label="Admin navigation sidebar">
       <div className="mb-8 flex items-center justify-between gap-3 pl-1 pr-1 md:pl-2 md:pr-0">
-        <img src={nexusLogo} alt="Nexus Logo" className="h-8" />
+        <img src={logoSrc} alt={logoAlt} className="h-8" />
         <button
           type="button"
           onClick={onClose}

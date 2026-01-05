@@ -81,7 +81,7 @@ const AdminHeader = ({ searchTerm, onSearchChange, onMenuToggle, theme = 'light'
   };
 
   return (
-    <header className="border-b border-gray-200 pb-4 transition-colors duration-300 dark:border-gray-800 md:pb-6">
+    <header className="border-b border-gray-200 pb-4 transition-colors duration-300 mt-4 ml-4 dark:border-gray-800 md:pb-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div className="flex items-center justify-between gap-3 md:block">
           <div className="flex items-center gap-3">

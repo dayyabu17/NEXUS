@@ -22,7 +22,7 @@ const AdminLayout = ({ children, searchTerm, onSearchChange }) => {
 
   return (
     <div className="relative flex min-h-screen bg-gray-100 font-sans transition-colors duration-300 dark:bg-gray-900">
-      <AdminSidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} />
+      <AdminSidebar isOpen={isSidebarOpen} onClose={handleSidebarClose} theme={theme} />
 
       {isSidebarOpen && (
         <button
