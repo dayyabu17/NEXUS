@@ -77,10 +77,24 @@ const getEventDetails = asyncHandler(async (req, res) => {
  * @returns {void}
  */
 const updateEventStatus = asyncHandler(async (req, res) => {
-  const { status, remarks } = req.body || {};
+  const { status, remarks, rejectionReason } = req.body || {};
 
   if (!['approved', 'rejected'].includes(status)) {
     return res.status(400).json({ message: 'Invalid status value' });
+  }
+
+  const trimmedRemarks = typeof remarks === 'string' ? remarks.trim() : '';
+  let trimmedRejectionReason =
+    typeof rejectionReason === 'string' ? rejectionReason.trim() : '';
+
+  if (!trimmedRejectionReason && status === 'rejected' && trimmedRemarks) {
+    trimmedRejectionReason = trimmedRemarks;
+  }
+
+  if (status === 'rejected' && !trimmedRejectionReason) {
+    return res
+      .status(400)
+      .json({ message: 'Rejection reason is required when rejecting an event.' });
   }
 
   const event = await Event.findById(req.params.id);
@@ -91,6 +105,11 @@ const updateEventStatus = asyncHandler(async (req, res) => {
 
   const previousStatus = event.status;
   event.status = status;
+  if (status === 'rejected') {
+    event.rejectionReason = trimmedRejectionReason;
+  } else if (status === 'approved') {
+    event.rejectionReason = '';
+  }
   await event.save();
 
   if (status !== previousStatus) {
@@ -104,11 +123,13 @@ const updateEventStatus = asyncHandler(async (req, res) => {
         if (organizerEmail) {
           const organizerName = organizer?.name || organizer?.organizationName || 'Organizer';
           const subject = `Event ${status.charAt(0).toUpperCase() + status.slice(1)}: ${event.title}`;
+          const emailRemarks =
+            status === 'rejected' ? event.rejectionReason : trimmedRemarks || undefined;
           const htmlContent = buildStatusChangeEmailHtml({
             organizerName,
             eventTitle: event.title,
             status,
-            remarks: remarks && remarks.trim() ? remarks.trim() : undefined,
+            remarks: emailRemarks,
           });
 
           sendNotificationEmail(organizerEmail, subject, htmlContent).catch((error) => {
@@ -130,6 +151,7 @@ const updateEventStatus = asyncHandler(async (req, res) => {
     eventId: event._id,
     newStatus: status,
     previousStatus,
+    rejectionReason: event.rejectionReason,
   });
 });
 

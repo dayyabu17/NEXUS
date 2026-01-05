@@ -62,6 +62,11 @@ const eventSchema = new mongoose.Schema(
       enum: ['pending', 'approved', 'rejected'], // <--- Admin controls this
       default: 'pending',
     },
+    rejectionReason: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     isFeatured: {
       type: Boolean,
       default: false,
