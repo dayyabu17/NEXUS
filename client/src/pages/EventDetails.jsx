@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import GuestLayout from '../layouts/GuestLayout';
 import EventHero from '../components/EventDetails/EventHero';
 import EventMapSection from '../components/EventDetails/EventMapSection';
+import MapActionButtons from '../components/GuestMap/MapActionButtons';
 import TicketSidebar from '../components/EventDetails/TicketSidebar';
 import EventCheckoutModal from '../components/EventCheckoutModal';
 import TicketFeedbackPanel from '../components/TicketFeedbackPanel';
@@ -124,6 +125,11 @@ const EventDetails = () => {
               theme={theme}
               distanceLabel={distanceLabel}
               isComputingDistance={isComputingDistance}
+            />
+            <MapActionButtons
+              latitude={eventData?.locationLatitude}
+              longitude={eventData?.locationLongitude}
+              address={eventData?.location || eventData?.address || ''}
             />
           </div>
         </section>
