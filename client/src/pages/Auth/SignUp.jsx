@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import AuthLayout from '../../layouts/AuthLayout';
 import api from '../../api/axios';
+import { useTheme } from '../../context/ThemeContext';
+import nexusLogoDark from '../../assets/nexus-logo.svg';
+import nexusLogoWhite from '../../assets/nexus-logo-white.svg';
 
 const SignUp = () => {
   // 'student' or 'organizer'
@@ -20,9 +23,13 @@ const SignUp = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const { theme, resolvedTheme } = useTheme();
+  const activeTheme = theme === 'system' ? resolvedTheme : theme;
+  const logoSrc = activeTheme === 'dark' ? nexusLogoWhite : nexusLogoDark;
   const isOrganizer = userType === 'organizer';
   const isStudent = userType === 'student';
   const MotionContainer = motion.div;
+  const inputClasses = 'h-12 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-nexus-primary dark:border-slate-700 dark:bg-slate-900 dark:text-white dark:placeholder:text-slate-500';
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -82,28 +89,31 @@ const SignUp = () => {
   };
 
   return (
-    <AuthLayout>
+    <AuthLayout showCornerLogo={false}>
       <MotionContainer
-        className="w-full max-w-sm space-y-8"
+        className="relative w-full max-w-2xl space-y-8 rounded-3xl bg-white p-8 text-slate-900 shadow-xl transition-colors dark:bg-slate-950 dark:text-white sm:p-10"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5, ease: 'easeOut' }}
       >
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold text-white">Join Nexus</h1>
-          <p className="text-base text-slate-400">
+        <div className="space-y-6">
+          <img src={logoSrc} alt="Nexus logo" className="w-32" />
+          <div className="space-y-2">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-white">Join Nexus</h1>
+            <p className="text-base text-slate-500 dark:text-slate-400">
             Get connected to every event, group, and opportunity.
-          </p>
+            </p>
+          </div>
         </div>
 
-        <div className="flex w-full rounded-lg bg-slate-900 p-1">
+        <div className="flex w-full rounded-xl bg-slate-100 p-1 transition-colors dark:bg-slate-900">
           <button
             type="button"
             onClick={() => setUserType('student')}
-            className={`flex-1 rounded-md py-2 transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
               userType === 'student'
-                ? 'bg-slate-800 text-white shadow-sm font-medium'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-slate-900 text-white shadow-sm dark:bg-nexus-primary'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
             Student
@@ -111,10 +121,10 @@ const SignUp = () => {
           <button
             type="button"
             onClick={() => setUserType('organizer')}
-            className={`flex-1 rounded-md py-2 transition-colors ${
+            className={`flex-1 rounded-lg py-2 text-sm font-medium transition-colors ${
               userType === 'organizer'
-                ? 'bg-slate-800 text-white shadow-sm font-medium'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-slate-900 text-white shadow-sm dark:bg-nexus-primary'
+                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
             }`}
           >
             Organizer
@@ -128,7 +138,7 @@ const SignUp = () => {
             name="name"
             value={formData.name}
             onChange={handleChange}
-            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+            className={inputClasses}
           />
           <input
             type="email"
@@ -136,7 +146,7 @@ const SignUp = () => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+            className={inputClasses}
           />
           <input
             type="tel"
@@ -144,7 +154,7 @@ const SignUp = () => {
             name="phoneNumber"
             value={formData.phoneNumber}
             onChange={handleChange}
-            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+            className={inputClasses}
           />
 
           <AnimatePresence initial={false}>
@@ -162,7 +172,7 @@ const SignUp = () => {
                   name="organization"
                   value={formData.organization}
                   onChange={handleChange}
-                  className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                  className={inputClasses}
                 />
               </motion.div>
             )}
@@ -184,7 +194,7 @@ const SignUp = () => {
                     name="regNo"
                     value={formData.regNo}
                     onChange={handleChange}
-                    className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                    className={inputClasses}
                   />
                   <input
                     type="text"
@@ -192,7 +202,7 @@ const SignUp = () => {
                     name="address"
                     value={formData.address}
                     onChange={handleChange}
-                    className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+                    className={inputClasses}
                   />
                 </div>
               </motion.div>
@@ -205,7 +215,7 @@ const SignUp = () => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+            className={inputClasses}
           />
           <input
             type="password"
@@ -213,11 +223,11 @@ const SignUp = () => {
             name="confirmPassword"
             value={formData.confirmPassword}
             onChange={handleChange}
-            className="h-12 w-full rounded-lg border border-slate-800 bg-slate-900 px-4 text-white placeholder:text-slate-500 outline-none transition-all focus:border-transparent focus:ring-2 focus:ring-blue-600"
+            className={inputClasses}
           />
 
           {error && (
-            <div className="rounded-lg border border-red-900/40 bg-red-900/20 px-3 py-2 text-sm text-red-200">
+            <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600 dark:border-red-500/40 dark:bg-red-500/10 dark:text-red-200">
               {error}
             </div>
           )}
@@ -225,15 +235,18 @@ const SignUp = () => {
           <button
             type="submit"
             disabled={loading}
-            className="flex h-12 w-full items-center justify-center rounded-lg bg-blue-600 text-sm font-medium text-white transition-colors hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-70"
+            className="flex h-12 w-full items-center justify-center rounded-xl bg-nexus-primary text-sm font-semibold text-white transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-nexus-primary focus:ring-offset-2 focus:ring-offset-white dark:focus:ring-offset-slate-950 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Loading…' : 'Continue'}
           </button>
         </form>
 
-        <p className="text-center text-sm text-slate-400">
+        <p className="text-center text-sm text-slate-500 dark:text-slate-400">
           Already have an account?
-          <Link to="/sign-in" className="ml-1 font-semibold text-blue-400 transition hover:text-blue-300">
+          <Link
+            to="/sign-in"
+            className="ml-1 font-semibold text-nexus-primary transition-colors hover:text-blue-700 dark:hover:text-blue-500"
+          >
             Sign In
           </Link>
         </p>

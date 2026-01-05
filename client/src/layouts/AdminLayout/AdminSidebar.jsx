@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import nexusLogo from '../../assets/nexus-logo.svg';
-import nexusIcon from '../../assets/icons/nexus-icon.svg';
+import nexusLogoDark from '../../assets/nexus-logo.svg';
+import nexusLogoWhite from '../../assets/nexus-logo-white.svg';
 import LogoutOutlinedSvg from '../../assets/icons/logout_outlined.svg';
 import { ADMIN_NAV_ITEMS } from '../../constants/navigation';
 
@@ -24,7 +24,7 @@ const AdminSidebar = ({ isOpen = false, onClose, theme = 'light' }) => {
     isOpen ? 'translate-x-0' : '-translate-x-full'
   }`;
 
-  const logoSrc = theme === 'dark' ? nexusIcon : nexusLogo;
+  const logoSrc = theme === 'dark' ? nexusLogoWhite : nexusLogoDark;
   const logoAlt = theme === 'dark' ? 'Nexus Icon' : 'Nexus Logo';
 
   return (
