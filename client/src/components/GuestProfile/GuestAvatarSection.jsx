@@ -18,6 +18,9 @@ const GuestAvatarSection = ({
     {renderNexusIdCard({
       avatar: avatarPreview,
       displayName: profile.name,
+      regNo: profile.regNo,
+      department: profile.department,
+      userId: profile._id,
       memberSince,
       userHandle,
       onShare,

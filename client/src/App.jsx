@@ -45,6 +45,7 @@ const PaymentCallback = lazy(() => import('./pages/PaymentCallback'));
 const MyTickets = lazy(() => import('./pages/MyTickets')); // Note: This was in /pages
 const GuestProfile = lazy(() => import('./pages/GuestProfile'));
 const GuestEvents = lazy(() => import('./pages/GuestEvents')); // Note: This was in /pages
+const GuestInfo = lazy(() => import('./pages/GuestInfo'));
 
 // --- 2. Loading Fallback Component ---
 // This shows while the browser fetches the specific page chunk
@@ -75,6 +76,7 @@ function App() {
         <Route path="/landingpage" element={<LandingPage />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/u/:userId" element={<GuestInfo />} />
         
         {/* Admin Routes */}
         <Route path="/admin/dashboard" element={<AdminDashboard />} /> 
@@ -119,6 +121,7 @@ function App() {
           <Route path="events" element={<GuestEvents />} />
           <Route path="profile" element={<GuestProfile />} />
         </Route>
+        <Route path="/guest/info/:userId" element={<GuestInfo />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/payment/callback" element={<PaymentCallback />} />
         <Route path="/dashboard" element={<GuestDashboard />} /> 

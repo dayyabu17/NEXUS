@@ -10,8 +10,11 @@ const TABS = [
 ];
 
 const initialProfile = {
+  _id: '',
   name: '',
   email: '',
+  regNo: '',
+  department: '',
   password: '',
   confirmPassword: '',
 };
@@ -44,8 +47,11 @@ const useGuestProfile = () => {
       const stored = JSON.parse(storedRaw);
       setProfile((prev) => ({
         ...prev,
+        _id: stored?._id || stored?.id || '',
         name: stored?.name || '',
         email: stored?.email || '',
+        regNo: stored?.regNo || stored?.studentId || '',
+        department: stored?.department || '',
       }));
       setAvatarPreview(resolveProfileImage(stored?.profilePicture));
       setMemberSince(stored?.createdAt || null);
