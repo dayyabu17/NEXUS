@@ -54,7 +54,6 @@ const NexusIDCard = ({
   avatar,
   displayName,
   regNo,
-  department,
   userId,
   memberSince,
   userHandle,
@@ -107,10 +106,14 @@ const NexusIDCard = ({
     mouseX.set(0);
     mouseY.set(0);
   }, [mouseX, mouseY]);
-  const [printStylesMounted, setPrintStylesMounted] = useState(false);
 
   useEffect(() => {
-    if (printStylesMounted || typeof document === 'undefined') {
+    if (typeof document === 'undefined') {
+      return undefined;
+    }
+
+    const existing = document.querySelector('style[data-nexus-print-card="true"]');
+    if (existing) {
       return undefined;
     }
 
@@ -118,14 +121,13 @@ const NexusIDCard = ({
     styleElement.setAttribute('data-nexus-print-card', 'true');
     styleElement.textContent = PRINT_STYLE;
     document.head.appendChild(styleElement);
-    setPrintStylesMounted(true);
 
     return () => {
       if (styleElement.parentNode) {
         styleElement.parentNode.removeChild(styleElement);
       }
     };
-  }, [printStylesMounted]);
+  }, []);
 
   const avatarUrl = useMemo(() => resolveProfileImage(avatar), [avatar]);
   const baseUrl = useMemo(() => getBaseUrl(), []);
@@ -204,27 +206,23 @@ const NexusIDCard = ({
             </div>
           </header>
 
-          <div className="grid grid-cols-[1fr_auto] gap-4">
-            <div className="space-y-3">
+          <div className="grid grid-cols-[1.5fr_1fr] gap-4">
+            <div className="flex h-full flex-col justify-between">
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Reg No</p>
-                <p className="text-sm font-semibold text-white">{regNo || 'Pending'}</p>
-              </div>
-              <div>
-                <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Department</p>
-                <p className="text-sm font-semibold text-white">{department || 'Not set'}</p>
+                <p className="mt-1 text-sm font-semibold text-white">{regNo || 'Pending'}</p>
               </div>
               <div>
                 <p className="text-[11px] uppercase tracking-[0.3em] text-white/60">Member Since</p>
-                <p className="text-sm font-semibold text-white">
-                  {memberSince ? new Date(memberSince).toLocaleDateString('en-US', {
+                <p className="mt-1 text-sm font-semibold text-white">
+                  {memberSince ? new Date(memberSince).toLocaleDateString('en-GB', {
                     month: 'long',
                     year: 'numeric',
                   }) : 'Unknown'}
                 </p>
               </div>
             </div>
-            <div className="flex flex-col items-center gap-2">
+            <div className="flex flex-col items-center justify-end gap-2">
               <div className="overflow-hidden rounded-xl border border-white/35 bg-white p-1">
                 <QRCode
                   value={qrValue}
