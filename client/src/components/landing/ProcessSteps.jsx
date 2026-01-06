@@ -40,8 +40,8 @@ const steps = [
 const ProcessSteps = () => (
   <section className="mx-auto flex w-full max-w-5xl flex-col items-center gap-12">
     <div className="space-y-4 text-center">
-      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-white">How Nexus Works</h2>
-      <p className="text-base text-slate-600 dark:text-slate-400">
+      <h2 className="text-3xl font-semibold tracking-tight text-slate-900 transition-colors duration-300 dark:text-white">How Nexus Works</h2>
+      <p className="text-base text-slate-600 transition-colors duration-300 dark:text-slate-400">
         Follow the simple journey to plan and enjoy unforgettable experiences.
       </p>
     </div>
@@ -65,12 +65,12 @@ const ProcessSteps = () => (
       <div className="relative z-10 flex flex-col items-center gap-12 sm:flex-row sm:justify-between">
         {steps.map(({ title, description, Icon }) => (
           <div key={title} className="flex w-full max-w-[220px] flex-col items-center gap-6 text-center">
-            <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-emerald-600">
+            <div className="relative z-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-nexus-primary">
               <Icon />
             </div>
             <div className="space-y-2">
-              <h3 className="text-lg font-semibold text-slate-900 dark:text-white">{title}</h3>
-              <p className="text-sm leading-relaxed text-slate-600 dark:text-slate-400">{description}</p>
+              <h3 className="text-lg font-semibold text-slate-900 transition-colors duration-300 dark:text-white">{title}</h3>
+              <p className="text-sm leading-relaxed text-slate-600 transition-colors duration-300 dark:text-slate-400">{description}</p>
             </div>
           </div>
         ))}

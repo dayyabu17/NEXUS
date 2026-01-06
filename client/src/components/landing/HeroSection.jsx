@@ -7,25 +7,25 @@ const MotionDiv = motion.div;
 const MotionH1 = motion.h1;
 
 const HeroSection = () => (
-  <div className="relative w-full overflow-hidden bg-slate-950 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/20 via-slate-950 to-slate-950">
-    <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20" aria-hidden />
+  <div className="relative w-full overflow-hidden bg-white transition-colors duration-300 dark:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] dark:from-primary/20 dark:via-slate-950 dark:to-slate-950">
+    <div className="pointer-events-none absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-5 dark:opacity-20" aria-hidden />
 
     <MotionSection
       initial="hidden"
       animate="visible"
       variants={fadeUp}
-      className="relative mx-auto flex max-w-7xl flex-col items-center gap-12 px-6 pt-20 pb-24 text-center sm:px-10 lg:pt-32"
+      className="relative mx-auto flex max-w-7xl flex-col items-center gap-12 px-6 pt-20 pb-24 text-center text-slate-900 transition-colors duration-300 sm:px-10 lg:pt-32 dark:text-white"
     >
       <div className="space-y-6">
-        <MotionH1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl md:text-6xl">
-          A campus that <span className="text-primary">connects</span>. A community that <span className="text-primary">grows</span>.
+        <MotionH1 className="text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl md:text-6xl dark:text-white">
+          A campus that <span className="text-nexus-primary">connects</span>. A community that <span className="text-nexus-primary">grows</span>.
         </MotionH1>
-        <p className="mx-auto max-w-2xl text-lg text-slate-300">
+        <p className="mx-auto max-w-2xl text-lg text-slate-600 transition-colors duration-300 dark:text-slate-300">
           The central hub for every event, workshop, and gathering at Bayero University Kano.
         </p>
         <button
           type="button"
-          className="inline-flex items-center justify-center rounded-full bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/30 transition hover:bg-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+          className="inline-flex items-center justify-center rounded-full bg-nexus-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-nexus-primary/30 transition hover:bg-nexus-primary/90 focus:outline-none focus-visible:ring-2 focus-visible:ring-nexus-primary/40"
         >
           Get Started
         </button>
