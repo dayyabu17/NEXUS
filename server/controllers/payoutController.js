@@ -123,9 +123,15 @@ const createOrUpdatePayoutAccount = asyncHandler(async (req, res) => {
     res.status(status).json({ message });
   }
 });
+const getPayoutAccount = asyncHandler(async (req, res) => {
+  const payoutAccount = await PayoutAccount.findOne({ user: req.user._id });
+  // Return null if not found (status 200) so frontend can handle empty state
+  res.status(200).json({ payoutAccount: payoutAccount || null });
+});
 
 module.exports = {
   fetchPaystackBanks,
   resolveBankAccount,
   createOrUpdatePayoutAccount,
+  getPayoutAccount,
 };

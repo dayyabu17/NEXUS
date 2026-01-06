@@ -19,6 +19,7 @@ const getStoredToken = () => {
 
 const PayoutSettings = () => {
   const [banks, setBanks] = useState([]);
+  const [currentAccount, setCurrentAccount] = useState(null);
   const [form, setForm] = useState(INITIAL_FORM);
   const [loadingBanks, setLoadingBanks] = useState(false);
   const [resolvingAccount, setResolvingAccount] = useState(false);
@@ -64,6 +65,45 @@ const PayoutSettings = () => {
     };
   }, [token]);
 
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchCurrentAccount = async () => {
+      if (!token) {
+        return;
+      }
+
+      try {
+        const { data } = await api.get('/payouts/me', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (!isMounted) {
+          return;
+        }
+
+        if (data?.payoutAccount) {
+          setCurrentAccount(data.payoutAccount);
+        }
+      } catch (error) {
+        if (error?.response?.status === 404) {
+          return;
+        }
+
+        if (isMounted) {
+          const message = error?.response?.data?.message || 'Unable to load payout account.';
+          setStatus((prev) => (prev.type ? prev : { type: 'error', message }));
+        }
+      }
+    };
+
+    fetchCurrentAccount();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [token]);
+
   const handleFieldChange = useCallback(
     (event) => {
       const { name, value } = event.target;
@@ -92,7 +132,7 @@ const PayoutSettings = () => {
     [banks]
   );
 
-  const handleAccountBlur = useCallback(async () => {
+  const handleVerifyAccount = useCallback(async () => {
     const trimmedAccount = form.accountNumber.trim();
 
     if (!form.bankCode || trimmedAccount.length !== 10) {
@@ -141,21 +181,25 @@ const PayoutSettings = () => {
       setStatus({ type: '', message: '' });
 
       try {
+        const payload = {
+          bankCode: form.bankCode,
+          bankName: form.bankName,
+          accountNumber: form.accountNumber.trim(),
+          accountName: form.accountName,
+          splitPercentage: Number(form.splitPercentage) || 0,
+        };
+
         await api.post(
           '/payouts/create',
-          {
-            bankCode: form.bankCode,
-            bankName: form.bankName,
-            accountNumber: form.accountNumber.trim(),
-            accountName: form.accountName,
-            splitPercentage: form.splitPercentage,
-          },
+          payload,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
         );
 
         setStatus({ type: 'success', message: 'Payout account saved.' });
+        setCurrentAccount(payload);
+        setForm(INITIAL_FORM);
       } catch (error) {
         const message = error?.response?.data?.message || 'Unable to save payout account.';
         setStatus({ type: 'error', message });
@@ -175,6 +219,35 @@ const PayoutSettings = () => {
         </p>
       </header>
 
+      {currentAccount && (
+        <section className="mb-6 rounded-3xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h3 className="text-base font-semibold">Active Payout Account</h3>
+            <span className="rounded-full bg-emerald-600 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-white dark:bg-emerald-400 dark:text-emerald-900">
+              Active
+            </span>
+          </div>
+          <dl className="grid gap-3 sm:grid-cols-2">
+            <div>
+              <dt className="text-xs uppercase tracking-[0.3em] text-emerald-700/70 dark:text-emerald-200/70">Bank</dt>
+              <dd className="font-medium">{currentAccount.bankName || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-[0.3em] text-emerald-700/70 dark:text-emerald-200/70">Account number</dt>
+              <dd className="font-medium">{currentAccount.accountNumber || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-[0.3em] text-emerald-700/70 dark:text-emerald-200/70">Account name</dt>
+              <dd className="font-medium">{currentAccount.accountName || 'N/A'}</dd>
+            </div>
+            <div>
+              <dt className="text-xs uppercase tracking-[0.3em] text-emerald-700/70 dark:text-emerald-200/70">Split percentage</dt>
+              <dd className="font-medium">{Number.isFinite(currentAccount.splitPercentage) ? currentAccount.splitPercentage : 10}%</dd>
+            </div>
+          </dl>
+        </section>
+      )}
+
       {status.message && (
         <div
           className={`mb-6 rounded-2xl border px-4 py-3 text-sm ${
@@ -186,6 +259,11 @@ const PayoutSettings = () => {
           {status.message}
         </div>
       )}
+
+      <div className="mb-5 flex items-center justify-between gap-3">
+        <h3 className="text-base font-semibold text-slate-900 dark:text-white">Update Bank Details</h3>
+        <span className="text-xs uppercase tracking-[0.3em] text-slate-400 dark:text-white/40">Enter new info</span>
+      </div>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
         <div className="flex flex-col gap-2">
@@ -213,16 +291,34 @@ const PayoutSettings = () => {
 
         <div className="flex flex-col gap-2">
           <label className="text-xs font-semibold uppercase tracking-[0.3em] text-slate-500 dark:text-slate-400">Account number</label>
-          <input
-            name="accountNumber"
-            value={form.accountNumber}
-            onChange={handleFieldChange}
-            onBlur={handleAccountBlur}
-            maxLength={10}
-            inputMode="numeric"
-            placeholder="0123456789"
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/30"
-          />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+            <div className="relative flex-1">
+              <input
+                name="accountNumber"
+                value={form.accountNumber}
+                onChange={handleFieldChange}
+                maxLength={10}
+                inputMode="numeric"
+                placeholder="0123456789"
+                className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/30"
+              />
+              {resolvingAccount && (
+                <Loader2 className="absolute right-3 top-3 h-5 w-5 animate-spin text-slate-400 dark:text-white/60" />
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={handleVerifyAccount}
+              disabled={
+                resolvingAccount ||
+                !form.bankCode ||
+                form.accountNumber.trim().length !== 10
+              }
+              className="inline-flex items-center justify-center rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-black dark:hover:bg-white/80"
+            >
+              {resolvingAccount ? 'Verifying…' : 'Verify Account'}
+            </button>
+          </div>
           <p className="text-xs text-slate-500 dark:text-white/45">
             We will auto-fill the account name after verifying with Paystack.
           </p>
@@ -257,6 +353,9 @@ const PayoutSettings = () => {
           />
           <p className="text-xs text-slate-500 dark:text-white/45">
             Default is 10% (Paystack's percentage_charge field).
+          </p>
+          <p className="text-xs text-slate-500 dark:text-white/45">
+            Nexus charges a 10% platform fee on all ticket sales.
           </p>
         </div>
 
