@@ -2,6 +2,7 @@ const axios = require('axios');
 const Ticket = require('../models/Ticket');
 const Event = require('../models/Event');
 const User = require('../models/User');
+const PayoutAccount = require('../models/PayoutAccount');
 const { sendNotificationEmail } = require('../utils/emailService');
 const { buildEventUrl } = require('../utils/eventHelpers');
 const { buildPaymentReceiptEmailHtml } = require('../utils/emailTemplates');
@@ -76,6 +77,11 @@ const initializeRSVP = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Event not found.' });
     }
 
+    const payoutAccount = await PayoutAccount.findOne({
+      user: event.organizer,
+      isActive: true,
+    });
+
     const existingTicket = await Ticket.findOne({
       user: userId,
       event: eventId,
@@ -149,18 +155,26 @@ const initializeRSVP = async (req, res) => {
     const normalizedBase = frontendBase.endsWith('/') ? frontendBase.slice(0, -1) : frontendBase;
     const callbackUrl = `${normalizedBase}/payment/callback`;
 
+    const paystackPayload = {
+      email,
+      amount: totalAmountKobo,
+      callback_url: callbackUrl,
+      metadata: {
+        userId,
+        eventId,
+        quantity: qty,
+      },
+    };
+
+    if (payoutAccount && payoutAccount.subaccountCode) {
+      paystackPayload.subaccount = payoutAccount.subaccountCode;
+      debugPayment('Using Subaccount for Split:', payoutAccount.subaccountCode);
+      // paystackPayload.bearer = 'subaccount';
+    }
+
     const paystackResponse = await axios.post(
       `${PAYSTACK_BASE_URL}/transaction/initialize`,
-      {
-        email,
-        amount: totalAmountKobo,
-        callback_url: callbackUrl,
-        metadata: {
-          userId,
-          eventId,
-          quantity: qty,
-        },
-      },
+      paystackPayload,
       {
         headers: {
           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
