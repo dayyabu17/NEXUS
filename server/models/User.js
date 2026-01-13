@@ -19,6 +19,7 @@ const mongoose = require('mongoose');
  * @property {string[]} interests - List of user interests (e.g., 'Technology', 'Music').
  */
 const userSchema = new mongoose.Schema({
+  
   name: {
     type: String,
     required: true,

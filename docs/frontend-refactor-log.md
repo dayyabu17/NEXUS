@@ -1,6 +1,7 @@
 # Frontend Refactor Log
 
 ## 2025-12-25
+
 - Initialized refactor log to track task execution.
 - Revisited existing frontend planning docs to confirm requirements captured in textual specifications.
 - Reviewed client/src/App.jsx; confirmed routes import component-level modules (AdminDashboard, OrganizerDashboard, etc.) and mix components with pages.
