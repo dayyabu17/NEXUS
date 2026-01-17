@@ -6,6 +6,7 @@ const PayoutAccount = require('../models/PayoutAccount');
 const { sendNotificationEmail } = require('../utils/emailService');
 const { buildEventUrl } = require('../utils/eventHelpers');
 const { buildPaymentReceiptEmailHtml } = require('../utils/emailTemplates');
+const { addInterestWithLIFO } = require('../utils/interestHelpers');
 
 const PAYSTACK_BASE_URL = 'https://api.paystack.co';
 const FRONTEND_FALLBACK = 'http://localhost:5173';
@@ -45,6 +46,39 @@ const updateEventSales = async (event, quantity) => {
   event.ticketsSold = currentSold + increment;
   event.rsvpCount = getSafeNumber(event.rsvpCount, 0) + increment;
   await event.save();
+};
+
+/**
+ * Auto-update user interests when they purchase a ticket.
+ * Adds the event category to their interests using LIFO logic (max 5).
+ *
+ * @param {string} userId - User ID
+ * @param {string} eventId - Event ID
+ */
+const autoUpdateUserInterests = async (userId, eventId) => {
+  try {
+    const event = await Event.findById(eventId).select('category').lean();
+    if (!event || !event.category) {
+      return; // Event or category not found, skip
+    }
+
+    const user = await User.findById(userId).select('interests');
+    if (!user) {
+      return; // User not found, skip
+    }
+
+    const currentInterests = Array.isArray(user.interests) ? user.interests : [];
+    const updatedInterests = addInterestWithLIFO(currentInterests, event.category, 5);
+
+    // Only update if interests changed
+    if (JSON.stringify(updatedInterests) !== JSON.stringify(currentInterests)) {
+      await User.findByIdAndUpdate(userId, { interests: updatedInterests });
+      console.log(`Updated interests for user ${userId}:`, updatedInterests);
+    }
+  } catch (error) {
+    console.error('Failed to auto-update interests:', error.message);
+    // Don't throw - this is a non-critical operation
+  }
 };
 
 /**
@@ -119,6 +153,9 @@ const initializeRSVP = async (req, res) => {
       });
 
       await updateEventSales(event, qty);
+
+      // Auto-update user interests with event category (LIFO)
+      await autoUpdateUserInterests(userId, eventId);
 
       try {
         const user = await User.findById(userId).select('name email');
@@ -282,6 +319,9 @@ const verifyPayment = async (req, res) => {
         metadata,
       });
       debugPayment('Ticket Created Successfully:', newTicket._id);
+
+      // Auto-update user interests with event category (LIFO)
+      await autoUpdateUserInterests(userId, eventId);
 
       const updateResult = await Event.findByIdAndUpdate(
         eventId,

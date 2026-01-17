@@ -3,6 +3,7 @@ const asyncHandler = require('express-async-handler');
 const User = require('../models/User');
 const Ticket = require('../models/Ticket');
 const { updateUserTheme } = require('../services/authService');
+const { validateInterests, normalizeInterests } = require('../utils/interestHelpers');
 
 /**
  * Update the authenticated user's theme preference.
@@ -17,6 +18,43 @@ const updateThemePreference = asyncHandler(async (req, res) => {
   res.json({
     message: 'Theme preference updated successfully.',
     theme: updatedUser.theme,
+  });
+});
+
+/**
+ * Update the authenticated user's interests.
+ *
+ * @route PUT /api/users/interests
+ * @description Update user's interest categories with validation (min 3, max 5)
+ * @access Private
+ */
+const updateUserInterests = asyncHandler(async (req, res) => {
+  const { interests } = req.body || {};
+
+  // Normalize and validate interests
+  const normalizedInterests = normalizeInterests(interests);
+  const validation = validateInterests(normalizedInterests, 3, 5);
+
+  if (!validation.isValid) {
+    return res.status(400).json({
+      message: validation.message,
+    });
+  }
+
+  // Update user interests in database
+  const updatedUser = await User.findByIdAndUpdate(
+    req.user._id,
+    { interests: normalizedInterests },
+    { new: true, runValidators: true }
+  ).select('interests name email');
+
+  if (!updatedUser) {
+    return res.status(404).json({ message: 'User not found.' });
+  }
+
+  res.json({
+    message: 'Interests updated successfully.',
+    interests: updatedUser.interests,
   });
 });
 
@@ -51,4 +89,5 @@ const getPublicUserProfile = asyncHandler(async (req, res) => {
 module.exports = {
   updateThemePreference,
   getPublicUserProfile,
+  updateUserInterests,
 };

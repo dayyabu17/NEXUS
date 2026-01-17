@@ -7,6 +7,7 @@ import { Routes, Route, Outlet } from 'react-router-dom';
 const SignIn = lazy(() => import('./pages/Auth/SignIn'));
 const SignUp = lazy(() => import('./pages/Auth/SignUp'));
 const LandingPage = lazy(() => import('./pages/LandingPage'));
+const OnboardingInterests = lazy(() => import('./pages/OnboardingInterests'));
 
 // Admin Pages
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
@@ -76,6 +77,7 @@ function App() {
         <Route path="/landingpage" element={<LandingPage />} />
         <Route path="/sign-in" element={<SignIn />} />
         <Route path="/sign-up" element={<SignUp />} />
+        <Route path="/onboarding/interests" element={<OnboardingInterests />} />
         <Route path="/u/:userId" element={<GuestInfo />} />
         
         {/* Admin Routes */}

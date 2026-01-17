@@ -78,7 +78,33 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      await api.post('/auth/register', payload);
+      const response = await api.post('/auth/register', payload);
+      
+      // If student role, store temp data and redirect to interests
+      if (isStudent) {
+        // Auto-login after signup for students
+        try {
+          const loginResponse = await api.post('/auth/login', {
+            email: formData.email,
+            password: formData.password,
+          });
+          
+          const { data } = loginResponse;
+          
+          if (data.token) {
+            localStorage.setItem('token', data.token);
+            localStorage.setItem('user', JSON.stringify(data));
+          }
+          
+          // Redirect to interest selection
+          navigate('/onboarding/interests');
+          return;
+        } catch (loginErr) {
+          console.error('Auto-login failed:', loginErr);
+          // Fall back to normal sign-in redirect
+        }
+      }
+      
       navigate('/sign-in');
     } catch (err) {
       const message = err?.response?.data?.message;

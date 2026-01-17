@@ -76,8 +76,8 @@ const getDashboardData = asyncHandler(async (req, res) => {
     ...(heroId ? { _id: { $ne: heroId } } : {}),
   };
 
-  const interestCategories = Array.isArray(req.user?.interestCategories)
-    ? req.user.interestCategories.filter(Boolean)
+  const interestCategories = Array.isArray(req.user?.interests)
+    ? req.user.interests.filter(Boolean)
     : [];
 
   let recommendedEvents = [];
