@@ -93,17 +93,25 @@ const getTicketStatus = asyncHandler(async (req, res) => {
 /**
  * Purge all tickets (Dev/Test only).
  *
- * @description Deletes all ticket records from the database. Use with caution.
- * @route POST /api/tickets/purge
- * @access Public (Should be restricted in production)
+ * @description Deletes all ticket records from the database. Restricted to admin and non-production.
+ * @route GET /api/tickets/purge
+ * @access Private (Admin; blocked in production)
  * @param {import('express').Request} req - The Express request object.
  * @param {import('express').Response} res - The Express response object.
  * @returns {void}
  */
 const purgeTickets = asyncHandler(async (req, res) => {
+  if (process.env.NODE_ENV === 'production') {
+    return res.status(403).json({ success: false, message: 'Operation not allowed in production.' });
+  }
+
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Admin privileges required.' });
+  }
+
   await Ticket.deleteMany({});
   console.log('All tickets deleted. Ready for fresh test.');
-  res.send('All tickets deleted. Ready for fresh test.');
+  res.json({ success: true, message: 'All tickets deleted. Ready for fresh test.' });
 });
 
 const checkInUser = asyncHandler(async (req, res) => {
@@ -156,6 +164,11 @@ const checkInUser = asyncHandler(async (req, res) => {
     return res
       .status(400)
       .json({ success: false, message: 'Only confirmed tickets can be checked in.' });
+  }
+
+  if (ticket.status === 'checked-in' || ticket.isCheckedIn) {
+    const guestAlready = buildGuestPayload(ticket);
+    return res.json({ success: true, alreadyCheckedIn: true, guest: guestAlready });
   }
 
   ticket.status = 'checked-in';

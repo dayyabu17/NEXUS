@@ -1,6 +1,6 @@
 const express = require('express');
 const { getMyTickets, getTicketStatus, purgeTickets, checkInUser } = require('../controllers/ticketController');
-const { protect, organizer } = require('../middleware/authMiddleware');
+const { protect, organizer, admin } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -21,9 +21,9 @@ router.get('/status/:eventId', protect, getTicketStatus);
 /**
  * @route GET /api/tickets/purge
  * @desc Delete all tickets (dev only).
- * @access Public
+ * @access Private (Admin; blocked in production)
  */
-router.get('/purge', purgeTickets);
+router.get('/purge', protect, admin, purgeTickets);
 
 /**
  * @route POST /api/tickets/check-in
