@@ -281,7 +281,7 @@ const AdminEventDetails = () => {
                   <li className="flex justify-between">
                     <span className="text-slate-500 dark:text-slate-400">Fee:</span>
                     <span className="font-medium text-slate-900 dark:text-white">
-                      {event.registrationFee > 0 ? `$${event.registrationFee}` : 'Free'}
+                      {event.registrationFee > 0 ? `₦${event.registrationFee}` : 'Free'}
                     </span>
                   </li>
                 </ul>
