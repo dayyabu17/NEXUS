@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axios';
 import { formatCurrency } from '../../components/OrganizerDashboard/dashboardUtils';
+import { resolveProfileImage } from '../../utils/profileUtils';
 
 const defaultStats = {
   totalUpcomingRsvps: 0,
@@ -59,7 +60,8 @@ const useOrganizerDashboard = () => {
       const parsed = JSON.parse(user);
       const name = parsed?.name?.trim() || fallbackName;
       const firstName = name.split(' ')[0] || fallbackName;
-      const avatar = parsed?.profilePicture || fallbackAvatar;
+      const rawAvatar = parsed?.profilePicture;
+      const avatar = rawAvatar ? resolveProfileImage(rawAvatar) : fallbackAvatar;
 
       return {
         name,
