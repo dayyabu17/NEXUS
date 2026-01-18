@@ -2,29 +2,20 @@ import { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 
 const DEFAULT_AVATAR = '/images/default-avatar.jpeg';
-const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta?.env?.VITE_SERVER_URL)
-  ? import.meta.env.VITE_SERVER_URL
-  : 'http://localhost:5000';
-const PUBLIC_BASE = `${API_BASE_URL.replace(/\/$/, '')}/public`;
-const DEFAULT_AVATAR_URL = `${PUBLIC_BASE}${DEFAULT_AVATAR}`;
-const THEME_STORAGE_KEY = 'adminTheme';
-
-const resolveProfilePicture = (value) => {
-  if (!value || typeof value !== 'string') {
-    return DEFAULT_AVATAR_URL;
+const resolveProfilePicture = (profilePicture) => {
+  if (!profilePicture) {
+    return DEFAULT_AVATAR;
   }
 
-  const trimmed = value.trim();
-  if (!trimmed || trimmed.toLowerCase() === 'null') {
-    return DEFAULT_AVATAR_URL;
+  if (typeof profilePicture === 'string' && profilePicture.startsWith('http')) {
+    return profilePicture;
   }
 
-  if (/^https?:\/\//i.test(trimmed)) {
-    return trimmed;
-  }
-
-  return `${PUBLIC_BASE}${trimmed.startsWith('/') ? trimmed : `/${trimmed}`}`;
+  return `http://localhost:5000/public${profilePicture}`;
 };
+
+const THEME_STORAGE_KEY = 'adminTheme';
+const DEFAULT_AVATAR_URL = resolveProfilePicture(null);
 
 const useAdminSettings = () => {
   const [formData, setFormData] = useState({
