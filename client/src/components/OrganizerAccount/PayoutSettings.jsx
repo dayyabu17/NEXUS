@@ -7,7 +7,7 @@ const INITIAL_FORM = {
   bankName: '',
   accountNumber: '',
   accountName: '',
-  splitPercentage: 10,
+  splitPercentage: 8,
 };
 
 const getStoredToken = () => {
@@ -345,17 +345,13 @@ const PayoutSettings = () => {
           <input
             name="splitPercentage"
             type="number"
-            min={0}
-            max={100}
             value={form.splitPercentage}
-            onChange={handleFieldChange}
-            className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:border-slate-400 focus:outline-none dark:border-white/10 dark:bg-black/40 dark:text-white dark:placeholder:text-white/30 dark:focus:border-white/30"
+            disabled
+            readOnly
+            className="cursor-not-allowed rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 dark:border-white/10 dark:bg-black/30 dark:text-white dark:placeholder:text-white/30"
           />
           <p className="text-xs text-slate-500 dark:text-white/45">
-            Default is 10% (Paystack's percentage_charge field).
-          </p>
-          <p className="text-xs text-slate-500 dark:text-white/45">
-            Nexus charges a 10% platform fee on all ticket sales.
+            Fixed at 8% for all payout accounts.
           </p>
         </div>
 
