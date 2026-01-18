@@ -14,6 +14,8 @@ const AdminEventDetails = () => {
   const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
   const [rejectionReason, setRejectionReason] = useState('');
   const [rejectionError, setRejectionError] = useState('');
+  const [featureLoading, setFeatureLoading] = useState(false);
+  const [featureError, setFeatureError] = useState('');
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -90,6 +92,39 @@ const AdminEventDetails = () => {
     }
   };
 
+  const handleToggleFeatured = async () => {
+    if (!event) return;
+
+    const eventDate = event.date ? new Date(event.date) : null;
+    const isDateInvalid = !eventDate || Number.isNaN(eventDate.getTime());
+    const isPast = !isDateInvalid && eventDate < new Date();
+
+    if (isDateInvalid || isPast) {
+      setFeatureError('Only upcoming events with valid dates can be featured.');
+      return;
+    }
+
+    setFeatureLoading(true);
+    setFeatureError('');
+    try {
+      const token = localStorage.getItem('token');
+      const config = {
+        headers: { Authorization: `Bearer ${token}` },
+      };
+
+      const nextValue = !event.isFeatured;
+      const response = await api.put(`/admin/events/${id}/feature`, { isFeatured: nextValue }, config);
+
+      setEvent((prev) => (prev ? { ...prev, isFeatured: response.data.isFeatured } : prev));
+    } catch (err) {
+      console.error(err);
+      const message = err.response?.data?.message || 'Failed to update featured status.';
+      setFeatureError(message);
+    } finally {
+      setFeatureLoading(false);
+    }
+  };
+
   if (loading)
     return (
       <AdminLayout>
@@ -127,6 +162,15 @@ const AdminEventDetails = () => {
                   }`}
                 >
                   {event.status.toUpperCase()}
+                </span>
+                <span
+                  className={`rounded-full px-3 py-1 text-sm font-medium ${
+                    event.isFeatured
+                      ? 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900/30 dark:text-indigo-200'
+                      : 'bg-slate-100 text-slate-600 dark:bg-slate-800/40 dark:text-slate-300'
+                  }`}
+                >
+                  {event.isFeatured ? 'FEATURED' : 'NOT FEATURED'}
                 </span>
               </div>
               <p className="text-lg text-slate-500 dark:text-slate-400">
@@ -184,6 +228,32 @@ const AdminEventDetails = () => {
             </div>
 
             <div className="h-fit space-y-6 rounded-lg bg-slate-50 p-6 dark:bg-slate-800/50">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <h3 className="mb-1 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Featured Status
+                  </h3>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">
+                    Only upcoming events can be featured on the dashboard.
+                  </p>
+                  {featureError && (
+                    <p className="mt-2 text-sm text-red-500">{featureError}</p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={handleToggleFeatured}
+                  disabled={featureLoading || !event || !event.date}
+                  className={`rounded-full px-4 py-2 text-sm font-semibold transition disabled:opacity-50 ${
+                    event?.isFeatured
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-slate-200 text-slate-800 hover:bg-slate-300 dark:bg-slate-700 dark:text-white dark:hover:bg-slate-600'
+                  }`}
+                >
+                  {featureLoading ? 'Updating...' : event?.isFeatured ? 'Unfeature' : 'Mark as Featured'}
+                </button>
+              </div>
+
               <div>
                 <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Organizer</h3>
                 <div className="flex items-center gap-3">

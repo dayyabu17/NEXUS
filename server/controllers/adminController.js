@@ -226,6 +226,60 @@ const getAllEvents = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Toggle event featured status.
+ *
+ * @description Allows an admin to mark or unmark an event as featured for the dashboard hero/recommended sections.
+ * @route PUT /api/admin/events/:id/feature
+ * @access Private (Admin)
+ */
+const setEventFeatured = asyncHandler(async (req, res) => {
+  const { isFeatured } = req.body || {};
+
+  if (typeof isFeatured !== 'boolean') {
+    return res.status(400).json({ message: 'isFeatured must be a boolean.' });
+  }
+
+  const event = await Event.findById(req.params.id);
+
+  if (!event) {
+    return res.status(404).json({ message: 'Event not found' });
+  }
+
+  const eventDate = event.date ? new Date(event.date) : null;
+  const now = new Date();
+
+  const isDateInvalid = !eventDate || Number.isNaN(eventDate.getTime());
+  const isPast = !isDateInvalid && eventDate < now;
+
+  if (isFeatured && (isDateInvalid || isPast)) {
+    // Force unfeature for past or invalid-dated events
+    event.isFeatured = false;
+    await event.save();
+    return res.status(400).json({
+      message: isDateInvalid
+        ? 'Cannot feature event: start date is missing or invalid. isFeatured has been set to false.'
+        : 'Cannot feature a past event. isFeatured has been set to false.',
+      eventId: event._id,
+      isFeatured: event.isFeatured,
+    });
+  }
+
+  if (isFeatured) {
+    // Ensure only one featured event at a time
+    await Event.updateMany({ _id: { $ne: event._id }, isFeatured: true }, { $set: { isFeatured: false } });
+  }
+
+  event.isFeatured = isFeatured;
+  await event.save();
+
+  return res.json({
+    message: `Event ${isFeatured ? 'marked as' : 'removed from'} featured`,
+    eventId: event._id,
+    isFeatured: event.isFeatured,
+  });
+});
+
+/**
  * Delete an event.
  *
  * @description Permanently removes an event from the database.
@@ -256,5 +310,6 @@ module.exports = {
     getAllUsers,
     updateUserRole,
     getAllEvents,
-    deleteEvent
+  deleteEvent,
+  setEventFeatured,
 };

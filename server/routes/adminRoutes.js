@@ -8,7 +8,8 @@ const {
     getAllUsers,
     updateUserRole,
     getAllEvents,
-    deleteEvent
+    deleteEvent,
+    setEventFeatured
 } = require('../controllers/adminController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -41,6 +42,14 @@ router.route('/events/:id')
  */
 router.route('/events/:id/status')
     .put(protect, admin, updateEventStatus);
+
+/**
+ * @route PUT /api/admin/events/:id/feature
+ * @desc Mark or unmark an event as featured.
+ * @access Private (Admin)
+ */
+router.route('/events/:id/feature')
+    .put(protect, admin, setEventFeatured);
 
 /**
  * @route GET /api/admin/users
