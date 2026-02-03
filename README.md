@@ -9,18 +9,21 @@
   </p>
 
   <p>
+  
     <a href="https://nexus-6753.vercel.app/" target="_blank">
       <img src="https://img.shields.io/badge/LIVE_DEMO-Visit_Site-2ea44f?style=for-the-badge&logo=vercel" alt="Live Demo" />
     </a>
   </p>
 
   <p>
+
     <img src="https://img.shields.io/badge/react-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB" alt="React" />
     <img src="https://img.shields.io/badge/node.js-6DA55F?style=for-the-badge&logo=node.js&logoColor=white" alt="Node.js" />
     <img src="https://img.shields.io/badge/express.js-%23404d59.svg?style=for-the-badge&logo=express&logoColor=%2361DAFB" alt="Express.js" />
     <img src="https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB" />
     <img src="https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
     <img src="https://img.shields.io/badge/license-ISC-blue?style=for-the-badge" alt="License" />
+
   </p>
 
   <br />
