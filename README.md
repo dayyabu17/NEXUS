@@ -26,7 +26,7 @@
   <br />
 
   <!-- Placeholder for App Demo/Screenshot -->
-  <img src="https://via.placeholder.com/800x400?text=Application+Dashboard+Preview" alt="App Screenshot" width="800" />
+  <img src="/Screenshot 2026-02-03 162925.png" alt="App Screenshot" width="800" />
 
   <br />
 </div>
