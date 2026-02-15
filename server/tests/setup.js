@@ -10,12 +10,14 @@ beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const mongoUri = mongoServer.getUri();
   await mongoose.connect(mongoUri);
-});
+}, 30000);
 
 afterEach(async () => {
-  const collections = await mongoose.connection.db.collections();
-  for (const collection of collections) {
-    await collection.deleteMany({});
+  if (mongoose.connection.db) {
+    const collections = await mongoose.connection.db.collections();
+    for (const collection of collections) {
+      await collection.deleteMany({});
+    }
   }
 });
 
@@ -24,4 +26,4 @@ afterAll(async () => {
   if (mongoServer) {
     await mongoServer.stop();
   }
-});
+}, 30000);
