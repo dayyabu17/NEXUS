@@ -97,7 +97,7 @@ const updateEventStatus = asyncHandler(async (req, res) => {
       .json({ message: 'Rejection reason is required when rejecting an event.' });
   }
 
-  const event = await Event.findById(req.params.id);
+  const event = await Event.findById(req.params.id).populate('organizer', 'email name organizationName');
 
   if (!event) {
     return res.status(404).json({ message: 'Event not found' });
@@ -113,11 +113,10 @@ const updateEventStatus = asyncHandler(async (req, res) => {
   await event.save();
 
   if (status !== previousStatus) {
-    const organizerId = event.organizer?._id || event.organizer;
+    const organizer = event.organizer;
 
-    if (organizerId) {
+    if (organizer) {
       try {
-        const organizer = await User.findById(organizerId).select('email name organizationName');
         const organizerEmail = organizer?.email;
 
         if (organizerEmail) {
@@ -139,7 +138,7 @@ const updateEventStatus = asyncHandler(async (req, res) => {
           console.error('Organizer email not found; notification email skipped.', { eventId: event._id });
         }
       } catch (error) {
-        console.error('Failed to fetch organizer for notification email:', error);
+        console.error('Error processing organizer notification email:', error);
       }
     } else {
       console.error('Organizer reference missing on event; notification email skipped.', { eventId: event._id });
