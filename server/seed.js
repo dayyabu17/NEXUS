@@ -30,6 +30,7 @@ const seedDB = async () => {
       email: 'admin@nexus.com',
       password: hashedPassword,
       role: 'admin',
+      phoneNumber: '1234567890',
     });
     console.log('Admin user created: admin@nexus.com');
 
@@ -41,6 +42,7 @@ const seedDB = async () => {
       password: organizerHashedPassword,
       role: 'organizer',
       organizationName: 'Tech Innovators', // Add organization name
+      phoneNumber: '0987654321',
     });
     console.log('Organizer user created: organizer@nexus.com');
 
@@ -51,6 +53,9 @@ const seedDB = async () => {
       email: 'guest@nexus.com',
       password: guestHashedPassword,
       role: 'student',
+      phoneNumber: '1122334455',
+      address: '123 Campus Dorm',
+      regNo: 'STU001',
     });
     console.log('Guest user created: guest@nexus.com');
 
